@@ -74,10 +74,10 @@ inline scope_exit<T> operator+(scope_exit_helper&&, T&& f)
 
 }
 
-#define SCOPE_EXIT(...) auto const CAT(scope_exit_, __LINE__)  \
-  (::detail::make_scope_exit([POP_LAST(__VA_ARGS__)]() noexcept\
+#define SCOPE_EXIT(...) auto const CAT(scope_exit_, __LINE__)          \
+  (::detail::make_scope_exit([POP_LAST(__VA_ARGS__)]() mutable noexcept\
     { LAST(__VA_ARGS__); }))
 #define SCOPE_EXIT2(...) auto const CAT(scope_exit_, __LINE__)\
-  =::detail::scope_exit_helper()+[__VA_ARGS__]() noexcept
+  =::detail::scope_exit_helper()+[__VA_ARGS__]() mutable noexcept
 
 #endif // SCOPEEXIT_HPP
