@@ -98,12 +98,6 @@ public:
     *this = from(object, method_ptr);
   }
 
-  template <class C>
-  delegate(R (C::* const method_ptr)(A...))
-  {
-    *this = from(object_ptr_, method_ptr);
-  }
-
   template <
     typename T,
     typename = typename std::enable_if<
