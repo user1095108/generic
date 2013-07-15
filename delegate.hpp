@@ -339,7 +339,7 @@ namespace std
   template <typename R, typename ...A>
   struct hash<delegate<R (A...)> >
   {
-    std::size_t operator()(delegate<R (A...)> const& d) const
+    size_t operator()(delegate<R (A...)> const& d) const
     {
       auto const seed(hash<void*>()(d.object_ptr_) + 0x9e3779b9);
 
