@@ -51,11 +51,11 @@ class delegate<R (A...)>
   }
 
 public:
-  constexpr delegate() { }
+  constexpr delegate() = default;
 
-  delegate(delegate const&) = default;
+  constexpr delegate(delegate const&) = default;
 
-  delegate(delegate&&) = default;
+  constexpr delegate(delegate&&) = default;
 
   template <class C>
   constexpr delegate(C const* const o)
