@@ -107,9 +107,9 @@ public:
     >::type
   >
   delegate(T&& f)
-    : store_size_(sizeof(T)),
-      store_(operator new(sizeof(T)),
-        functor_deleter<typename std::remove_reference<T>::type>)
+    : store_(operator new(sizeof(T)),
+        functor_deleter<typename std::remove_reference<T>::type>),
+      store_size_(sizeof(T))
   {
     typedef typename std::remove_reference<T>::type functor_type;
 
@@ -286,8 +286,8 @@ private:
 
   deleter_type deleter_;
 
-  std::size_t store_size_;
   std::shared_ptr<void> store_;
+  std::size_t store_size_;
 
   template <class T>
   static void destructor_stub(void* const p)
