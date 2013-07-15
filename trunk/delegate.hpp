@@ -44,7 +44,7 @@ class delegate<R (A...)>
 
   typedef R (*stub_ptr_type)(void*, A...);
 
-  delegate(void* const o, stub_ptr_type const m)
+  constexpr delegate(void* const o, stub_ptr_type const m)
     : object_ptr_(o),
       stub_ptr_(m)
   {
