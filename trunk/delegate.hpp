@@ -114,14 +114,12 @@ public:
   >
   delegate(T&& f)
     : store_size_(sizeof(T)),
-      store_(object_ptr_ = operator new(sizeof(T)),
+      store_(operator new(sizeof(T)),
         functor_deleter<typename std::remove_reference<T>::type>)
   {
     typedef typename std::remove_reference<T>::type functor_type;
 
-    object_ptr_ = store_.get();
-
-    new (store_.get()) functor_type(std::forward<T>(f));
+    object_ptr_ = new (store_.get()) functor_type(std::forward<T>(f));
 
     stub_ptr_ = functor_stub<functor_type>;
 
@@ -169,9 +167,7 @@ public:
       deleter_(store_.get());
     }
 
-    new (store_.get()) functor_type(std::forward<T>(f));
-
-    object_ptr_ = store_.get();
+    object_ptr_ = new (store_.get()) functor_type(std::forward<T>(f));
 
     stub_ptr_ = functor_stub<functor_type>;
 

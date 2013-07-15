@@ -15,6 +15,9 @@
 
 #include <utility>
 
+namespace generic
+{
+
 class any
 {
 public:
@@ -181,6 +184,8 @@ inline ValueType any_cast(any const& operand)
   typedef typename std::remove_reference<ValueType>::type nonref;
 
   return any_cast<nonref const&>(const_cast<any&>(operand));
+}
+
 }
 
 #endif // ANY_HPP
