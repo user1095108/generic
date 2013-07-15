@@ -12,18 +12,6 @@
 
 #include <utility>
 
-inline void* align(std::size_t const alignment, std::size_t const size,
-  void* const ptr, std::size_t const space)
-{
-  auto const p(reinterpret_cast<std::size_t>(ptr));
-
-  auto const aligned((p + alignment - 1) & -alignment);
-
-  return space - (aligned - p) < size
-    ? nullptr
-    : reinterpret_cast<void *>(aligned);
-}
-
 template <typename T> class delegate;
 
 template<class R, class ...A>
@@ -65,7 +53,7 @@ class delegate<R (A...)>
 public:
   constexpr delegate() { }
 
-  delegate(delegate const&) = delete;
+  delegate(delegate const&) = default;
 
   delegate(delegate&&) = default;
 
@@ -119,55 +107,30 @@ public:
   template <
     typename T,
     typename = typename std::enable_if<
-      !std::is_same<delegate, typename std::remove_reference<T>::type>::value
+      !std::is_same<delegate, typename std::remove_const<
+        typename std::remove_reference<T>::type>::type>::value
       && is_functor<typename std::remove_reference<T>::type>::value
     >::type
   >
   delegate(T&& f)
-    : stub_ptr_(functor_stub<typename std::remove_reference<T>::type>),
-      functor_deleter_(
-        functor_deleter<typename std::remove_reference<T>::type>),
-      store_size_(sizeof(typename std::remove_reference<T>::type)),
-      store_(object_ptr_ = operator new(
-        sizeof(typename std::remove_reference<T>::type)), operator delete)
+    : store_size_(sizeof(T)),
+      store_(object_ptr_ = operator new(sizeof(T)),
+        functor_deleter<typename std::remove_reference<T>::type>)
   {
     typedef typename std::remove_reference<T>::type functor_type;
 
-    new (object_ptr_) functor_type(std::move(f));
+    object_ptr_ = store_.get();
+
+    new (store_.get()) functor_type(std::forward<T>(f));
+
+    stub_ptr_ = functor_stub<functor_type>;
+
+    deleter_ = destructor_stub<functor_type>;
   }
 
-  ~delegate()
-  {
-    if (store_ && functor_deleter_)
-    {
-      functor_deleter_(store_.get());
-    }
-    // else do nothing
-  }
+  delegate& operator=(delegate const&) = default;
 
-  delegate& operator=(delegate const&) = delete;
-
-  delegate& operator=(delegate&& rhs)
-  {
-    if (store_)
-    {
-      auto const tmp(functor_deleter_);
-      functor_deleter_ = 0;
-
-      tmp(store_.get());
-    }
-    // else do nothing
-
-    object_ptr_ = rhs.object_ptr_;
-    stub_ptr_ = rhs.stub_ptr_;
-
-    functor_deleter_ = rhs.functor_deleter_;
-
-    store_ = std::move(rhs.store_);
-    store_size_ = rhs.store_size_;
-
-    return *this;
-  }
+  delegate& operator=(delegate&& rhs) = default;
 
   template <class C>
   delegate& operator=(R (C::* const rhs)(A...))
@@ -184,7 +147,8 @@ public:
   template <
     typename T,
     typename = typename std::enable_if<
-      !std::is_same<delegate, typename std::remove_reference<T>::type>::value
+      !std::is_same<delegate, typename std::remove_const<
+        typename std::remove_reference<T>::type>::type>::value
       && is_functor<typename std::remove_reference<T>::type>::value
     >::type
   >
@@ -192,30 +156,26 @@ public:
   {
     typedef typename std::remove_reference<T>::type functor_type;
 
-    if (store_)
+    if ((sizeof(T) > store_size_)
+      || (decltype(store_.use_count())(1) != store_.use_count()))
     {
-      auto const tmp(functor_deleter_);
-      functor_deleter_ = 0;
+      store_.reset(operator new(sizeof(T)),
+        functor_deleter<functor_type>);
 
-      tmp(store_.get());
+      store_size_ = sizeof(T);
     }
-    // else do nothing
-
-    if (!store_.get()
-      || (!(object_ptr_ = align(alignof(functor_type), sizeof(functor_type),
-        store_.get(), store_size_))))
+    else
     {
-      store_.reset(object_ptr_ = operator new(sizeof(functor_type)));
-
-      store_size_ = sizeof(functor_type);
+      deleter_(store_.get());
     }
-    // else do nothing
 
-    new (object_ptr_) functor_type(std::move(f));
+    new (store_.get()) functor_type(std::forward<T>(f));
 
-    functor_deleter_ = functor_deleter<functor_type>;
+    object_ptr_ = store_.get();
 
     stub_ptr_ = functor_stub<functor_type>;
+
+    deleter_ = destructor_stub<functor_type>;
 
     return *this;
   }
@@ -331,18 +291,26 @@ public:
 private:
   typedef void (*deleter_type)(void*);
 
-  void* object_ptr_;
-  stub_ptr_type stub_ptr_{ };
+  void* object_ptr_{};
+  stub_ptr_type stub_ptr_{};
 
-  deleter_type functor_deleter_;
+  deleter_type deleter_;
 
   std::size_t store_size_;
-  std::unique_ptr<void, deleter_type> store_{ nullptr, operator delete };
+  std::shared_ptr<void> store_;
+
+  template <class T>
+  static void destructor_stub(void* const p)
+  {
+    static_cast<T*>(p)->~T();
+  }
 
   template <class T>
   static void functor_deleter(void* const p)
   {
     static_cast<T*>(p)->~T();
+
+    operator delete(p);
   }
 
   template <R (*function_ptr)(A...)>
