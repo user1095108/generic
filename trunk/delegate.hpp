@@ -279,6 +279,8 @@ public:
   }
 
 private:
+  friend class ::std::hash<delegate>;
+
   typedef void (*deleter_type)(void*);
 
   void* object_ptr_{};
@@ -331,5 +333,20 @@ private:
     return (*static_cast<T*>(object_ptr_))(args...);
   }
 };
+
+namespace std
+{
+  template <typename R, typename ...A>
+  struct hash<delegate<R (A...)> >
+  {
+    std::size_t operator()(delegate<R (A...)> const& d) const
+    {
+      auto const seed(std::hash<void*>()(d.object_ptr_) + 0x9e3779b9);
+
+      return std::hash<void*>()(d.stub_ptr_)
+        + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+  };
+}
 
 #endif // DELEGATE_HPP
