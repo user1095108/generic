@@ -151,8 +151,7 @@ public:
     if ((sizeof(T) > store_size_)
       || (decltype(store_.use_count())(1) != store_.use_count()))
     {
-      store_.reset(operator new(sizeof(T)),
-        functor_deleter<functor_type>);
+      store_.reset(operator new(sizeof(T)), functor_deleter<functor_type>);
 
       store_size_ = sizeof(T);
     }
