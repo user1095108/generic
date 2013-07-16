@@ -136,15 +136,8 @@ public:
     return *this = from(static_cast<C const*>(object_ptr_), rhs);
   }
 
-  template <
-    typename T,
-    typename = typename std::enable_if<
-      !std::is_same<delegate, typename std::remove_const<
-        typename std::remove_reference<T>::type>::type>::value
-      && is_functor<typename std::remove_reference<T>::type>::value
-    >::type
-  >
-  delegate& operator=(T&& f)
+  template <typename T>
+  delegate& operator=(T f)
   {
     typedef typename std::remove_reference<T>::type functor_type;
 
