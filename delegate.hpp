@@ -247,7 +247,7 @@ public:
 
   void swap(delegate& other)
   {
-    std::swap(*this, other);
+    ::std::swap(*this, other);
   }
 
   constexpr bool operator==(delegate const& rhs) const
