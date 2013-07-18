@@ -308,24 +308,24 @@ private:
   }
 
   template <class C, R (C::*method_ptr)(A...)>
-  static constexpr R method_stub(void* const object_ptr_,
+  static constexpr R method_stub(void* const object_ptr,
     A const... args)
   {
-    return (static_cast<C*>(object_ptr_)->*method_ptr)(args...);
+    return (static_cast<C*>(object_ptr)->*method_ptr)(args...);
   }
 
   template <class C, R (C::*method_ptr)(A...) const>
-  static constexpr R const_method_stub(void* const object_ptr_,
+  static constexpr R const_method_stub(void* const object_ptr,
     A const... args)
   {
-    return (static_cast<C const*>(object_ptr_)->*method_ptr)(args...);
+    return (static_cast<C const*>(object_ptr)->*method_ptr)(args...);
   }
 
   template <typename T>
-  static constexpr R functor_stub(void* const object_ptr_,
+  static constexpr R functor_stub(void* const object_ptr,
     A const... args)
   {
-    return (*static_cast<T*>(object_ptr_))(args...);
+    return (*static_cast<T*>(object_ptr))(args...);
   }
 };
 
