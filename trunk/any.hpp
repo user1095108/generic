@@ -147,7 +147,7 @@ inline ValueType const* unsafe_any_cast(any const* const operand)
 template<typename ValueType>
 inline ValueType* any_cast(any* const operand)
 {
-  return operand && (operand->type() == typeid(ValueType))
+  return operand && (&operand->type() == &typeid(ValueType))
     ? &static_cast<any::holder<ValueType>*>(operand->content)->held
     : nullptr;
 }
