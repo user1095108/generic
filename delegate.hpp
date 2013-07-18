@@ -75,13 +75,13 @@ public:
   }
 
   template <class C>
-  delegate(C* const object_ptr_, R (C::* const method_ptr)(A...))
+  delegate(C* const object_ptr, R (C::* const method_ptr)(A...))
   {
     *this = from(object_ptr_, method_ptr);
   }
 
   template <class C>
-  delegate(C* const object_ptr_, R (C::* const method_ptr)(A...) const)
+  delegate(C* const object_ptr, R (C::* const method_ptr)(A...) const)
   {
     *this = from(object_ptr_, method_ptr);
   }
@@ -243,12 +243,9 @@ public:
       return (object.*method_ptr)(args...); } };
   }
 
-  void reset() { stub_ptr_ = nullptr; }
+  void reset() { stub_ptr_ = nullptr; store_.reset(); }
 
-  void swap(delegate& other)
-  {
-    ::std::swap(*this, other);
-  }
+  void swap(delegate& other) { ::std::swap(*this, other); }
 
   constexpr bool operator==(delegate const& rhs) const
   {
