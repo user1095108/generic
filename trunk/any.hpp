@@ -1,11 +1,7 @@
 #ifndef ANY_HPP
 # define ANY_HPP
 
-#include <algorithm>
-
 #include <cassert>
-
-#include <iostream>
 
 #include <stdexcept>
 
