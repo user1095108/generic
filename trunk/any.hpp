@@ -21,10 +21,10 @@ namespace generic
 class any
 {
 public:
-  any() : content(0) { }
+  any() : content(nullptr) { }
 
   explicit any(any const& other)
-    : content(other.content ? other.content->clone() : 0)
+    : content(other.content ? other.content->clone() : nullptr)
   {
   }
 
@@ -33,7 +33,7 @@ public:
   template<typename ValueType>
   any(ValueType&& value)
     : content(new holder<typename std::remove_reference<ValueType>::type>(
-      std::forward<ValueType>(value)))
+        std::forward<ValueType>(value)))
   {
   }
 
@@ -75,11 +75,15 @@ private: // types
 
   struct placeholder
   {
+    placeholder(placeholder const&) = delete;
+
     virtual ~placeholder() { }
 
     virtual placeholder* clone() const = 0;
 
     virtual std::type_info const& type() const = 0;
+
+    placeholder& operator=(placeholder const&) = delete;
   };
 
   template<typename ValueType, typename = void>
@@ -90,8 +94,6 @@ private: // types
     holder(T&& value) : held(std::forward<T>(value)) { }
 
     placeholder* clone() const final { throw std::invalid_argument(""); }
-
-    holder& operator=(holder const&) = delete;
 
   public: // queries
     std::type_info const& type() const { return typeid(ValueType); }
@@ -110,7 +112,7 @@ private: // types
   {
   public: // constructor
     template <class T>
-    holder(T && value) : held(std::forward<T>(value)) { }
+    holder(T&& value) : held(std::forward<T>(value)) { }
 
     placeholder* clone() const final { return new holder<ValueType>(held); }
 
