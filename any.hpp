@@ -51,7 +51,7 @@ public: // modifiers
   any& operator=(any&& rhs)
   {
     content = rhs.content;
-    rhs.content = 0;
+    rhs.content = nullptr;
 
     return *this;
   }
@@ -153,7 +153,7 @@ inline ValueType* any_cast(any* operand)
 {
   return operand && (operand->type() == typeid(ValueType))
     ? &static_cast<any::holder<ValueType>*>(operand->content)->held
-    : 0;
+    : nullptr;
 }
 
 template<typename ValueType>
