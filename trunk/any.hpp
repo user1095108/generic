@@ -75,6 +75,8 @@ private: // types
 
   struct placeholder
   {
+    placeholder() = default;
+
     placeholder(placeholder const&) = delete;
 
     virtual ~placeholder() { }
