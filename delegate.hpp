@@ -77,13 +77,13 @@ public:
   template <class C>
   delegate(C* const object_ptr, R (C::* const method_ptr)(A...))
   {
-    *this = from(object_ptr_, method_ptr);
+    *this = from(object_ptr, method_ptr);
   }
 
   template <class C>
   delegate(C* const object_ptr, R (C::* const method_ptr)(A...) const)
   {
-    *this = from(object_ptr_, method_ptr);
+    *this = from(object_ptr, method_ptr);
   }
 
   template <class C>
@@ -212,19 +212,19 @@ public:
   }
 
   template <class C>
-  static constexpr delegate from(C* const object_ptr_,
+  static constexpr delegate from(C* const object_ptr,
     R (C::* const method_ptr)(A...))
   {
-    return { [object_ptr_, method_ptr](A const... args){
-      return (object_ptr_->*method_ptr)(args...); } };
+    return { [object_ptr, method_ptr](A const... args){
+      return (object_ptr->*method_ptr)(args...); } };
   }
 
   template <class C>
-  static constexpr delegate from(C const* const object_ptr_,
+  static constexpr delegate from(C const* const object_ptr,
     R (C::* const method_ptr)(A...) const)
   {
-    return { [object_ptr_, method_ptr](A const... args){
-      return (object_ptr_->*method_ptr)(args...); } };
+    return { [object_ptr, method_ptr](A const... args){
+      return (object_ptr->*method_ptr)(args...); } };
   }
 
   template <class C>
