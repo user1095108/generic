@@ -176,15 +176,15 @@ public:
   }
 
   template <class C, R (C::*method_ptr)(A...)>
-  static constexpr delegate from(C* const object_ptr_)
+  static constexpr delegate from(C* const object_ptr)
   {
-    return { object_ptr_, method_stub<C, method_ptr> };
+    return { object_ptr, method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::*method_ptr)(A...) const>
-  static constexpr delegate from(C const* const object_ptr_)
+  static constexpr delegate from(C const* const object_ptr)
   {
-    return { const_cast<C*>(object_ptr_), const_method_stub<C, method_ptr> };
+    return { const_cast<C*>(object_ptr), const_method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::*method_ptr)(A...)>
