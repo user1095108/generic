@@ -81,11 +81,11 @@ private: // types
 
     virtual ~placeholder() { }
 
+    placeholder& operator=(placeholder const&) = delete;
+
     virtual placeholder* clone() const = 0;
 
     virtual std::type_info const& type() const = 0;
-
-    placeholder& operator=(placeholder const&) = delete;
   };
 
   template<typename ValueType, typename = void>
@@ -137,19 +137,19 @@ private: // representation
 };
 
 template<typename ValueType>
-inline ValueType* unsafe_any_cast(any* operand)
+inline ValueType* unsafe_any_cast(any* const operand)
 {
   return &static_cast<any::holder<ValueType>*>(operand->content)->held;
 }
 
 template<typename ValueType>
-inline ValueType const* unsafe_any_cast(any const* operand)
+inline ValueType const* unsafe_any_cast(any const* const operand)
 {
   return unsafe_any_cast<ValueType>(const_cast<any*>(operand));
 }
 
 template<typename ValueType>
-inline ValueType* any_cast(any* operand)
+inline ValueType* any_cast(any* const operand)
 {
   return operand && (operand->type() == typeid(ValueType))
     ? &static_cast<any::holder<ValueType>*>(operand->content)->held
@@ -157,7 +157,7 @@ inline ValueType* any_cast(any* operand)
 }
 
 template<typename ValueType>
-inline ValueType const* any_cast(any const* operand)
+inline ValueType const* any_cast(any const* const operand)
 {
   return any_cast<ValueType>(const_cast<any*>(operand));
 }
