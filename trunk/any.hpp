@@ -26,7 +26,12 @@ public:
 
   explicit any(any&& other) { *this = std::move(other); }
 
-  template<typename ValueType>
+  template<typename ValueType,
+    typename = typename std::enable_if<
+      !std::is_same<any, typename std::remove_const<
+        typename std::remove_reference<ValueType>::type>::type>::value
+    >::type
+  >
   any(ValueType&& value)
     : content(new holder<typename std::remove_reference<ValueType>::type>(
         std::forward<ValueType>(value)))
@@ -39,10 +44,7 @@ public: // modifiers
 
   void swap(any& other) { std::swap(content, other.content); }
 
-  any& operator=(any const& rhs)
-  {
-    return *this = any(rhs);
-  }
+  any& operator=(any const& rhs) { return *this = any(rhs); }
 
   any& operator=(any&& rhs)
   {
@@ -52,7 +54,12 @@ public: // modifiers
     return *this;
   }
 
-  template<typename ValueType>
+  template<typename ValueType,
+    typename = typename std::enable_if<
+      !std::is_same<any, typename std::remove_const<
+        typename std::remove_reference<ValueType>::type>::type>::value
+    >::type
+  >
   any& operator=(ValueType&& rhs)
   {
     return *this = any(std::forward<ValueType>(rhs));
@@ -73,11 +80,11 @@ private: // types
   {
     placeholder() = default;
 
-    placeholder(placeholder const&) = delete;
+    template <typename T> placeholder(T&&) = delete;
 
-    virtual ~placeholder() { }
+    virtual ~placeholder() noexcept { }
 
-    placeholder& operator=(placeholder const&) = delete;
+    template <typename T> placeholder& operator=(T&&) = delete;
 
     virtual placeholder* clone() const = 0;
 
