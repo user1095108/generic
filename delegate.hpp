@@ -117,7 +117,7 @@ public:
 
     object_ptr_ = store_.get();
 
-    stub_ptr_ = functor_stub<functor_type, A...>;
+    stub_ptr_ = functor_stub<functor_type>;
 
     deleter_ = destructor_stub<functor_type>;
   }
@@ -166,7 +166,7 @@ public:
 
     object_ptr_ = store_.get();
 
-    stub_ptr_ = functor_stub<functor_type, A...>;
+    stub_ptr_ = functor_stub<functor_type>;
 
     deleter_ = destructor_stub<functor_type>;
 
@@ -176,33 +176,33 @@ public:
   template <R (* const function_ptr)(A...)>
   static constexpr delegate from()
   {
-    return { nullptr, function_stub<function_ptr, A...> };
+    return { nullptr, function_stub<function_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...)>
   static constexpr delegate from(C* object_ptr)
   {
-    return { object_ptr, method_stub<C, method_ptr, A...> };
+    return { object_ptr, method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...) const>
   static constexpr delegate from(C const* object_ptr)
   {
     return { const_cast<C*>(object_ptr),
-      const_method_stub<C, method_ptr, A...> };
+      const_method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...)>
   static constexpr delegate from(C& object)
   {
-    return { &object, method_stub<C, method_ptr, A...> };
+    return { &object, method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...) const>
   static constexpr delegate from(C const& object)
   {
     return { const_cast<C*>(&object),
-      const_method_stub<C, method_ptr, A...> };
+      const_method_stub<C, method_ptr> };
   }
 
   template <typename T>
@@ -270,12 +270,10 @@ public:
 
   constexpr explicit operator bool() const { return stub_ptr_; }
 
-  template <typename ...B>
-  constexpr R operator()(B&&... args) const
+  constexpr R operator()(A... args) const
   {
 //  assert(stub_ptr);
-    return ((R (*)(void*, B&&...))stub_ptr_)(
-      object_ptr_, std::forward<B>(args)...);
+    return stub_ptr_(object_ptr_, std::forward<A>(args)...);
   }
 
 private:
@@ -305,30 +303,30 @@ private:
     operator delete(p);
   }
 
-  template <R (*function_ptr)(A...), typename ...B>
-  static constexpr R function_stub(void* const, B&&... args)
+  template <R (*function_ptr)(A...)>
+  static constexpr R function_stub(void* const, A&&... args)
   {
-    return function_ptr(std::forward<B>(args)...);
+    return function_ptr(std::forward<A>(args)...);
   }
 
-  template <class C, R (C::*method_ptr)(A...), typename ...B>
-  static constexpr R method_stub(void* const object_ptr, B&&... args)
+  template <class C, R (C::*method_ptr)(A...)>
+  static constexpr R method_stub(void* const object_ptr, A&&... args)
   {
     return (static_cast<C*>(object_ptr)->*method_ptr)(
-      std::forward<B>(args)...);
+      std::forward<A>(args)...);
   }
 
-  template <class C, R (C::*method_ptr)(A...) const, typename ...B>
-  static constexpr R const_method_stub(void* const object_ptr, B&&... args)
+  template <class C, R (C::*method_ptr)(A...) const>
+  static constexpr R const_method_stub(void* const object_ptr, A&&... args)
   {
     return (static_cast<C const*>(object_ptr)->*method_ptr)(
-      std::forward<B>(args)...);
+      std::forward<A>(args)...);
   }
 
-  template <typename T, typename ...B>
-  static constexpr R functor_stub(void* const object_ptr, B&&... args)
+  template <typename T>
+  static constexpr R functor_stub(void* const object_ptr, A&&... args)
   {
-    return (*static_cast<T*>(object_ptr))(std::forward<B>(args)...);
+    return (*static_cast<T*>(object_ptr))(std::forward<A>(args)...);
   }
 };
 
