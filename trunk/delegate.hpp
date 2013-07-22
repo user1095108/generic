@@ -69,7 +69,7 @@ public:
   {
   }
 
-  delegate(R (*const function_ptr)(A...))
+  delegate(R (* const function_ptr)(A...))
   {
     *this = from(function_ptr);
   }
@@ -188,8 +188,7 @@ public:
   template <class C, R (C::* const method_ptr)(A...) const>
   static constexpr delegate from(C const* object_ptr)
   {
-    return { const_cast<C*>(object_ptr),
-      const_method_stub<C, method_ptr> };
+    return { const_cast<C*>(object_ptr), const_method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...)>
@@ -201,19 +200,18 @@ public:
   template <class C, R (C::* const method_ptr)(A...) const>
   static constexpr delegate from(C const& object)
   {
-    return { const_cast<C*>(&object),
-      const_method_stub<C, method_ptr> };
+    return { const_cast<C*>(&object), const_method_stub<C, method_ptr> };
   }
 
   template <typename T>
-  static delegate from(T&& f)
+  static constexpr delegate from(T&& f)
   {
     return { std::forward<T>(f) };
   }
 
   static constexpr delegate from(R (* const function_ptr)(A...))
   {
-    return { [function_ptr](A&&... args){
+    return { [function_ptr](A&&... args) {
       return (*function_ptr)(std::forward<A>(args)...); } };
   }
 
@@ -221,7 +219,7 @@ public:
   static constexpr delegate from(C* const object_ptr,
     R (C::* const method_ptr)(A...))
   {
-    return { [object_ptr, method_ptr](A&&... args){
+    return { [object_ptr, method_ptr](A&&... args) {
       return (object_ptr->*method_ptr)(std::forward<A>(args)...); } };
   }
 
@@ -229,7 +227,7 @@ public:
   static constexpr delegate from(C const* const object_ptr,
     R (C::* const method_ptr)(A...) const)
   {
-    return { [object_ptr, method_ptr](A&&... args){
+    return { [object_ptr, method_ptr](A&&... args) {
       return (object_ptr->*method_ptr)(std::forward<A>(args)...); } };
   }
 
@@ -237,7 +235,7 @@ public:
   static constexpr delegate from(C& object,
    R (C::* const method_ptr)(A...))
   {
-    return { [&object, method_ptr](A&&... args){
+    return { [&object, method_ptr](A&&... args) {
       return (object.*method_ptr)(std::forward<A>(args)...); } };
   }
 
@@ -245,13 +243,13 @@ public:
   static constexpr delegate from(C const& object,
     R (C::* const method_ptr)(A...) const)
   {
-    return { [&object, method_ptr](A&&... args){
+    return { [&object, method_ptr](A&&... args) {
       return (object.*method_ptr)(std::forward<A>(args)...); } };
   }
 
   void reset() { stub_ptr_ = nullptr; store_.reset(); }
 
-  void swap(delegate& other) { ::std::swap(*this, other); }
+  constexpr void swap(delegate& other) { ::std::swap(*this, other); }
 
   constexpr bool operator==(delegate const& rhs) const
   {
@@ -290,7 +288,7 @@ private:
   std::size_t store_size_;
 
   template <class T>
-  static void destructor_stub(void* const p)
+  static constexpr void destructor_stub(void* const p)
   {
     static_cast<T*>(p)->~T();
   }
