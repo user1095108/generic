@@ -59,6 +59,20 @@ struct max_type<A>
   typedef A type;
 };
 
+template <int I, typename A, typename B, typename ...C>
+struct index_of
+{
+  static constexpr int const value =
+    std::is_same<A, B>::value ? I : index_of<I + 1, A, C...>::value;
+};
+
+template <int I, typename A, typename B>
+struct index_of<I, A, B>
+{
+  static constexpr int const value =
+    std::is_same<A, B>::value ? I : -1;
+};
+
 template <bool B>
 using bool_ = std::integral_constant<bool, B>;
 
