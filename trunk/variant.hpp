@@ -79,7 +79,7 @@ struct variant
 
   variant() = default;
 
-  ~variant() noexcept
+  ~variant()
   {
     if (store_type_)
     {
