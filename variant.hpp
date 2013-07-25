@@ -2,9 +2,11 @@
 #ifndef VARIANT_HPP
 # define VARIANT_HPP
 
-#include <exception>
+#include <cassert>
 
 #include <array>
+
+#include <exception>
 
 #include <utility>
 
@@ -61,24 +63,57 @@ struct max_type<A>
 
 template <typename A, typename B, typename... C>
 struct index_of
-  : std::integral_constant<std::size_t,
-      std::is_same<A, B>{ } ? 0 : 1 + index_of<A, C...>{ } >
+  : std::integral_constant<int,
+      std::is_same<A, B>{}
+      + (index_of<A, C...>{} == -1 ? -1 : 1+index_of<A, C...>{})
+    >
 {
 };
 
 template <typename A, typename B>
 struct index_of<A, B>
-  : std::integral_constant<std::size_t, 0>
-{
-  static_assert(std::is_same<A, B>{ }, "type not found");
-};
-
-template <std::size_t I, typename A, typename B...>
-struct type_at : at<I - 1, B...>
+  : std::integral_constant < int, std::is_same<A, B>{} -1 >
 {
 };
 
-template <std::size_t I, typename A, typename B...>
+template <typename A, typename B, typename... C>
+struct compatible_index_of
+  : std::integral_constant<int,
+      std::is_constructible<A, B>{}
+      + (compatible_index_of<A, C...>{} == -1
+        ? -1
+        : 1 + compatible_index_of<A, C...>{})
+    >
+{
+};
+
+template <typename A, typename B>
+struct compatible_index_of<A, B>
+  : std::integral_constant<int, std::is_constructible<A, B>{} - 1>
+{
+};
+
+template <typename A, typename B, typename... C>
+struct compatible_type
+{
+  typedef typename std::conditional<std::is_constructible<A, B>{}, A,
+    typename compatible_type<A, C...>::type>::type type;
+};
+
+template <typename A, typename B>
+struct compatible_type<A, B>
+{
+  typedef typename std::conditional<
+    std::is_constructible<A, B>{}, A, void>::type type;
+};
+
+
+template <std::size_t I, typename A, typename ...B>
+struct type_at : type_at<I - 1, B...>
+{
+};
+
+template <typename A, typename ...B>
 struct type_at<0, A, B...>
 {
   typedef A type;
@@ -86,6 +121,12 @@ struct type_at<0, A, B...>
 
 template <bool B>
 using bool_ = std::integral_constant<bool, B>;
+
+template <class A, class ...B>
+struct all_of : bool_<A::value && all_of<B...>::value> { };
+
+template <class A>
+struct all_of<A> : bool_<A::value> { };
 
 template <class A, class ...B>
 struct one_of : bool_<A::value || one_of<B...>::value> { };
@@ -98,6 +139,11 @@ struct one_of<A> : bool_<A::value> { };
 template <typename ...T>
 struct variant
 {
+  static_assert(!::detail::one_of<std::is_reference<T>...>::value,
+    "reference types are unsupported");
+  static_assert(::detail::all_of<std::is_move_constructible<T>...>::value,
+    "unmovable types are unsupported");
+
   static constexpr auto const max_align = detail::max_align<T...>::align;
 
   typedef typename detail::max_type<T...>::type max_type;
@@ -106,7 +152,7 @@ struct variant
 
   ~variant()
   {
-    if (store_type_)
+    if (-1 != store_type_)
     {
       deleter_(store_);
     }
@@ -124,7 +170,7 @@ struct variant
 
   variant& operator=(variant&& rhs)
   {
-    if (rhs.store_type_)
+    if (-1 != rhs.store_type_)
     {
       rhs.mover_(rhs, *this);
 
@@ -157,14 +203,14 @@ struct variant
   template <
     typename U,
     typename = typename std::enable_if<
-      ::detail::one_of<std::is_same<T,
-        typename std::remove_const<U>::type>...
+        ::detail::one_of<std::is_same<
+          typename std::remove_const<T>::type, U>...
       >::value
     >::type
   >
   variant& operator=(U&& f)
   {
-    if (store_type_)
+    if (-1 != store_type_)
     {
       deleter_(store_);
     }
@@ -176,7 +222,8 @@ struct variant
 
     mover_ = mover_stub<U>;
 
-    store_type_ = &typeid(U);
+    store_type_ = ::detail::index_of<U,
+      typename std::remove_const<T>::type...>::value;
 
     return *this;
   }
@@ -184,15 +231,24 @@ struct variant
   template <typename U>
   bool contains() const
   {
-    return store_type_ && (typeid(U) == *store_type_);
+    return (store_type_ >= 0)
+      && (::detail::index_of<U,
+        typename std::remove_const<T>::type...>::value == store_type_);
   }
 
-  template <typename U>
-  U const& get() const
+  template <typename U,
+    typename = typename std::enable_if<
+      -1 != ::detail::index_of<U,
+        typename std::remove_const<T>::type...>::value
+    >::type
+  >
+  U& get() const
   {
-    if (contains<U>())
+    if (::detail::index_of<U,
+      typename std::remove_const<T>::type...>::value == store_type_)
     {
-      return *(static_cast<U const*>(static_cast<void const*>(store_)));
+      return *(const_cast<U*>(static_cast<U const*>(static_cast<void const*>(
+        store_))));
     }
     else
     {
@@ -201,11 +257,16 @@ struct variant
   }
 
   template <typename U>
-  U& get()
+  U get(typename std::enable_if<(-1 == ::detail::index_of<U,
+    typename std::remove_const<T>::type...>::value)
+    && (-1 != ::detail::compatible_index_of<U,
+      typename std::remove_const<T>::type...>::value)>::type* = nullptr) const
   {
-    if (contains<U>())
+    if (::detail::compatible_index_of<U,
+      typename std::remove_const<T>::type...>::value == store_type_)
     {
-      return *(static_cast<U*>(static_cast<void*>(store_)));
+      return *static_cast<typename ::detail::compatible_type<U, T...>
+        ::type const*>(static_cast<void const*>(store_));
     }
     else
     {
@@ -231,7 +292,7 @@ private:
 
   alignas(max_align) char store_[sizeof(max_type)];
 
-  std::type_info const* store_type_{ };
+  int store_type_ { -1 };
 
   typedef void (*deleter_type)(void*);
   deleter_type deleter_;
