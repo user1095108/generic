@@ -257,8 +257,8 @@ struct variant
   }
 
   template <typename U>
-  U get(typename std::enable_if<(-1 == ::detail::index_of<U,
-    typename std::remove_const<T>::type...>::value)
+  U get(typename std::enable_if<(-1 ==
+    ::detail::index_of<U, typename std::remove_const<T>::type...>::value)
     && (-1 != ::detail::compatible_index_of<U,
       typename std::remove_const<T>::type...>::value)
     && std::is_arithmetic<U>::value
@@ -295,7 +295,7 @@ private:
 
   alignas(max_align) char store_[sizeof(max_type)];
 
-  int store_type_ { -1 };
+  int store_type_{ -1 };
 
   typedef void (*deleter_type)(void*);
   deleter_type deleter_;
