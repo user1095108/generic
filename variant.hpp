@@ -4,15 +4,11 @@
 
 #include <cassert>
 
-#include <array>
-
-#include <exception>
-
-#include <utility>
-
 #include <type_traits>
 
 #include <typeinfo>
+
+#include <utility>
 
 namespace detail
 {
@@ -96,7 +92,7 @@ struct compatible_index_of<A, B>
 template <typename A, typename B, typename... C>
 struct compatible_type
 {
-  typedef typename std::conditional<std::is_constructible<A, B>{}, A,
+  typedef typename std::conditional<std::is_constructible<A, B>{}, B,
     typename compatible_type<A, C...>::type>::type type;
 };
 
@@ -104,9 +100,8 @@ template <typename A, typename B>
 struct compatible_type<A, B>
 {
   typedef typename std::conditional<
-    std::is_constructible<A, B>{}, A, void>::type type;
+    std::is_constructible<A, B>{}, B, void>::type type;
 };
-
 
 template <std::size_t I, typename A, typename ...B>
 struct type_at : type_at<I - 1, B...>
@@ -157,7 +152,7 @@ struct variant
 
   typedef typename detail::max_type<T...>::type max_type;
 
-  variant() = default;
+  constexpr variant() = default;
 
   ~variant()
   {
@@ -180,7 +175,17 @@ struct variant
 
   variant& operator=(variant const& rhs)
   {
-    if ((-1 != rhs.store_type_) && rhs.copier_)
+    if (-1 == rhs.store_type_)
+    {
+      if (-1 != store_type_)
+      {
+        store_type_ = -1;
+
+        deleter_(store_);
+      }
+      // else do nothing
+    }
+    else if (rhs.copier_)
     {
       rhs.copier_(const_cast<variant&>(rhs), *this);
 
@@ -202,7 +207,17 @@ struct variant
 
   variant& operator=(variant&& rhs)
   {
-    if ((-1 != rhs.store_type_) && rhs.mover_)
+    if (-1 == rhs.store_type)
+    {
+      if (-1 != store_type_)
+      {
+        store_type_ = -1;
+
+        deleter_(store_);
+      }
+      // else do nothing
+    }
+    else if (rhs.mover_)
     {
       rhs.mover_(rhs, *this);
 
@@ -238,8 +253,8 @@ struct variant
   template <
     typename U,
     typename = typename std::enable_if<
-        ::detail::one_of<std::is_same<
-          typename std::remove_const<T>::type, U>...
+      ::detail::one_of<std::is_same<
+        typename std::remove_const<T>::type, U>...
       >::value
     >::type
   >
@@ -269,10 +284,12 @@ struct variant
     return *this;
   }
 
+  constexpr explicit operator bool() const { return -1 != store_type_; }
+
   template <typename U>
-  bool contains() const
+  constexpr bool contains() const
   {
-    return (store_type_ >= 0)
+    return (-1 != store_type_)
       && (::detail::index_of<U,
         typename std::remove_const<T>::type...>::value == store_type_);
   }
@@ -310,11 +327,16 @@ struct variant
       ::value)
   >::type* = nullptr)
   {
+    static_assert(std::is_same<
+      typename ::detail::type_at<::detail::compatible_index_of<U,
+        typename std::remove_const<T>::type...>::value, T...>::type,
+      typename ::detail::compatible_type<U, T...>::type>::value,
+      "internal error");
     if (::detail::compatible_index_of<U,
       typename std::remove_const<T>::type...>::value == store_type_)
     {
-      return U(*static_cast<typename ::detail::compatible_type<U, T...>
-        ::type const*>(static_cast<void const*>(store_)));
+      return U(*static_cast<typename ::detail::compatible_type<U, T...>::type
+        const*>(static_cast<void const*>(store_)));
     }
     else
     {
@@ -342,17 +364,16 @@ private:
       static_cast<void*>(src.store_))));
   }
 
-  alignas(max_align) char store_[sizeof(max_type)];
-
   int store_type_{ -1 };
 
   typedef void (*deleter_type)(void*);
   deleter_type deleter_;
 
   typedef void (*mover_type)(variant&, variant&);
+  mover_type copier_;
   mover_type mover_;
 
-  mover_type copier_;
+  alignas(max_align) char store_[sizeof(max_type)];
 };
 
 #endif // VARIANT_HPP
