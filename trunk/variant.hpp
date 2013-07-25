@@ -180,7 +180,7 @@ struct variant
 
       store_type_ = rhs.store_type_;
 
-      rhs.store_type_ = nullptr;
+      rhs.store_type_ = -1;
     }
     // else do nothing
 
@@ -247,8 +247,8 @@ struct variant
     if (::detail::index_of<U,
       typename std::remove_const<T>::type...>::value == store_type_)
     {
-      return *(const_cast<U*>(static_cast<U const*>(static_cast<void const*>(
-        store_))));
+      return *(const_cast<U*>(static_cast<U const*>(
+        static_cast<void const*>(store_))));
     }
     else
     {
@@ -260,7 +260,10 @@ struct variant
   U get(typename std::enable_if<(-1 == ::detail::index_of<U,
     typename std::remove_const<T>::type...>::value)
     && (-1 != ::detail::compatible_index_of<U,
-      typename std::remove_const<T>::type...>::value)>::type* = nullptr) const
+      typename std::remove_const<T>::type...>::value)
+    && std::is_arithmetic<U>::value
+    && std::is_arithmetic<typename ::detail::compatible_type<U, T...>::type>
+      ::value>::type* = nullptr) const
   {
     if (::detail::compatible_index_of<U,
       typename std::remove_const<T>::type...>::value == store_type_)
