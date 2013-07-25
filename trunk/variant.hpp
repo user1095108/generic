@@ -177,7 +177,7 @@ struct variant
   {
     if (-1 == rhs.store_type_)
     {
-      if (-1 != store_type_)
+      if (*this)
       {
         store_type_ = -1;
 
@@ -209,7 +209,7 @@ struct variant
   {
     if (-1 == rhs.store_type)
     {
-      if (-1 != store_type_)
+      if (*this)
       {
         store_type_ = -1;
 
@@ -260,7 +260,7 @@ struct variant
   >
   variant& operator=(U&& f)
   {
-    if (-1 != store_type_)
+    if (*this)
     {
       deleter_(store_);
     }
@@ -354,12 +354,24 @@ private:
   template <typename U>
   static void copier_stub(variant& src, variant& dst)
   {
+    if (dst)
+    {
+      dst.deleter_(dst.store_);
+    }
+    // else do nothing
+
     new (dst.store_) U(*static_cast<U*>(static_cast<void*>(src.store_)));
   }
 
   template <typename U>
   static void mover_stub(variant& src, variant& dst)
   {
+    if (dst)
+    {
+      dst.deleter_(dst.store_);
+    }
+    // else do nothing
+
     new (dst.store_) U(std::move(*static_cast<U*>(
       static_cast<void*>(src.store_))));
   }
