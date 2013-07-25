@@ -60,13 +60,12 @@ struct max_type<A>
 };
 
 template <std::size_t I, typename A, typename B...>
-struct at
+struct at : at<I - 1, B...>
 {
-  typedef std::conditional<I, typename at<I - 1, B...>::type, A> type;
 };
 
-template <std::size_t I, typename A>
-struct at<0, A>
+template <std::size_t I, typename A, typename B...>
+struct at<0, A, B...>
 {
   typedef A type;
 };
