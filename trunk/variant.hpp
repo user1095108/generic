@@ -134,6 +134,14 @@ struct one_of : bool_<A::value || one_of<B...>::value> { };
 template <class A>
 struct one_of<A> : bool_<A::value> { };
 
+template <class A>
+struct is_move_or_copy_constructible
+{
+  static constexpr auto const value =
+    std::is_copy_constructible<A>::value
+    || std::is_move_constructible<A>::value;
+};
+
 }
 
 template <typename ...T>
@@ -141,8 +149,9 @@ struct variant
 {
   static_assert(!::detail::one_of<std::is_reference<T>...>::value,
     "reference types are unsupported");
-  static_assert(::detail::all_of<std::is_move_constructible<T>...>::value,
-    "unmovable types are unsupported");
+  static_assert(::detail::all_of<
+    ::detail::is_move_or_copy_constructible<T>...>::value,
+    "unmovable and uncopyable types are unsupported");
 
   static constexpr auto const max_align = detail::max_align<T...>::align;
 
@@ -159,30 +168,56 @@ struct variant
     // else do nothing
   }
 
-  variant(variant const&) = delete;
+  variant(variant const& other)
+  {
+    *this = other;
+  }
 
   variant(variant&& other)
   {
     *this = std::move(other);
   }
 
-  variant& operator=(variant const&) = delete;
+  variant& operator=(variant const& rhs)
+  {
+    if ((-1 != rhs.store_type_) && rhs.copier_)
+    {
+      rhs.copier_(const_cast<variant&>(rhs), *this);
+
+      deleter_ = rhs.deleter_;
+
+      copier_ = rhs.copier_;
+
+      mover_ = rhs.mover_;
+
+      store_type_ = rhs.store_type_;
+    }
+    else
+    {
+      throw std::bad_typeid();
+    }
+
+    return *this;
+  }
 
   variant& operator=(variant&& rhs)
   {
-    if (-1 != rhs.store_type_)
+    if ((-1 != rhs.store_type_) && rhs.mover_)
     {
       rhs.mover_(rhs, *this);
 
       deleter_ = rhs.deleter_;
 
+      copier_ = rhs.copier_;
+
       mover_ = rhs.mover_;
 
       store_type_ = rhs.store_type_;
-
-      rhs.store_type_ = -1;
     }
-    // else do nothing
+    else
+    {
+      throw std::bad_typeid();
+    }
 
     return *this;
   }
@@ -220,7 +255,13 @@ struct variant
 
     deleter_ = destructor_stub<U>;
 
-    mover_ = mover_stub<U>;
+    copier_ = std::is_copy_constructible<U>::value
+      ? copier_stub<U>
+      : nullptr;
+
+    mover_ = std::is_move_constructible<U>::value
+      ? mover_stub<U>
+      : nullptr;
 
     store_type_ = ::detail::index_of<U,
       typename std::remove_const<T>::type...>::value;
@@ -261,15 +302,19 @@ struct variant
     ::detail::index_of<U, typename std::remove_const<T>::type...>::value)
     && (-1 != ::detail::compatible_index_of<U,
       typename std::remove_const<T>::type...>::value)
-    && std::is_arithmetic<U>::value
-    && std::is_arithmetic<typename ::detail::compatible_type<U, T...>::type>
-      ::value>::type* = nullptr) const
+    && (std::is_arithmetic<U>::value
+      || std::is_enum<U>::value)
+    && (std::is_arithmetic<typename ::detail::compatible_type<U, T...>::type>
+      ::value
+      || std::is_enum<typename ::detail::compatible_type<U, T...>::type>
+      ::value)
+  >::type* = nullptr)
   {
     if (::detail::compatible_index_of<U,
       typename std::remove_const<T>::type...>::value == store_type_)
     {
-      return *static_cast<typename ::detail::compatible_type<U, T...>
-        ::type const*>(static_cast<void const*>(store_));
+      return U(*static_cast<typename ::detail::compatible_type<U, T...>
+        ::type const*>(static_cast<void const*>(store_)));
     }
     else
     {
@@ -285,12 +330,16 @@ private:
   }
 
   template <typename U>
+  static void copier_stub(variant& src, variant& dst)
+  {
+    new (dst.store_) U(*static_cast<U*>(static_cast<void*>(src.store_)));
+  }
+
+  template <typename U>
   static void mover_stub(variant& src, variant& dst)
   {
     new (dst.store_) U(std::move(*static_cast<U*>(
       static_cast<void*>(src.store_))));
-
-    src.deleter_(src.store_);
   }
 
   alignas(max_align) char store_[sizeof(max_type)];
@@ -302,6 +351,8 @@ private:
 
   typedef void (*mover_type)(variant&, variant&);
   mover_type mover_;
+
+  mover_type copier_;
 };
 
 #endif // VARIANT_HPP
