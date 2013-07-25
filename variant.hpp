@@ -59,29 +59,29 @@ struct max_type<A>
   typedef A type;
 };
 
+template <typename A, typename B, typename... C>
+struct index_of
+  : std::integral_constant<std::size_t,
+      std::is_same<A, B>{ } ? 0 : 1 + index_of<A, C...>{ } >
+{
+};
+
+template <typename A, typename B>
+struct index_of<A, B>
+  : std::integral_constant<std::size_t, 0>
+{
+  static_assert(std::is_same<A, B>{ }, "type not found");
+};
+
 template <std::size_t I, typename A, typename B...>
-struct at : at<I - 1, B...>
+struct type_at : at<I - 1, B...>
 {
 };
 
 template <std::size_t I, typename A, typename B...>
-struct at<0, A, B...>
+struct type_at<0, A, B...>
 {
   typedef A type;
-};
-
-template <int I, typename A, typename B, typename ...C>
-struct index_of
-{
-  static constexpr int const value =
-    std::is_same<A, B>::value ? I : index_of<I + 1, A, C...>::value;
-};
-
-template <int I, typename A, typename B>
-struct index_of<I, A, B>
-{
-  static constexpr int const value =
-    std::is_same<A, B>::value ? I : -1;
 };
 
 template <bool B>
