@@ -156,7 +156,7 @@ struct variant
 
   ~variant()
   {
-    if (-1 != store_type_)
+    if (*this)
     {
       deleter_(store_);
     }
@@ -175,7 +175,7 @@ struct variant
 
   variant& operator=(variant const& rhs)
   {
-    if (-1 == rhs.store_type_)
+    if (!rhs)
     {
       if (*this)
       {
@@ -207,7 +207,7 @@ struct variant
 
   variant& operator=(variant&& rhs)
   {
-    if (-1 == rhs.store_type)
+    if (!rhs)
     {
       if (*this)
       {
@@ -289,9 +289,8 @@ struct variant
   template <typename U>
   constexpr bool contains() const
   {
-    return (-1 != store_type_)
-      && (::detail::index_of<U,
-        typename std::remove_const<T>::type...>::value == store_type_);
+    return *this && (::detail::index_of<U,
+      typename std::remove_const<T>::type...>::value == store_type_);
   }
 
   template <typename U,
