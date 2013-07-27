@@ -61,14 +61,14 @@ template <typename A, typename B, typename... C>
 struct index_of
   : std::integral_constant<int,
       std::is_same<A, B>{}
-      + (index_of<A, C...>{} == -1 ? -1 : 1+index_of<A, C...>{})
+      + (-1 == index_of<A, C...>{ } ? -1 : 1 + index_of<A, C...>{ })
     >
 {
 };
 
 template <typename A, typename B>
 struct index_of<A, B>
-  : std::integral_constant < int, std::is_same<A, B>{} -1 >
+  : std::integral_constant <int, std::is_same<A, B>{} - 1>
 {
 };
 
@@ -76,9 +76,9 @@ template <typename A, typename B, typename... C>
 struct compatible_index_of
   : std::integral_constant<int,
       std::is_constructible<A, B>{}
-      + (compatible_index_of<A, C...>{} == -1
-        ? -1
-        : 1 + compatible_index_of<A, C...>{})
+      + (-1 == compatible_index_of<A, C...>{ }
+          ? -1
+          : 1 + compatible_index_of<A, C...>{ })
     >
 {
 };
@@ -188,14 +188,6 @@ struct variant
     else if (rhs.copier_)
     {
       rhs.copier_(const_cast<variant&>(rhs), *this);
-
-      deleter_ = rhs.deleter_;
-
-      copier_ = rhs.copier_;
-
-      mover_ = rhs.mover_;
-
-      store_type_ = rhs.store_type_;
     }
     else
     {
@@ -220,14 +212,6 @@ struct variant
     else if (rhs.mover_)
     {
       rhs.mover_(rhs, *this);
-
-      deleter_ = rhs.deleter_;
-
-      copier_ = rhs.copier_;
-
-      mover_ = rhs.mover_;
-
-      store_type_ = rhs.store_type_;
     }
     else
     {
@@ -240,46 +224,150 @@ struct variant
   template <
     typename U,
     typename = typename std::enable_if<
-      ::detail::one_of<std::is_same<T,
-        typename std::remove_const<U>::type>...
-      >::value
+      ::detail::one_of<std::is_same<typename std::remove_const<
+        typename std::remove_reference<U>::type>::type, T>...
+    >::value
+    && !std::is_same<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type,
+    variant>::value
     >::type
   >
   variant(U&& f)
   {
-    *this = std::forward<U>(f);
+    this = std::forward<U>(f);
   }
 
-  template <
-    typename U,
-    typename = typename std::enable_if<
-      ::detail::one_of<std::is_same<
-        typename std::remove_const<T>::type, U>...
-      >::value
-    >::type
-  >
-  variant& operator=(U&& f)
+  template <typename U>
+  typename std::enable_if<
+    ::detail::one_of<std::is_same<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type, T>...>::value
+    && !std::is_rvalue_reference<U&&>::value
+    && std::is_copy_assignable<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type>::value
+    && !std::is_same<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type,
+      variant>::value,
+    variant&
+  >::type
+  operator=(U&& f)
   {
+    typedef typename std::remove_const<
+      typename std::remove_reference<U>::type>::type user_type;
+
+    if (::detail::index_of<user_type, T...>::value == store_type_)
+    {
+      *static_cast<user_type*>(static_cast<void*>(store_)) = f;
+    }
+    else
+    {
+      if (*this)
+      {
+        deleter_(store_);
+      }
+      // else do nothing
+
+      new (store_) user_type(std::forward<U>(f));
+
+      deleter_ = destructor_stub<user_type>;
+
+      copier_ = std::is_copy_constructible<user_type>::value
+        ? copier_stub<user_type>
+        : nullptr;
+
+      mover_ = std::is_move_constructible<user_type>::value
+        ? mover_stub<user_type>
+        : nullptr;
+
+      store_type_ = ::detail::index_of<user_type, T...>::value;
+    }
+
+    return *this;
+  }
+
+  template <typename U>
+  typename std::enable_if<
+    ::detail::one_of<std::is_same<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type, T>...>::value
+    && std::is_rvalue_reference<U&&>::value
+    && std::is_move_assignable<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type>::value
+    && !std::is_same<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type,
+      variant>::value,
+    variant&
+  >::type
+  operator=(U&& f)
+  {
+    typedef typename std::remove_const<
+      typename std::remove_reference<U>::type>::type user_type;
+
+    if (::detail::index_of<user_type, T...>::value == store_type_)
+    {
+      *static_cast<user_type*>(static_cast<void*>(store_)) = std::move(f);
+    }
+    else
+    {
+      if (*this)
+      {
+        deleter_(store_);
+      }
+      // else do nothing
+
+      new (store_) user_type(std::forward<U>(f));
+
+      deleter_ = destructor_stub<user_type>;
+
+      copier_ = std::is_copy_constructible<user_type>::value
+        ? copier_stub<user_type>
+        : nullptr;
+
+      mover_ = std::is_move_constructible<user_type>::value
+        ? mover_stub<user_type>
+        : nullptr;
+
+      store_type_ = ::detail::index_of<user_type, T...>::value;
+    }
+
+    return *this;
+  }
+
+  template <typename U>
+  typename std::enable_if<
+    ::detail::one_of<std::is_same<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type, T>...>::value
+    && !std::is_copy_assignable<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type>::value
+    && !std::is_move_assignable<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type>::value
+    && !std::is_same<typename std::remove_const<
+      typename std::remove_reference<U>::type>::type,
+      variant>::value,
+    variant&
+  >::type
+  operator=(U&& f)
+  {
+    typedef typename std::remove_const<
+      typename std::remove_reference<U>::type>::type user_type;
+
     if (*this)
     {
       deleter_(store_);
     }
     // else do nothing
 
-    new (store_) U(std::forward<U>(f));
+    new (store_) user_type(std::forward<U>(f));
 
-    deleter_ = destructor_stub<U>;
+    deleter_ = destructor_stub<user_type>;
 
-    copier_ = std::is_copy_constructible<U>::value
-      ? copier_stub<U>
+    copier_ = std::is_copy_constructible<user_type>::value
+      ? copier_stub<user_type>
       : nullptr;
 
-    mover_ = std::is_move_constructible<U>::value
-      ? mover_stub<U>
+    mover_ = std::is_move_constructible<user_type>::value
+      ? mover_stub<user_type>
       : nullptr;
 
-    store_type_ = ::detail::index_of<U,
-      typename std::remove_const<T>::type...>::value;
+    store_type_ = ::detail::index_of<user_type, T...>::value;
 
     return *this;
   }
@@ -289,23 +377,41 @@ struct variant
   template <typename U>
   constexpr bool contains() const
   {
-    return *this && (::detail::index_of<U,
-      typename std::remove_const<T>::type...>::value == store_type_);
+    return *this && (::detail::index_of<
+      typename std::remove_const<U>::type, T...>::value == store_type_);
   }
 
   template <typename U,
     typename = typename std::enable_if<
-      -1 != ::detail::index_of<U,
-        typename std::remove_const<T>::type...>::value
+      -1 != ::detail::index_of<typename std::remove_const<
+        typename std::remove_reference<U>::type>::type, T...>::value
     >::type
   >
-  U& get() const
+  U& get()
   {
-    if (::detail::index_of<U,
-      typename std::remove_const<T>::type...>::value == store_type_)
+    if (::detail::index_of<
+      typename std::remove_const<U>::type, T...>::value == store_type_)
     {
-      return *(const_cast<U*>(static_cast<U const*>(
-        static_cast<void const*>(store_))));
+      return *static_cast<U*>(static_cast<void*>(store_));
+    }
+    else
+    {
+      throw std::bad_typeid();
+    }
+  }
+
+  template <typename U,
+    typename = typename std::enable_if<
+      -1 != ::detail::index_of<typename std::remove_const<
+        typename std::remove_reference<U>::type>::type, T...>::value
+    >::type
+  >
+  U const& get() const
+  {
+    if (::detail::index_of<
+      typename std::remove_const<U>::type, T...>::value == store_type_)
+    {
+      return *static_cast<U const*>(static_cast<void const*>(store_));
     }
     else
     {
@@ -315,24 +421,23 @@ struct variant
 
   template <typename U>
   U get(typename std::enable_if<(-1 ==
-    ::detail::index_of<U, typename std::remove_const<T>::type...>::value)
-    && (-1 != ::detail::compatible_index_of<U,
-      typename std::remove_const<T>::type...>::value)
+    ::detail::index_of<typename std::remove_const<U>::type, T...>::value)
+    && (-1 != ::detail::compatible_index_of<
+      typename std::remove_const<U>::type, T...>::value)
     && (std::is_arithmetic<U>::value
       || std::is_enum<U>::value)
-    && (std::is_arithmetic<typename ::detail::compatible_type<U, T...>::type>
-      ::value
+    && (std::is_arithmetic<typename ::detail::compatible_type<
+      typename std::remove_const<U>::type, T...>::type>::value
       || std::is_enum<typename ::detail::compatible_type<U, T...>::type>
-      ::value)
+        ::value)
   >::type* = nullptr)
   {
     static_assert(std::is_same<
       typename ::detail::type_at<::detail::compatible_index_of<U,
-        typename std::remove_const<T>::type...>::value, T...>::type,
+        T...>::value, T...>::type,
       typename ::detail::compatible_type<U, T...>::type>::value,
       "internal error");
-    if (::detail::compatible_index_of<U,
-      typename std::remove_const<T>::type...>::value == store_type_)
+    if (::detail::compatible_index_of<U, T...>::value == store_type_)
     {
       return U(*static_cast<typename ::detail::compatible_type<U, T...>::type
         const*>(static_cast<void const*>(store_)));
@@ -351,7 +456,39 @@ private:
   }
 
   template <typename U>
-  static void copier_stub(variant& src, variant& dst)
+  static typename std::enable_if<
+    std::is_copy_assignable<U>::value>::type
+  copier_stub(variant& src, variant& dst)
+  {
+    if (src.store_type_ == dst.store_type_)
+    {
+      *static_cast<U*>(static_cast<void*>(dst.store_)) =
+        *static_cast<U*>(static_cast<void*>(src.store_));
+    }
+    else
+    {
+      if (dst)
+      {
+        dst.deleter_(dst.store_);
+      }
+      // else do nothing
+
+      new (dst.store_) U(*static_cast<U*>(static_cast<void*>(src.store_)));
+
+      dst.deleter_ = src.deleter_;
+
+      dst.copier_ = src.copier_;
+
+      dst.mover_ = src.mover_;
+
+      dst.store_type_ = src.store_type_;
+    }
+  }
+
+  template <typename U>
+  static typename std::enable_if<
+    !std::is_copy_assignable<U>::value>::type
+  copier_stub(variant& src, variant& dst)
   {
     if (dst)
     {
@@ -360,10 +497,50 @@ private:
     // else do nothing
 
     new (dst.store_) U(*static_cast<U*>(static_cast<void*>(src.store_)));
+
+    dst.deleter_ = src.deleter_;
+
+    dst.copier_ = src.copier_;
+
+    dst.mover_ = src.mover_;
+
+    dst.store_type_ = src.store_type_;
   }
 
   template <typename U>
-  static void mover_stub(variant& src, variant& dst)
+  static typename std::enable_if<
+    std::is_move_assignable<U>::value>::type
+  mover_stub(variant& src, variant& dst)
+  {
+    if (src.store_type_ == dst.store_type_)
+    {
+      *static_cast<U*>(static_cast<void*>(dst.store_)) =
+        std::move(*static_cast<U*>(static_cast<void*>(src.store_)));
+    }
+    else
+    {
+      if (dst)
+      {
+        dst.deleter_(dst.store_);
+      }
+      // else do nothing
+
+      new (dst.store_) U(*static_cast<U*>(static_cast<void*>(src.store_)));
+
+      dst.deleter_ = src.deleter_;
+
+      dst.copier_ = src.copier_;
+
+      dst.mover_ = src.mover_;
+
+      dst.store_type_ = src.store_type_;
+    }
+  }
+
+  template <typename U>
+  static typename std::enable_if<
+    !std::is_move_assignable<U>::value>::type
+  mover_stub(variant& src, variant& dst)
   {
     if (dst)
     {
@@ -373,6 +550,14 @@ private:
 
     new (dst.store_) U(std::move(*static_cast<U*>(
       static_cast<void*>(src.store_))));
+
+    dst.deleter_ = src.deleter_;
+
+    dst.copier_ = src.copier_;
+
+    dst.mover_ = src.mover_;
+
+    dst.store_type_ = src.store_type_;
   }
 
   int store_type_{ -1 };
