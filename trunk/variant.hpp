@@ -525,7 +525,8 @@ private:
       }
       // else do nothing
 
-      new (dst.store_) U(*static_cast<U*>(static_cast<void*>(src.store_)));
+      new (dst.store_) U(std::move(*static_cast<U*>(static_cast<void*>(
+        src.store_))));
 
       dst.deleter_ = src.deleter_;
 
