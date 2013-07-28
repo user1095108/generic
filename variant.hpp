@@ -561,14 +561,14 @@ private:
     dst.store_type_ = src.store_type_;
   }
 
-  int store_type_{ -1 };
-
   typedef void (*deleter_type)(void*);
   deleter_type deleter_;
 
   typedef void (*mover_type)(variant&, variant&);
   mover_type copier_;
   mover_type mover_;
+
+  int store_type_{ -1 };
 
   alignas(max_align) char store_[sizeof(max_type)];
 };
