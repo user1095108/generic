@@ -77,8 +77,8 @@ struct compatible_index_of
   : std::integral_constant<int,
       std::is_constructible<A, B>{}
       + (-1 == compatible_index_of<A, C...>{ }
-          ? -1
-          : 1 + compatible_index_of<A, C...>{ })
+        ? -1
+        : 1 + compatible_index_of<A, C...>{ })
     >
 {
 };
