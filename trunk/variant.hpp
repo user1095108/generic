@@ -225,7 +225,8 @@ struct variant
     typename U,
     typename = typename std::enable_if<
       ::detail::one_of<std::is_same<typename std::remove_const<
-        typename std::remove_reference<U>::type>::type, T>...
+        typename std::remove_reference<U>::type>::type,
+        typename std::remove_const<T>::type>...
     >::value
     && !std::is_same<typename std::remove_const<
       typename std::remove_reference<U>::type>::type,
@@ -240,7 +241,8 @@ struct variant
   template <typename U>
   typename std::enable_if<
     ::detail::one_of<std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type, T>...>::value
+      typename std::remove_reference<U>::type>::type,
+      typename std::remove_const<T>::type>...>::value
     && !std::is_rvalue_reference<U&&>::value
     && std::is_copy_assignable<typename std::remove_const<
       typename std::remove_reference<U>::type>::type>::value
@@ -254,7 +256,8 @@ struct variant
     typedef typename std::remove_const<
       typename std::remove_reference<U>::type>::type user_type;
 
-    if (::detail::index_of<user_type, T...>::value == store_type_)
+    if (::detail::index_of<user_type,
+      typename std::remove_const<T>::type...>::value == store_type_)
     {
       *static_cast<user_type*>(static_cast<void*>(store_)) = f;
     }
@@ -278,7 +281,8 @@ struct variant
         ? mover_stub<user_type>
         : nullptr;
 
-      store_type_ = ::detail::index_of<user_type, T...>::value;
+      store_type_ = ::detail::index_of<user_type,
+        typename std::remove_const<T>::type...>::value;
     }
 
     return *this;
@@ -287,7 +291,8 @@ struct variant
   template <typename U>
   typename std::enable_if<
     ::detail::one_of<std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type, T>...>::value
+      typename std::remove_reference<U>::type>::type,
+      typename std::remove_const<T>::type>...>::value
     && std::is_rvalue_reference<U&&>::value
     && std::is_move_assignable<typename std::remove_const<
       typename std::remove_reference<U>::type>::type>::value
@@ -301,7 +306,8 @@ struct variant
     typedef typename std::remove_const<
       typename std::remove_reference<U>::type>::type user_type;
 
-    if (::detail::index_of<user_type, T...>::value == store_type_)
+    if (::detail::index_of<user_type,
+      typename std::remove_const<T>::type...>::value == store_type_)
     {
       *static_cast<user_type*>(static_cast<void*>(store_)) = std::move(f);
     }
@@ -325,7 +331,8 @@ struct variant
         ? mover_stub<user_type>
         : nullptr;
 
-      store_type_ = ::detail::index_of<user_type, T...>::value;
+      store_type_ = ::detail::index_of<user_type,
+        typename std::remove_const<T>::type...>::value;
     }
 
     return *this;
@@ -334,7 +341,8 @@ struct variant
   template <typename U>
   typename std::enable_if<
     ::detail::one_of<std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type, T>...>::value
+      typename std::remove_reference<U>::type>::type,
+      typename std::remove_const<T>::type>...>::value
     && !std::is_copy_assignable<typename std::remove_const<
       typename std::remove_reference<U>::type>::type>::value
     && !std::is_move_assignable<typename std::remove_const<
@@ -367,7 +375,8 @@ struct variant
       ? mover_stub<user_type>
       : nullptr;
 
-    store_type_ = ::detail::index_of<user_type, T...>::value;
+    store_type_ = ::detail::index_of<user_type,
+      typename std::remove_const<T>::type...>::value;
 
     return *this;
   }
@@ -378,7 +387,8 @@ struct variant
   constexpr bool contains() const
   {
     return *this && (::detail::index_of<
-      typename std::remove_const<U>::type, T...>::value == store_type_);
+      typename std::remove_const<U>::type,
+        typename std::remove_const<T>::type...>::value == store_type_);
   }
 
   template <typename U,
@@ -421,9 +431,11 @@ struct variant
 
   template <typename U>
   U get(typename std::enable_if<(-1 ==
-    ::detail::index_of<typename std::remove_const<U>::type, T...>::value)
+    ::detail::index_of<typename std::remove_const<U>::type,
+      typename std::remove_const<T>::type...>::value)
     && (-1 != ::detail::compatible_index_of<
-      typename std::remove_const<U>::type, T...>::value)
+      typename std::remove_const<U>::type,
+      typename std::remove_const<T>::type...>::value)
     && (std::is_arithmetic<U>::value
       || std::is_enum<U>::value)
     && (std::is_arithmetic<typename ::detail::compatible_type<
@@ -434,13 +446,16 @@ struct variant
   {
     static_assert(std::is_same<
       typename ::detail::type_at<::detail::compatible_index_of<U,
-        T...>::value, T...>::type,
+        typename std::remove_const<T>::type...>::value,
+        typename std::remove_const<T>::type...>::type,
       typename ::detail::compatible_type<U, T...>::type>::value,
       "internal error");
-    if (::detail::compatible_index_of<U, T...>::value == store_type_)
+    if (::detail::compatible_index_of<U,
+      typename std::remove_const<T>::type...>::value == store_type_)
     {
-      return U(*static_cast<typename ::detail::compatible_type<U, T...>::type
-        const*>(static_cast<void const*>(store_)));
+      return U(*static_cast<typename ::detail::compatible_type<U,
+        typename std::remove_const<T>::type...>::type const*>(
+          static_cast<void const*>(store_)));
     }
     else
     {
