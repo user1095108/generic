@@ -408,13 +408,15 @@ struct variant
         typename std::remove_const<T>::type...>::value == store_type_);
   }
 
-  template <typename U,
-    typename = typename std::enable_if<
-      -1 != ::detail::index_of<typename std::remove_const<U>::type,
-        typename std::remove_const<T>::type...>::value
-    >::type
-  >
-  U& get()
+  template <typename U>
+  typename std::enable_if<
+    (-1 != ::detail::index_of<typename std::remove_const<U>::type,
+      typename std::remove_const<T>::type...>::value)
+    && !std::is_enum<U>::value
+    && !std::is_fundamental<U>::value,
+    U&
+  >::type
+  get()
   {
     if (::detail::index_of<typename std::remove_const<U>::type,
       typename std::remove_const<T>::type...>::value == store_type_)
@@ -427,13 +429,15 @@ struct variant
     }
   }
 
-  template <typename U,
-    typename = typename std::enable_if<
-      -1 != ::detail::index_of<typename std::remove_const<U>::type,
-        typename std::remove_const<T>::type...>::value
-    >::type
-  >
-  U const& get() const
+  template <typename U>
+  typename std::enable_if<
+    (-1 != ::detail::index_of<typename std::remove_const<U>::type,
+      typename std::remove_const<T>::type...>::value)
+    && !std::is_enum<U>::value
+    && !std::is_fundamental<U>::value,
+    U const&
+  >::type
+  get() const
   {
     if (::detail::index_of<typename std::remove_const<U>::type,
       typename std::remove_const<T>::type...>::value == store_type_)
@@ -447,19 +451,40 @@ struct variant
   }
 
   template <typename U>
-  U get(typename std::enable_if<(-1 ==
+  typename std::enable_if<(-1 !=
+    ::detail::index_of<typename std::remove_const<U>::type,
+      typename std::remove_const<T>::type...>::value)
+    && (std::is_enum<U>::value
+      || std::is_fundamental<U>::value),
+    U
+  >::type
+  get()
+  {
+    if (::detail::index_of<U,
+      typename std::remove_const<T>::type...>::value == store_type_)
+    {
+      return U(*static_cast<typename ::detail::compatible_type<U,
+        typename std::remove_const<T>::type...>::type const*>(
+          static_cast<void const*>(store_)));
+    }
+    else
+    {
+      throw std::bad_typeid();
+    }
+  }
+
+  template <typename U>
+  typename std::enable_if<(-1 ==
     ::detail::index_of<typename std::remove_const<U>::type,
       typename std::remove_const<T>::type...>::value)
     && (-1 != ::detail::compatible_index_of<
       typename std::remove_const<U>::type,
       typename std::remove_const<T>::type...>::value)
-    && (std::is_arithmetic<U>::value
-      || std::is_enum<U>::value)
-    && (std::is_arithmetic<typename ::detail::compatible_type<
-      typename std::remove_const<U>::type, T...>::type>::value
-      || std::is_enum<typename ::detail::compatible_type<U, T...>::type>
-        ::value)
-  >::type* = nullptr)
+    && (std::is_enum<U>::value
+      || std::is_fundamental<U>::value),
+    U
+  >::type
+  get()
   {
     static_assert(std::is_same<
       typename ::detail::type_at<::detail::compatible_index_of<U,
