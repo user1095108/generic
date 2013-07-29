@@ -60,26 +60,40 @@ struct max_type<A>
 template <typename A, typename B, typename... C>
 struct index_of
   : std::integral_constant<int,
-      std::is_same<A, B>{}
-      + (-1 == index_of<A, C...>{ } ? -1 : 1 + index_of<A, C...>{ })
-    >
+    std::is_same<A, B>{}
+      ? 0
+      : (-1 == index_of<A, C...>::value) ? -1 : 1 + index_of<A, C...>::value>
 {
 };
 
 template <typename A, typename B>
 struct index_of<A, B>
-  : std::integral_constant <int, std::is_same<A, B>{} - 1>
+  : std::integral_constant<int, std::is_same<A, B>{} - 1>
+{
+};
+
+template <typename A, typename... B>
+struct has_duplicates
+  : std::integral_constant<bool,
+      (-1 == index_of<A, B...>::value ? has_duplicates<B...>::value : true)
+    >
+{
+};
+
+template <typename A>
+struct has_duplicates<A>
+  : std::integral_constant<bool, false>
 {
 };
 
 template <typename A, typename B, typename... C>
 struct compatible_index_of
   : std::integral_constant<int,
-      std::is_constructible<A, B>{}
-      + (-1 == compatible_index_of<A, C...>{ }
+    std::is_constructible<A, B>{}
+      ? 0
+      : (-1 == compatible_index_of<A, C...>::value)
         ? -1
-        : 1 + compatible_index_of<A, C...>{ })
-    >
+        : 1 + compatible_index_of<A, C...>::value>
 {
 };
 
@@ -147,6 +161,9 @@ struct variant
   static_assert(::detail::all_of<
     ::detail::is_move_or_copy_constructible<T>...>::value,
     "unmovable and uncopyable types are unsupported");
+  static_assert(!::detail::has_duplicates<
+    typename std::remove_const<T>::type...>::value,
+    "duplicates are unsupported");
 
   static constexpr auto const max_align = detail::max_align<T...>::align;
 
