@@ -167,7 +167,6 @@ struct variant
     typename std::remove_const<T>::type...>::value,
     "duplicates are unsupported");
 
-
   static constexpr auto const max_align = detail::max_align<T...>::align;
 
   typedef typename detail::max_type<T...>::type max_type;
