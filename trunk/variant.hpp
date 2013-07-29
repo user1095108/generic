@@ -489,7 +489,9 @@ private:
 
   template <typename U>
   static typename std::enable_if<
-    std::is_copy_assignable<U>::value>::type
+    std::is_copy_constructible<U>::value
+    && std::is_copy_assignable<U>::value
+  >::type
   copier_stub(variant& src, variant& dst)
   {
     if (src.store_type_ == dst.store_type_)
@@ -519,7 +521,9 @@ private:
 
   template <typename U>
   static typename std::enable_if<
-    !std::is_copy_assignable<U>::value>::type
+    std::is_copy_constructible<U>::value
+    && !std::is_copy_assignable<U>::value
+  >::type
   copier_stub(variant& src, variant& dst)
   {
     if (dst)
@@ -541,7 +545,19 @@ private:
 
   template <typename U>
   static typename std::enable_if<
-    std::is_move_assignable<U>::value>::type
+    !std::is_copy_constructible<U>::value
+    && !std::is_copy_assignable<U>::value
+  >::type
+  copier_stub(variant& src, variant& dst)
+  {
+    assert(0);
+  }
+
+  template <typename U>
+  static typename std::enable_if<
+    std::is_move_constructible<U>::value
+    && std::is_move_assignable<U>::value
+  >::type
   mover_stub(variant& src, variant& dst)
   {
     if (src.store_type_ == dst.store_type_)
@@ -572,7 +588,9 @@ private:
 
   template <typename U>
   static typename std::enable_if<
-    !std::is_move_assignable<U>::value>::type
+    std::is_move_constructible<U>::value
+    && !std::is_move_assignable<U>::value
+  >::type
   mover_stub(variant& src, variant& dst)
   {
     if (dst)
@@ -591,6 +609,16 @@ private:
     dst.mover_ = src.mover_;
 
     dst.store_type_ = src.store_type_;
+  }
+
+  template <typename U>
+  static typename std::enable_if<
+    !std::is_move_constructible<U>::value
+    && !std::is_move_assignable<U>::value
+  >::type
+  mover_stub(variant& src, variant& dst)
+  {
+    assert(0);
   }
 
   typedef void (*deleter_type)(void*);
