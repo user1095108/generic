@@ -138,10 +138,10 @@ template <class A>
 struct all_of<A> : bool_<A::value> { };
 
 template <class A, class ...B>
-struct one_of : bool_<A::value || one_of<B...>::value> { };
+struct any_of : bool_<A::value || any_of<B...>::value> { };
 
 template <class A>
-struct one_of<A> : bool_<A::value> { };
+struct any_of<A> : bool_<A::value> { };
 
 template <class A>
 struct is_move_or_copy_constructible
@@ -156,7 +156,7 @@ struct is_move_or_copy_constructible
 template <typename ...T>
 struct variant
 {
-  static_assert(!::detail::one_of<std::is_reference<T>...>::value,
+  static_assert(!::detail::any_of<std::is_reference<T>...>::value,
     "reference types are unsupported");
   static_assert(::detail::all_of<
     ::detail::is_move_or_copy_constructible<T>...>::value,
@@ -241,7 +241,7 @@ struct variant
   template <
     typename U,
     typename = typename std::enable_if<
-      ::detail::one_of<std::is_same<typename std::remove_const<
+      ::detail::any_of<std::is_same<typename std::remove_const<
         typename std::remove_reference<U>::type>::type,
         typename std::remove_const<T>::type>...
     >::value
@@ -257,7 +257,7 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    ::detail::one_of<std::is_same<typename std::remove_const<
+    ::detail::any_of<std::is_same<typename std::remove_const<
       typename std::remove_reference<U>::type>::type,
       typename std::remove_const<T>::type>...>::value
     && !std::is_rvalue_reference<U&&>::value
@@ -307,7 +307,7 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    ::detail::one_of<std::is_same<typename std::remove_const<
+    ::detail::any_of<std::is_same<typename std::remove_const<
       typename std::remove_reference<U>::type>::type,
       typename std::remove_const<T>::type>...>::value
     && std::is_rvalue_reference<U&&>::value
@@ -357,7 +357,7 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    ::detail::one_of<std::is_same<typename std::remove_const<
+    ::detail::any_of<std::is_same<typename std::remove_const<
       typename std::remove_reference<U>::type>::type,
       typename std::remove_const<T>::type>...>::value
     && !std::is_copy_assignable<typename std::remove_const<
