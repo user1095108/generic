@@ -384,13 +384,13 @@ struct variant
   template <typename U,
     typename = typename std::enable_if<
       -1 != ::detail::index_of<typename std::remove_const<U>::type,
-        T...>::value
+        typename std::remove_const<T>::type...>::value
     >::type
   >
   U& get()
   {
-    if (::detail::index_of<
-      typename std::remove_const<U>::type, T...>::value == store_type_)
+    if (::detail::index_of<typename std::remove_const<U>::type,
+      typename std::remove_const<T>::type...>::value == store_type_)
     {
       return *static_cast<U*>(static_cast<void*>(store_));
     }
@@ -403,13 +403,13 @@ struct variant
   template <typename U,
     typename = typename std::enable_if<
       -1 != ::detail::index_of<typename std::remove_const<U>::type,
-        T...>::value
+        typename std::remove_const<T>::type...>::value
     >::type
   >
   U const& get() const
   {
-    if (::detail::index_of<
-      typename std::remove_const<U>::type, T...>::value == store_type_)
+    if (::detail::index_of<typename std::remove_const<U>::type,
+      typename std::remove_const<T>::type...>::value == store_type_)
     {
       return *static_cast<U const*>(static_cast<void const*>(store_));
     }
