@@ -158,12 +158,15 @@ struct variant
 {
   static_assert(!::detail::any_of<std::is_reference<T>...>::value,
     "reference types are unsupported");
+  static_assert(!::detail::any_of<std::is_void<T>...>::value,
+    "void is unsupported");
   static_assert(::detail::all_of<
     ::detail::is_move_or_copy_constructible<T>...>::value,
     "unmovable and uncopyable types are unsupported");
   static_assert(!::detail::has_duplicates<
     typename std::remove_const<T>::type...>::value,
     "duplicates are unsupported");
+
 
   static constexpr auto const max_align = detail::max_align<T...>::align;
 
