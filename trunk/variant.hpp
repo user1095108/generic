@@ -383,8 +383,8 @@ struct variant
 
   template <typename U,
     typename = typename std::enable_if<
-      -1 != ::detail::index_of<typename std::remove_const<
-        typename std::remove_reference<U>::type>::type, T...>::value
+      -1 != ::detail::index_of<typename std::remove_const<U>::type,
+        T...>::value
     >::type
   >
   U& get()
@@ -402,8 +402,8 @@ struct variant
 
   template <typename U,
     typename = typename std::enable_if<
-      -1 != ::detail::index_of<typename std::remove_const<
-        typename std::remove_reference<U>::type>::type, T...>::value
+      -1 != ::detail::index_of<typename std::remove_const<U>::type,
+        T...>::value
     >::type
   >
   U const& get() const
