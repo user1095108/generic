@@ -14,19 +14,19 @@ struct dstreambuf : std::streambuf
   dstreambuf(delegate_type d)
     : delegate_(d)
   {
-    setp(buffer_, buffer_ + bufsize);
+    super::setp(buffer_, buffer_ + bufsize);
   }
 
 private:
   int overflow(int const c)
   {
-    sync();
+    dstreambuf::sync();
 
     if (traits_type::eof() != c)
     {
-      *pptr() = traits_type::to_char_type(c);
+      *super::pptr() = traits_type::to_char_type(c);
 
-      pbump(1);
+      super::pbump(1);
     }
     // else do nothing
 
@@ -35,11 +35,11 @@ private:
 
   int sync()
   {
-    if (pbase() != pptr())
+    if (super::pbase() != super::pptr())
     {
       delegate_(pbase(), pptr() - pbase());
 
-      setp(buffer_, buffer_ + bufsize);
+      super::setp(buffer_, buffer_ + bufsize);
     }
     // else do nothing
 
@@ -47,6 +47,8 @@ private:
   }
 
 private:
+  typedef std::streambuf super;
+
   delegate_type delegate_;
 
   char buffer_[bufsize];
