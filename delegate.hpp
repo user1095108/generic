@@ -249,7 +249,7 @@ public:
 
   void reset() { stub_ptr_ = nullptr; store_.reset(); }
 
-  constexpr void swap(delegate& other) { ::std::swap(*this, other); }
+  void swap(delegate& other) { ::std::swap(*this, other); }
 
   constexpr bool operator==(delegate const& rhs) const
   {
@@ -288,7 +288,7 @@ private:
   std::size_t store_size_;
 
   template <class T>
-  static constexpr void destructor_stub(void* const p)
+  static void destructor_stub(void* const p)
   {
     static_cast<T*>(p)->~T();
   }
@@ -302,27 +302,27 @@ private:
   }
 
   template <R (*function_ptr)(A...)>
-  static constexpr R function_stub(void* const, A&&... args)
+  static R function_stub(void* const, A&&... args)
   {
     return function_ptr(std::forward<A>(args)...);
   }
 
   template <class C, R (C::*method_ptr)(A...)>
-  static constexpr R method_stub(void* const object_ptr, A&&... args)
+  static R method_stub(void* const object_ptr, A&&... args)
   {
     return (static_cast<C*>(object_ptr)->*method_ptr)(
       std::forward<A>(args)...);
   }
 
   template <class C, R (C::*method_ptr)(A...) const>
-  static constexpr R const_method_stub(void* const object_ptr, A&&... args)
+  static R const_method_stub(void* const object_ptr, A&&... args)
   {
     return (static_cast<C const*>(object_ptr)->*method_ptr)(
       std::forward<A>(args)...);
   }
 
   template <typename T>
-  static constexpr R functor_stub(void* const object_ptr, A&&... args)
+  static R functor_stub(void* const object_ptr, A&&... args)
   {
     return (*static_cast<T*>(object_ptr))(std::forward<A>(args)...);
   }
