@@ -268,7 +268,7 @@ public:
 
   constexpr explicit operator bool() const { return stub_ptr_; }
 
-  constexpr R operator()(A... args) const
+  R operator()(A... args) const
   {
 //  assert(stub_ptr);
     return stub_ptr_(object_ptr_, std::forward<A>(args)...);

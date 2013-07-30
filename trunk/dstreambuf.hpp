@@ -37,7 +37,7 @@ private:
   {
     if (super::pbase() != super::pptr())
     {
-      delegate_(pbase(), pptr() - pbase());
+      delegate_(super::pbase(), super::pptr() - super::pbase());
 
       super::setp(buffer_, buffer_ + bufsize);
     }
