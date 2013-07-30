@@ -6,6 +6,7 @@
 
 #include "delegate.hpp"
 
+template <std::size_t bufsize = 128>
 struct dstreambuf : std::streambuf
 {
   typedef delegate<void (char const*, std::size_t)> delegate_type;
@@ -13,7 +14,7 @@ struct dstreambuf : std::streambuf
   dstreambuf(delegate_type d)
     : delegate_(d)
   {
-    setp(buffer_, buffer_ + bufsize_);
+    setp(buffer_, buffer_ + bufsize);
   }
 
 private:
@@ -38,7 +39,7 @@ private:
     {
       delegate_(pbase(), pptr() - pbase());
 
-      setp(buffer_, buffer_ + bufsize_);
+      setp(buffer_, buffer_ + bufsize);
     }
     // else do nothing
 
@@ -46,11 +47,9 @@ private:
   }
 
 private:
-  static constexpr std::size_t const bufsize_ = 1;
-
   delegate_type delegate_;
 
-  char buffer_[bufsize_];
+  char buffer_[bufsize];
 };
 
 #endif // DSTREAMBUF_HPP
