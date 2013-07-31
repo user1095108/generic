@@ -22,9 +22,9 @@ private:
   {
     dstreambuf::sync();
 
-    if (traits_type::eof() != c)
+    if (super::traits_type::eof() != c)
     {
-      *super::pptr() = traits_type::to_char_type(c);
+      *super::pptr() = super::traits_type::to_char_type(c);
 
       super::pbump(1);
     }
@@ -44,6 +44,17 @@ private:
     // else do nothing
 
     return 0;
+  }
+
+  std::streamsize xsputn(char const* const s, std::streamsize const n)
+  {
+    if (n > 0)
+    {
+      delegate_(s, n);
+    }
+    // else do nothing
+
+    return n;
   }
 
 private:
