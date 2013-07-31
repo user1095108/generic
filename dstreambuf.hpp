@@ -2,6 +2,8 @@
 #ifndef DSTREAMBUF_HPP
 # define DSTREAMBUF_HPP
 
+#include <cassert>
+
 #include <streambuf>
 
 #include "delegate.hpp"
@@ -48,11 +50,9 @@ private:
 
   std::streamsize xsputn(char const* const s, std::streamsize const n)
   {
-    if (n > 0)
-    {
-      delegate_(s, n);
-    }
-    // else do nothing
+    assert(n > 0);
+
+    delegate_(s, n);
 
     return n;
   }
