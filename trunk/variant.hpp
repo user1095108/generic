@@ -171,7 +171,7 @@ struct variant
 
   typedef typename detail::max_type<T...>::type max_type;
 
-  constexpr variant() = default;
+  variant() = default;
 
   ~variant()
   {
@@ -400,10 +400,10 @@ struct variant
     return *this;
   }
 
-  constexpr explicit operator bool() const { return -1 != store_type_; }
+  explicit operator bool() const { return -1 != store_type_; }
 
   template <typename U>
-  constexpr bool contains() const
+  static constexpr bool contains() const
   {
     return *this && (::detail::index_of<
       typename std::remove_const<U>::type,
