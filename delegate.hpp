@@ -38,7 +38,7 @@ class delegate<R (A...)>
   template <typename U>
   struct is_functor
   {
-    static constexpr bool const value = is_functora<U>::value
+    static constexpr auto const value = is_functora<U>::value
       || is_functorb<U>::value;
   };
 
