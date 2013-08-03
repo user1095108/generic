@@ -403,7 +403,7 @@ struct variant
   explicit operator bool() const { return -1 != store_type_; }
 
   template <typename U>
-  static constexpr bool contains() const
+  bool contains() const
   {
     return *this && (::detail::index_of<
       typename std::remove_const<U>::type,
