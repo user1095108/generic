@@ -44,27 +44,27 @@ class delegate<R (A...)>
 
   typedef R (*stub_ptr_type)(void*, A&&...);
 
-  constexpr delegate(void* const o, stub_ptr_type const m)
+  delegate(void* const o, stub_ptr_type const m)
     : object_ptr_(o),
       stub_ptr_(m)
   {
   }
 
 public:
-  constexpr delegate() = default;
+  delegate() = default;
 
-  constexpr delegate(delegate const&) = default;
+  delegate(delegate const&) = default;
 
-  constexpr delegate(delegate&&) = default;
+  delegate(delegate&&) = default;
 
   template <class C>
-  constexpr delegate(C const* const o)
+  explicit delegate(C const* const o)
     : object_ptr_(const_cast<C*>(o))
   {
   }
 
   template <class C>
-  constexpr delegate(C const& o)
+  explicit delegate(C const& o)
     : object_ptr_(const_cast<C*>(&o))
   {
   }
@@ -174,49 +174,49 @@ public:
   }
 
   template <R (* const function_ptr)(A...)>
-  static constexpr delegate from()
+  static delegate from()
   {
     return { nullptr, function_stub<function_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...)>
-  static constexpr delegate from(C* object_ptr)
+  static delegate from(C* object_ptr)
   {
     return { object_ptr, method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...) const>
-  static constexpr delegate from(C const* object_ptr)
+  static delegate from(C const* object_ptr)
   {
     return { const_cast<C*>(object_ptr), const_method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...)>
-  static constexpr delegate from(C& object)
+  static delegate from(C& object)
   {
     return { &object, method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...) const>
-  static constexpr delegate from(C const& object)
+  static delegate from(C const& object)
   {
     return { const_cast<C*>(&object), const_method_stub<C, method_ptr> };
   }
 
   template <typename T>
-  static constexpr delegate from(T&& f)
+  static delegate from(T&& f)
   {
     return { std::forward<T>(f) };
   }
 
-  static constexpr delegate from(R (* const function_ptr)(A...))
+  static delegate from(R (* const function_ptr)(A...))
   {
     return { [function_ptr](A&&... args) {
       return (*function_ptr)(std::forward<A>(args)...); } };
   }
 
   template <class C>
-  static constexpr delegate from(C* const object_ptr,
+  static delegate from(C* const object_ptr,
     R (C::* const method_ptr)(A...))
   {
     return { [object_ptr, method_ptr](A&&... args) {
@@ -224,7 +224,7 @@ public:
   }
 
   template <class C>
-  static constexpr delegate from(C const* const object_ptr,
+  static delegate from(C const* const object_ptr,
     R (C::* const method_ptr)(A...) const)
   {
     return { [object_ptr, method_ptr](A&&... args) {
@@ -232,15 +232,14 @@ public:
   }
 
   template <class C>
-  static constexpr delegate from(C& object,
-   R (C::* const method_ptr)(A...))
+  static delegate from(C& object, R (C::* const method_ptr)(A...))
   {
     return { [&object, method_ptr](A&&... args) {
       return (object.*method_ptr)(std::forward<A>(args)...); } };
   }
 
   template <class C>
-  static constexpr delegate from(C const& object,
+  static delegate from(C const& object,
     R (C::* const method_ptr)(A...) const)
   {
     return { [&object, method_ptr](A&&... args) {
@@ -251,22 +250,22 @@ public:
 
   void swap(delegate& other) { ::std::swap(*this, other); }
 
-  constexpr bool operator==(delegate const& rhs) const
+  bool operator==(delegate const& rhs) const
   {
     return (object_ptr_ == rhs.object_ptr_) && (stub_ptr_ == rhs.stub_ptr_);
   }
 
-  constexpr bool operator!=(delegate const& rhs) const
+  bool operator!=(delegate const& rhs) const
   {
     return !operator==(rhs);
   }
 
-  constexpr bool operator<(delegate const& rhs) const
+  bool operator<(delegate const& rhs) const
   {
     return (object_ptr_ < rhs.object_ptr_) || (stub_ptr_ < rhs.stub_ptr_);
   }
 
-  constexpr explicit operator bool() const { return stub_ptr_; }
+  explicit operator bool() const { return stub_ptr_; }
 
   R operator()(A... args) const
   {
