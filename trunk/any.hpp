@@ -17,14 +17,14 @@ namespace generic
 class any
 {
 public:
-  any() : content(nullptr) { }
+  any() noexcept : content(nullptr) { }
 
-  any(any const& other)
+  explicit any(any const& other) noexcept
     : content(other.content ? other.content->clone() : nullptr)
   {
   }
 
-  any(any&& other) { *this = std::move(other); }
+  explicit any(any&& other) noexcept { *this = std::move(other); }
 
   template<typename ValueType,
     typename = typename std::enable_if<
