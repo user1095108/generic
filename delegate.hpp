@@ -145,31 +145,31 @@ public:
   }
 
   template <R (* const function_ptr)(A...)>
-  static delegate from()
+  static delegate from() noexcept
   {
     return { nullptr, function_stub<function_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...)>
-  static delegate from(C* object_ptr)
+  static delegate from(C* object_ptr) noexcept
   {
     return { object_ptr, method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...) const>
-  static delegate from(C const* object_ptr)
+  static delegate from(C const* object_ptr) noexcept
   {
     return { const_cast<C*>(object_ptr), const_method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...)>
-  static delegate from(C& object)
+  static delegate from(C& object) noexcept
   {
     return { &object, method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...) const>
-  static delegate from(C const& object)
+  static delegate from(C const& object) noexcept
   {
     return { const_cast<C*>(&object), const_method_stub<C, method_ptr> };
   }
