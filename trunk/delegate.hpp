@@ -19,7 +19,7 @@ class delegate<R (A...)>
 {
   typedef R (*stub_ptr_type)(void*, A&&...);
 
-  delegate(void* const o, stub_ptr_type const m)
+  delegate(void* const o, stub_ptr_type const m) noexcept
     : object_ptr_(o),
       stub_ptr_(m)
   {
@@ -33,13 +33,13 @@ public:
   delegate(delegate&&) = default;
 
   template <class C>
-  explicit delegate(C const* const o)
+  explicit delegate(C const* const o) noexcept
     : object_ptr_(const_cast<C*>(o))
   {
   }
 
   template <class C>
-  explicit delegate(C const& o)
+  explicit delegate(C const& o) noexcept
     : object_ptr_(const_cast<C*>(&o))
   {
   }
@@ -81,10 +81,10 @@ public:
   >
   delegate(T&& f)
     : store_(operator new(sizeof(T)),
-        functor_deleter<typename std::remove_reference<T>::type>),
+        functor_deleter<typename std::decay<T>::type>),
       store_size_(sizeof(T))
   {
-    typedef typename std::remove_reference<T>::type functor_type;
+    typedef typename std::decay<T>::type functor_type;
 
     new (store_.get()) functor_type(std::forward<T>(f));
 
@@ -119,7 +119,7 @@ public:
   >
   delegate& operator=(T&& f)
   {
-    typedef typename std::remove_reference<T>::type functor_type;
+    typedef typename std::decay<T>::type functor_type;
 
     if ((sizeof(T) > store_size_)
       || (decltype(store_.use_count())(1) != store_.use_count()))
@@ -219,24 +219,24 @@ public:
 
   void reset() { stub_ptr_ = nullptr; store_.reset(); }
 
-  void swap(delegate& other) { ::std::swap(*this, other); }
+  void swap(delegate& other) noexcept { ::std::swap(*this, other); }
 
-  bool operator==(delegate const& rhs) const
+  bool operator==(delegate const& rhs) const noexcept
   {
     return (object_ptr_ == rhs.object_ptr_) && (stub_ptr_ == rhs.stub_ptr_);
   }
 
-  bool operator!=(delegate const& rhs) const
+  bool operator!=(delegate const& rhs) const noexcept
   {
     return !operator==(rhs);
   }
 
-  bool operator<(delegate const& rhs) const
+  bool operator<(delegate const& rhs) const noexcept
   {
     return (object_ptr_ < rhs.object_ptr_) || (stub_ptr_ < rhs.stub_ptr_);
   }
 
-  explicit operator bool() const { return stub_ptr_; }
+  explicit operator bool() const noexcept { return stub_ptr_; }
 
   R operator()(A... args) const
   {
@@ -303,7 +303,7 @@ namespace std
   template <typename R, typename ...A>
   struct hash<delegate<R (A...)> >
   {
-    size_t operator()(delegate<R (A...)> const& d) const
+    size_t operator()(delegate<R (A...)> const& d) const noexcept
     {
       auto const seed(hash<void*>()(d.object_ptr_) + 0x9e3779b9);
 
