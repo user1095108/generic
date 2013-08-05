@@ -17,31 +17,6 @@ template <typename T> class delegate;
 template<class R, class ...A>
 class delegate<R (A...)>
 {
-  template <typename U, typename = void> struct is_functora
-    : std::false_type { };
-
-  template <typename U>
-  struct is_functora<U,
-    typename std::enable_if<bool(sizeof((R (U::*)(A...))
-      &U::operator()))>::type
-  > : std::true_type { };
-
-  template <typename U, typename = void> struct is_functorb
-    : std::false_type { };
-
-  template <typename U>
-  struct is_functorb<U,
-    typename std::enable_if<bool(sizeof((R (U::*)(A...) const)
-      &U::operator()))>::type
-  > : std::true_type { };
-
-  template <typename U>
-  struct is_functor
-  {
-    static constexpr auto const value = is_functora<U>::value
-      || is_functorb<U>::value;
-  };
-
   typedef R (*stub_ptr_type)(void*, A&&...);
 
   delegate(void* const o, stub_ptr_type const m)
@@ -101,17 +76,15 @@ public:
   template <
     typename T,
     typename = typename std::enable_if<
-      !std::is_same<delegate, typename std::remove_const<
-        typename std::remove_reference<T>::type>::type>::value
-      && is_functor<typename std::remove_reference<T>::type>::value
+      !std::is_same<delegate, typename std::decay<T>::type>::value
     >::type
   >
   delegate(T&& f)
     : store_(operator new(sizeof(T)),
-        functor_deleter<typename std::remove_reference<T>::type>),
+        functor_deleter<typename std::decay<T>::type>),
       store_size_(sizeof(T))
   {
-    typedef typename std::remove_reference<T>::type functor_type;
+    typedef typename std::decay<T>::type functor_type;
 
     new (store_.get()) functor_type(std::forward<T>(f));
 
@@ -141,14 +114,12 @@ public:
   template <
     typename T,
     typename = typename std::enable_if<
-      !std::is_same<delegate, typename std::remove_const<
-        typename std::remove_reference<T>::type>::type>::value
-      && is_functor<typename std::remove_reference<T>::type>::value
+      !std::is_same<delegate, typename std::decay<T>::type>::value
     >::type
   >
   delegate& operator=(T&& f)
   {
-    typedef typename std::remove_reference<T>::type functor_type;
+    typedef typename std::decay<T>::type functor_type;
 
     if ((sizeof(T) > store_size_)
       || (decltype(store_.use_count())(1) != store_.use_count()))
