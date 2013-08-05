@@ -28,8 +28,7 @@ public:
 
   template<typename ValueType,
     typename = typename std::enable_if<
-      !std::is_same<any, typename std::remove_const<
-        typename std::remove_reference<ValueType>::type>::type>::value
+      !std::is_same<any, typename std::decay<ValueType>::type>::value
     >::type
   >
   any(ValueType&& value)
