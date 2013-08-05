@@ -19,12 +19,12 @@ class any
 public:
   any() : content(nullptr) { }
 
-  explicit any(any const& other)
+  any(any const& other)
     : content(other.content ? other.content->clone() : nullptr)
   {
   }
 
-  explicit any(any&& other) { *this = std::move(other); }
+  any(any&& other) { *this = std::move(other); }
 
   template<typename ValueType,
     typename = typename std::enable_if<
@@ -41,11 +41,11 @@ public:
 
 public: // modifiers
 
-  void swap(any& other) { std::swap(content, other.content); }
+  void swap(any& other) noexcept { std::swap(content, other.content); }
 
   any& operator=(any const& rhs) { return *this = any(rhs); }
 
-  any& operator=(any&& rhs)
+  any& operator=(any&& rhs) noexcept
   {
     content = rhs.content;
     rhs.content = nullptr;
@@ -66,9 +66,9 @@ public: // modifiers
 
 public: // queries
 
-  explicit operator bool() const { return content; }
+  explicit operator bool() const noexcept { return content; }
 
-  std::type_info const& type() const
+  std::type_info const& type() const noexcept
   {
     return content ? content->type() : typeid(void);
   }
@@ -79,11 +79,7 @@ private: // types
   {
     placeholder() = default;
 
-    template <typename T> placeholder(T&&) = delete;
-
     virtual ~placeholder() noexcept { }
-
-    template <typename T> placeholder& operator=(T&&) = delete;
 
     virtual placeholder* clone() const = 0;
 
@@ -97,10 +93,12 @@ private: // types
     template <class T>
     holder(T&& value) : held(std::forward<T>(value)) { }
 
+    holder& operator=(holder const&) = delete;
+
     placeholder* clone() const final { throw std::invalid_argument(""); }
 
   public: // queries
-    std::type_info const& type() const { return typeid(ValueType); }
+    std::type_info const& type() const noexcept { return typeid(ValueType); }
 
   public:
     ValueType held;
@@ -121,7 +119,7 @@ private: // types
     placeholder* clone() const final { return new holder<ValueType>(held); }
 
   public: // queries
-    std::type_info const& type() const { return typeid(ValueType); }
+    std::type_info const& type() const noexcept { return typeid(ValueType); }
 
   public:
     ValueType held;
@@ -130,36 +128,36 @@ private: // types
 private: // representation
 
   template<typename ValueType>
-  friend ValueType* any_cast(any*);
+  friend ValueType* any_cast(any*) noexcept;
 
   template<typename ValueType>
-  friend ValueType* unsafe_any_cast(any *);
+  friend ValueType* unsafe_any_cast(any*) noexcept;
 
   placeholder* content;
 };
 
 template<typename ValueType>
-inline ValueType* unsafe_any_cast(any* const operand)
+inline ValueType* unsafe_any_cast(any* const operand) noexcept
 {
   return &static_cast<any::holder<ValueType>*>(operand->content)->held;
 }
 
 template<typename ValueType>
-inline ValueType const* unsafe_any_cast(any const* const operand)
+inline ValueType const* unsafe_any_cast(any const* const operand) noexcept
 {
   return unsafe_any_cast<ValueType>(const_cast<any*>(operand));
 }
 
 template<typename ValueType>
-inline ValueType* any_cast(any* const operand)
+inline ValueType* any_cast(any* const operand) noexcept
 {
-  return operand && (&operand->type() == &typeid(ValueType))
+  return operand && (operand->type() == typeid(ValueType))
     ? &static_cast<any::holder<ValueType>*>(operand->content)->held
     : nullptr;
 }
 
 template<typename ValueType>
-inline ValueType const* any_cast(any const* const operand)
+inline ValueType const* any_cast(any const* const operand) noexcept
 {
   return any_cast<ValueType>(const_cast<any*>(operand));
 }
