@@ -19,12 +19,12 @@ class any
 public:
   any() noexcept : content(nullptr) { }
 
-  explicit any(any const& other) noexcept
+  any(any const& other)
     : content(other.content ? other.content->clone() : nullptr)
   {
   }
 
-  explicit any(any&& other) noexcept { *this = std::move(other); }
+  any(any&& other) noexcept { *this = std::move(other); }
 
   template<typename ValueType,
     typename = typename std::enable_if<
