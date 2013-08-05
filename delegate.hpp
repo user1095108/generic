@@ -81,10 +81,10 @@ public:
   >
   delegate(T&& f)
     : store_(operator new(sizeof(T)),
-        functor_deleter<typename std::decay<T>::type>),
+        functor_deleter<typename std::remove_reference<T>::type>),
       store_size_(sizeof(T))
   {
-    typedef typename std::decay<T>::type functor_type;
+    typedef typename std::remove_reference<T>::type functor_type;
 
     new (store_.get()) functor_type(std::forward<T>(f));
 
@@ -119,7 +119,7 @@ public:
   >
   delegate& operator=(T&& f)
   {
-    typedef typename std::decay<T>::type functor_type;
+    typedef typename std::remove_reference<T>::type functor_type;
 
     if ((sizeof(T) > store_size_)
       || (decltype(store_.use_count())(1) != store_.use_count()))
