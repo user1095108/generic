@@ -99,9 +99,9 @@ public:
 
   delegate& operator=(delegate&& rhs) = default;
 
-  delegate& operator=(R (* const function_ptr)(A...))
+  delegate& operator=(R (* const rhs)(A...))
   {
-    return *this = from(function_ptr);
+    return *this = from(rhs);
   }
 
   template <class C>
