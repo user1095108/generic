@@ -177,44 +177,44 @@ public:
   template <typename T>
   static delegate from(T&& f)
   {
-    return { std::forward<T>(f) };
+    return std::forward<T>(f);
   }
 
   static delegate from(R (* const function_ptr)(A...))
   {
-    return { [function_ptr](A&&... args) {
-      return (*function_ptr)(std::forward<A>(args)...); } };
+    return [function_ptr](A&&... args) {
+      return (*function_ptr)(std::forward<A>(args)...); };
   }
 
   template <class C>
   static delegate from(C* const object_ptr,
     R (C::* const method_ptr)(A...))
   {
-    return { [object_ptr, method_ptr](A&&... args) {
-      return (object_ptr->*method_ptr)(std::forward<A>(args)...); } };
+    return [object_ptr, method_ptr](A&&... args) {
+      return (object_ptr->*method_ptr)(std::forward<A>(args)...); };
   }
 
   template <class C>
   static delegate from(C const* const object_ptr,
     R (C::* const method_ptr)(A...) const)
   {
-    return { [object_ptr, method_ptr](A&&... args) {
-      return (object_ptr->*method_ptr)(std::forward<A>(args)...); } };
+    return [object_ptr, method_ptr](A&&... args) {
+      return (object_ptr->*method_ptr)(std::forward<A>(args)...); };
   }
 
   template <class C>
   static delegate from(C& object, R (C::* const method_ptr)(A...))
   {
-    return { [&object, method_ptr](A&&... args) {
-      return (object.*method_ptr)(std::forward<A>(args)...); } };
+    return [&object, method_ptr](A&&... args) {
+      return (object.*method_ptr)(std::forward<A>(args)...); };
   }
 
   template <class C>
   static delegate from(C const& object,
     R (C::* const method_ptr)(A...) const)
   {
-    return { [&object, method_ptr](A&&... args) {
-      return (object.*method_ptr)(std::forward<A>(args)...); } };
+    return [&object, method_ptr](A&&... args) {
+      return (object.*method_ptr)(std::forward<A>(args)...); };
   }
 
   void reset() { stub_ptr_ = nullptr; store_.reset(); }
@@ -249,7 +249,7 @@ private:
 
   typedef void (*deleter_type)(void*);
 
-  void* object_ptr_{};
+  void* object_ptr_;
   stub_ptr_type stub_ptr_{};
 
   deleter_type deleter_;
