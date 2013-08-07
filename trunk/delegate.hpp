@@ -99,6 +99,11 @@ public:
 
   delegate& operator=(delegate&& rhs) = default;
 
+  delegate& operator=(R (* const function_ptr)(A...))
+  {
+    return *this = from(function_ptr);
+  }
+
   template <class C>
   delegate& operator=(R (C::* const rhs)(A...))
   {
