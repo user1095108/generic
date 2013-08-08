@@ -15,24 +15,22 @@ namespace detail
 
 template <typename A, typename ...B>
 struct max_align
+  : std::integral_constant<std::size_t,
+      (alignof(A) > max_align<B...>{}) ? alignof(A) : max_align<B...>{} >
 {
-  static constexpr auto const align =
-    (alignof(A) > max_align<B...>::align)
-      ? alignof(A)
-      : max_align<B...>::align;
 };
 
 template <typename A, typename B>
 struct max_align<A, B>
+  : std::integral_constant<std::size_t,
+      (alignof(A) > alignof(B)) ? alignof(A) : alignof(B)>
 {
-  static constexpr auto const align =
-    (alignof(A) > alignof(B)) ? alignof(A) : alignof(B);
 };
 
 template <typename A>
 struct max_align<A>
+  : std::integral_constant<std::size_t, alignof(A)>
 {
-  static constexpr auto const align = alignof(A);
 };
 
 template <typename A, typename ...B>
@@ -166,7 +164,7 @@ struct variant
   static_assert(!::detail::has_duplicates<T...>::value,
     "duplicate types are unsupported");
 
-  static constexpr auto const max_align = detail::max_align<T...>::align;
+  static constexpr auto const max_align = detail::max_align<T...>::value;
 
   typedef typename detail::max_type<T...>::type max_type;
 
