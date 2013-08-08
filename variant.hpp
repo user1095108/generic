@@ -16,7 +16,7 @@ namespace detail
 template <typename A, typename ...B>
 struct max_align
   : std::integral_constant<std::size_t,
-      (alignof(A) > max_align<B...>{}) ? alignof(A) : max_align<B...>{} >
+      (alignof(A) > max_align<B...>{}) ? alignof(A) : max_align<B...>{}>
 {
 };
 
