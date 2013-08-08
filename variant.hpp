@@ -159,13 +159,12 @@ struct variant
   static_assert(!::detail::any_of<std::is_reference<T>...>::value,
     "reference types are unsupported");
   static_assert(!::detail::any_of<std::is_void<T>...>::value,
-    "void is unsupported");
+    "void type is unsupported");
   static_assert(::detail::all_of<
     ::detail::is_move_or_copy_constructible<T>...>::value,
     "unmovable and uncopyable types are unsupported");
-  static_assert(!::detail::has_duplicates<
-    typename std::remove_const<T>::type...>::value,
-    "duplicates are unsupported");
+  static_assert(!::detail::has_duplicates<T...>::value,
+    "duplicate types are unsupported");
 
   static constexpr auto const max_align = detail::max_align<T...>::align;
 
@@ -236,10 +235,9 @@ struct variant
 
   template <
     typename U,
-    typename = typename std::enable_if<
-      ::detail::any_of<std::is_same<typename std::decay<U>::type,
-        typename std::remove_const<T>::type>...>::value
-      && !std::is_same<typename std::decay<U>::type, variant>::value
+    typename = typename std::enable_if<::detail::any_of<std::is_same<
+      typename std::remove_reference<U>::type, T>...>::value
+      && !std::is_same<typename std::remove_reference<U>::type, variant>::value
     >::type
   >
   variant(U&& f)
@@ -248,20 +246,18 @@ struct variant
   }
 
   template <typename U>
-  typename std::enable_if<
-    ::detail::any_of<std::is_same<typename std::decay<U>::type,
-      typename std::remove_const<T>::type>...>::value
+  typename std::enable_if<::detail::any_of<std::is_same<
+    typename std::remove_reference<U>::type, T>...>::value
     && !std::is_rvalue_reference<U&&>::value
-    && std::is_copy_assignable<typename std::decay<U>::type>::value
-    && !std::is_same<typename std::decay<U>::type, variant>::value,
+    && std::is_copy_assignable<typename std::remove_reference<U>::type>::value
+    && !std::is_same<typename std::remove_reference<U>::type, variant>::value,
     variant&
   >::type
   operator=(U&& f)
   {
-    typedef typename std::decay<U>::type user_type;
+    typedef typename std::remove_reference<U>::type user_type;
 
-    if (::detail::index_of<user_type,
-      typename std::remove_const<T>::type...>::value == store_type_)
+    if (::detail::index_of<user_type, T...>::value == store_type_)
     {
       *static_cast<user_type*>(static_cast<void*>(store_)) = f;
     }
@@ -285,8 +281,7 @@ struct variant
         ? mover_stub<user_type>
         : nullptr;
 
-      store_type_ = ::detail::index_of<user_type,
-        typename std::remove_const<T>::type...>::value;
+      store_type_ = ::detail::index_of<user_type, T...>::value;
     }
 
     return *this;
@@ -294,19 +289,18 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    ::detail::any_of<std::is_same<typename std::decay<U>::type,
-      typename std::remove_const<T>::type>...>::value
+    ::detail::any_of<std::is_same<
+      typename std::remove_reference<U>::type, T>...>::value
     && std::is_rvalue_reference<U&&>::value
-    && std::is_move_assignable<typename std::decay<U>::type>::value
-    && !std::is_same<typename std::decay<U>::type, variant>::value,
+    && std::is_move_assignable<typename std::remove_reference<U>::type>::value
+    && !std::is_same<typename std::remove_reference<U>::type, variant>::value,
     variant&
   >::type
   operator=(U&& f)
   {
-    typedef typename std::decay<U>::type user_type;
+    typedef typename std::remove_reference<U>::type user_type;
 
-    if (::detail::index_of<user_type,
-      typename std::remove_const<T>::type...>::value == store_type_)
+    if (::detail::index_of<user_type, T...>::value == store_type_)
     {
       *static_cast<user_type*>(static_cast<void*>(store_)) = std::move(f);
     }
@@ -330,8 +324,7 @@ struct variant
         ? mover_stub<user_type>
         : nullptr;
 
-      store_type_ = ::detail::index_of<user_type,
-        typename std::remove_const<T>::type...>::value;
+      store_type_ = ::detail::index_of<user_type, T...>::value;
     }
 
     return *this;
@@ -339,16 +332,19 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    ::detail::any_of<std::is_same<typename std::decay<U>::type,
-      typename std::remove_const<T>::type>...>::value
-    && !std::is_copy_assignable<typename std::decay<U>::type>::value
-    && !std::is_move_assignable<typename std::decay<U>::type>::value
-    && !std::is_same<typename std::decay<U>::type, variant>::value,
+    ::detail::any_of<std::is_same<
+      typename std::remove_reference<U>::type, T>...>::value
+    && !std::is_copy_assignable<
+      typename std::remove_reference<U>::type>::value
+    && !std::is_move_assignable<
+      typename std::remove_reference<U>::type>::value
+    && !std::is_same<
+      typename std::remove_reference<U>::type, variant>::value,
     variant&
   >::type
   operator=(U&& f)
   {
-    typedef typename std::decay<U>::type user_type;
+    typedef typename std::remove_reference<U>::type user_type;
 
     if (*this)
     {
@@ -368,8 +364,7 @@ struct variant
       ? mover_stub<user_type>
       : nullptr;
 
-    store_type_ = ::detail::index_of<user_type,
-      typename std::remove_const<T>::type...>::value;
+    store_type_ = ::detail::index_of<user_type, T...>::value;
 
     return *this;
   }
@@ -379,22 +374,19 @@ struct variant
   template <typename U>
   bool contains() const noexcept
   {
-    return *this && (::detail::index_of<typename std::remove_const<U>::type,
-      typename std::remove_const<T>::type...>::value == store_type_);
+    return *this && (::detail::index_of<U, T...>::value == store_type_);
   }
 
   template <typename U>
   typename std::enable_if<
-    (-1 != ::detail::index_of<typename std::remove_const<U>::type,
-      typename std::remove_const<T>::type...>::value)
+    (-1 != ::detail::index_of<U, T...>::value)
     && !std::is_enum<U>::value
     && !std::is_fundamental<U>::value,
     U&
   >::type
   get()
   {
-    if (::detail::index_of<typename std::remove_const<U>::type,
-      typename std::remove_const<T>::type...>::value == store_type_)
+    if (::detail::index_of<U, T...>::value == store_type_)
     {
       return *static_cast<U*>(static_cast<void*>(store_));
     }
@@ -406,16 +398,14 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    (-1 != ::detail::index_of<typename std::remove_const<U>::type,
-      typename std::remove_const<T>::type...>::value)
+    (-1 != ::detail::index_of<U, T...>::value)
     && !std::is_enum<U>::value
     && !std::is_fundamental<U>::value,
     U const&
   >::type
   get() const
   {
-    if (::detail::index_of<typename std::remove_const<U>::type,
-      typename std::remove_const<T>::type...>::value == store_type_)
+    if (::detail::index_of<U, T...>::value == store_type_)
     {
       return *static_cast<U const*>(static_cast<void const*>(store_));
     }
@@ -426,20 +416,17 @@ struct variant
   }
 
   template <typename U>
-  typename std::enable_if<(-1 !=
-    ::detail::index_of<typename std::remove_const<U>::type,
-      typename std::remove_const<T>::type...>::value)
-    && (std::is_enum<U>::value
-      || std::is_fundamental<U>::value),
+  typename std::enable_if<
+    (-1 != ::detail::index_of<U, T...>::value)
+    && (std::is_enum<U>::value || std::is_fundamental<U>::value),
     U
   >::type
   get()
   {
-    if (::detail::index_of<U,
-      typename std::remove_const<T>::type...>::value == store_type_)
+    if (::detail::index_of<U, T...>::value == store_type_)
     {
-      return U(*static_cast<typename ::detail::compatible_type<U,
-        typename std::remove_const<T>::type...>::type const*>(
+      return U(*static_cast<
+        typename ::detail::compatible_type<U, T...>::type const*>(
           static_cast<void const*>(store_)));
     }
     else
@@ -449,29 +436,23 @@ struct variant
   }
 
   template <typename U>
-  typename std::enable_if<(-1 ==
-    ::detail::index_of<typename std::remove_const<U>::type,
-      typename std::remove_const<T>::type...>::value)
-    && (-1 != ::detail::compatible_index_of<
-      typename std::remove_const<U>::type,
-      typename std::remove_const<T>::type...>::value)
-    && (std::is_enum<U>::value
-      || std::is_fundamental<U>::value),
+  typename std::enable_if<
+    (-1 == ::detail::index_of<U, T...>::value)
+    && (-1 != ::detail::compatible_index_of<U, T...>::value)
+    && (std::is_enum<U>::value || std::is_fundamental<U>::value),
     U
   >::type
   get()
   {
     static_assert(std::is_same<
-      typename ::detail::type_at<::detail::compatible_index_of<U,
-        typename std::remove_const<T>::type...>::value,
-        typename std::remove_const<T>::type...>::type,
+      typename ::detail::type_at<
+        ::detail::compatible_index_of<U, T...>::value, T...>::type,
       typename ::detail::compatible_type<U, T...>::type>::value,
       "internal error");
-    if (::detail::compatible_index_of<U,
-      typename std::remove_const<T>::type...>::value == store_type_)
+    if (::detail::compatible_index_of<U, T...>::value == store_type_)
     {
-      return U(*static_cast<typename ::detail::compatible_type<U,
-        typename std::remove_const<T>::type...>::type const*>(
+      return U(*static_cast<
+        typename ::detail::compatible_type<U, T...>::type const*>(
           static_cast<void const*>(store_)));
     }
     else
