@@ -507,6 +507,8 @@ struct variant
     }
   }
 
+  int store_type_index() const { return store_type_; }
+
 private:
   template <typename U>
   static void destructor_stub(void* const p)
