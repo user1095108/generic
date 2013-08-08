@@ -237,13 +237,9 @@ struct variant
   template <
     typename U,
     typename = typename std::enable_if<
-      ::detail::any_of<std::is_same<typename std::remove_const<
-        typename std::remove_reference<U>::type>::type,
-        typename std::remove_const<T>::type>...
-    >::value
-    && !std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type,
-    variant>::value
+      ::detail::any_of<std::is_same<typename std::decay<U>::type,
+        typename std::remove_const<T>::type>...>::value
+      && !std::is_same<typename std::decay<U>::type, variant>::value
     >::type
   >
   variant(U&& f)
@@ -253,21 +249,16 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    ::detail::any_of<std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type,
+    ::detail::any_of<std::is_same<typename std::decay<U>::type,
       typename std::remove_const<T>::type>...>::value
     && !std::is_rvalue_reference<U&&>::value
-    && std::is_copy_assignable<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type>::value
-    && !std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type,
-      variant>::value,
+    && std::is_copy_assignable<typename std::decay<U>::type>::value
+    && !std::is_same<typename std::decay<U>::type, variant>::value,
     variant&
   >::type
   operator=(U&& f)
   {
-    typedef typename std::remove_const<
-      typename std::remove_reference<U>::type>::type user_type;
+    typedef typename std::decay<U>::type user_type;
 
     if (::detail::index_of<user_type,
       typename std::remove_const<T>::type...>::value == store_type_)
@@ -303,21 +294,16 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    ::detail::any_of<std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type,
+    ::detail::any_of<std::is_same<typename std::decay<U>::type,
       typename std::remove_const<T>::type>...>::value
     && std::is_rvalue_reference<U&&>::value
-    && std::is_move_assignable<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type>::value
-    && !std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type,
-      variant>::value,
+    && std::is_move_assignable<typename std::decay<U>::type>::value
+    && !std::is_same<typename std::decay<U>::type, variant>::value,
     variant&
   >::type
   operator=(U&& f)
   {
-    typedef typename std::remove_const<
-      typename std::remove_reference<U>::type>::type user_type;
+    typedef typename std::decay<U>::type user_type;
 
     if (::detail::index_of<user_type,
       typename std::remove_const<T>::type...>::value == store_type_)
@@ -353,22 +339,16 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    ::detail::any_of<std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type,
+    ::detail::any_of<std::is_same<typename std::decay<U>::type,
       typename std::remove_const<T>::type>...>::value
-    && !std::is_copy_assignable<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type>::value
-    && !std::is_move_assignable<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type>::value
-    && !std::is_same<typename std::remove_const<
-      typename std::remove_reference<U>::type>::type,
-      variant>::value,
+    && !std::is_copy_assignable<typename std::decay<U>::type>::value
+    && !std::is_move_assignable<typename std::decay<U>::type>::value
+    && !std::is_same<typename std::decay<U>::type, variant>::value,
     variant&
   >::type
   operator=(U&& f)
   {
-    typedef typename std::remove_const<
-      typename std::remove_reference<U>::type>::type user_type;
+    typedef typename std::decay<U>::type user_type;
 
     if (*this)
     {
