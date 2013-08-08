@@ -182,15 +182,9 @@ struct variant
     // else do nothing
   }
 
-  variant(variant const& other)
-  {
-    *this = other;
-  }
+  variant(variant const& other) { *this = other; }
 
-  variant(variant&& other)
-  {
-    *this = std::move(other);
-  }
+  variant(variant&& other) { *this = std::move(other); }
 
   variant& operator=(variant const& rhs)
   {
@@ -400,14 +394,13 @@ struct variant
     return *this;
   }
 
-  explicit operator bool() const { return -1 != store_type_; }
+  explicit operator bool() const noexcept { return -1 != store_type_; }
 
   template <typename U>
-  bool contains() const
+  bool contains() const noexcept
   {
-    return *this && (::detail::index_of<
-      typename std::remove_const<U>::type,
-        typename std::remove_const<T>::type...>::value == store_type_);
+    return *this && (::detail::index_of<typename std::remove_const<U>::type,
+      typename std::remove_const<T>::type...>::value == store_type_);
   }
 
   template <typename U>
@@ -507,7 +500,7 @@ struct variant
     }
   }
 
-  int store_type_index() const { return store_type_; }
+  int store_type_index() const noexcept { return store_type_; }
 
 private:
   template <typename U>
