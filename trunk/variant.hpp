@@ -14,23 +14,25 @@ namespace detail
 {
 
 template <typename A, typename ...B>
-struct max_align
-  : std::integral_constant<std::size_t,
-      (alignof(A) > max_align<B...>{}) ? alignof(A) : max_align<B...>{}>
+struct max_align_type
 {
+  typedef typename std::conditional<
+    (alignof(A) > alignof(typename max_align_type<B...>::type)),
+    A,
+    typename max_align_type<B...>::type
+  >::type type;
 };
 
 template <typename A, typename B>
-struct max_align<A, B>
-  : std::integral_constant<std::size_t,
-      (alignof(A) > alignof(B)) ? alignof(A) : alignof(B)>
+struct max_align_type<A, B>
 {
+  typedef typename std::conditional<(alignof(A) > alignof(B)), A, B>::type type;
 };
 
 template <typename A>
-struct max_align<A>
-  : std::integral_constant<std::size_t, alignof(A)>
+struct max_align_type<A>
 {
+  typedef A type;
 };
 
 template <typename A, typename ...B>
@@ -164,9 +166,11 @@ struct variant
   static_assert(!::detail::has_duplicates<T...>::value,
     "duplicate types are unsupported");
 
-  static constexpr auto const max_align = detail::max_align<T...>::value;
+  typedef typename ::detail::max_align_type<T...>::type max_align_type;
 
-  typedef typename detail::max_type<T...>::type max_type;
+  typedef typename ::detail::max_type<T...>::type max_type;
+
+  static constexpr auto const max_align = alignof(max_align_type);
 
   variant() = default;
 
@@ -611,7 +615,7 @@ private:
 
   int store_type_{ -1 };
 
-  alignas(max_align) char store_[sizeof(max_type)];
+  alignas(max_align_type) char store_[sizeof(max_type)];
 };
 
 #endif // VARIANT_HPP
