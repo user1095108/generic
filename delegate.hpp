@@ -76,7 +76,7 @@ public:
   template <
     typename T,
     typename = typename std::enable_if<
-      !std::is_same<delegate, typename std::decay<T>::type>::value
+      !std::is_same<delegate, typename std::decay<T>::type>{}
     >::type
   >
   delegate(T&& f)
@@ -119,7 +119,7 @@ public:
   template <
     typename T,
     typename = typename std::enable_if<
-      !std::is_same<delegate, typename std::decay<T>::type>::value
+      !std::is_same<delegate, typename std::decay<T>::type>{}
     >::type
   >
   delegate& operator=(T&& f)
