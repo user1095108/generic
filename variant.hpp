@@ -252,7 +252,7 @@ struct variant
     typename std::remove_reference<U>::type, T>...>::value
     && !std::is_rvalue_reference<U&&>::value
     && std::is_copy_assignable<typename std::remove_reference<U>::type>::value
-    && !std::is_same<typename std::remove_reference<U>::type, variant>::value,
+    && !std::is_same<typename std::decay<U>::type, variant>::value,
     variant&
   >::type
   operator=(U&& f)
@@ -295,7 +295,7 @@ struct variant
       typename std::remove_reference<U>::type, T>...>::value
     && std::is_rvalue_reference<U&&>::value
     && std::is_move_assignable<typename std::remove_reference<U>::type>::value
-    && !std::is_same<typename std::remove_reference<U>::type, variant>::value,
+    && !std::is_same<typename std::decay<U>::type, variant>::value,
     variant&
   >::type
   operator=(U&& f)
@@ -340,8 +340,7 @@ struct variant
       typename std::remove_reference<U>::type>::value
     && !std::is_move_assignable<
       typename std::remove_reference<U>::type>::value
-    && !std::is_same<
-      typename std::remove_reference<U>::type, variant>::value,
+    && !std::is_same<typename std::decay<U>::type, variant>::value,
     variant&
   >::type
   operator=(U&& f)
@@ -382,8 +381,7 @@ struct variant
   template <typename U>
   typename std::enable_if<
     (-1 != ::detail::index_of<U, T...>::value)
-    && !std::is_enum<U>::value
-    && !std::is_fundamental<U>::value,
+    && !(std::is_enum<U>::value || std::is_fundamental<U>::value),
     U&
   >::type
   get()
@@ -401,13 +399,12 @@ struct variant
   template <typename U>
   typename std::enable_if<
     (-1 != ::detail::index_of<U, T...>::value)
-    && !std::is_enum<U>::value
-    && !std::is_fundamental<U>::value,
+    && !(std::is_enum<U>::value || std::is_fundamental<U>::value),
     U const&
   >::type
   get() const
   {
-    if (::detail::index_of<U, T...>::value == store_type_)
+    if (::detail::index_of<U, T...>{} == store_type_)
     {
       return *static_cast<U const*>(static_cast<void const*>(store_));
     }
@@ -423,13 +420,11 @@ struct variant
     && (std::is_enum<U>::value || std::is_fundamental<U>::value),
     U
   >::type
-  get()
+  get() const
   {
-    if (::detail::index_of<U, T...>::value == store_type_)
+    if (::detail::index_of<U, T...>{} == store_type_)
     {
-      return U(*static_cast<
-        typename ::detail::compatible_type<U, T...>::type const*>(
-          static_cast<void const*>(store_)));
+      return *static_cast<U const*>(static_cast<void const*>(store_));
     }
     else
     {
@@ -444,7 +439,7 @@ struct variant
     && (std::is_enum<U>::value || std::is_fundamental<U>::value),
     U
   >::type
-  get()
+  get() const
   {
     static_assert(std::is_same<
       typename ::detail::type_at<
