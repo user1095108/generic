@@ -388,7 +388,24 @@ struct variant
   template <typename U>
   typename std::enable_if<
     (-1 != ::detail::index_of<U, T...>{})
-    && !(std::is_enum<U>{} || std::is_fundamental<U>{}),
+    && (std::is_enum<U>{} || std::is_fundamental<U>{}),
+    U
+  >::type
+  cget() const
+  {
+    if (::detail::index_of<U, T...>{} == store_type_)
+    {
+      return *static_cast<U const*>(static_cast<void const*>(store_));
+    }
+    else
+    {
+      throw std::bad_typeid();
+    }
+  }
+
+  template <typename U>
+  typename std::enable_if<
+    (-1 != ::detail::index_of<U, T...>{})
     U&
   >::type
   get()
@@ -406,26 +423,7 @@ struct variant
   template <typename U>
   typename std::enable_if<
     (-1 != ::detail::index_of<U, T...>{})
-    && !(std::is_enum<U>{} || std::is_fundamental<U>{}),
     U const&
-  >::type
-  get() const
-  {
-    if (::detail::index_of<U, T...>{} == store_type_)
-    {
-      return *static_cast<U const*>(static_cast<void const*>(store_));
-    }
-    else
-    {
-      throw std::bad_typeid();
-    }
-  }
-
-  template <typename U>
-  typename std::enable_if<
-    (-1 != ::detail::index_of<U, T...>{})
-    && (std::is_enum<U>{} || std::is_fundamental<U>{}),
-    U
   >::type
   get() const
   {
