@@ -405,7 +405,7 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    (-1 != ::detail::index_of<U, T...>{})
+    (-1 != ::detail::index_of<U, T...>{}),
     U&
   >::type
   get()
@@ -422,7 +422,7 @@ struct variant
 
   template <typename U>
   typename std::enable_if<
-    (-1 != ::detail::index_of<U, T...>{})
+    (-1 != ::detail::index_of<U, T...>{}),
     U const&
   >::type
   get() const
