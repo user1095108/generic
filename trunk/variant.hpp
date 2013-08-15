@@ -672,8 +672,6 @@ private:
   >::type
   streamer_stub(S& os, variant const& v)
   {
-    std::ostream::sentry cerberos(os);
-
     os << v.get<U>();
   }
 
