@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#include <ostream>
+
 #include <type_traits>
 
 #include <typeinfo>
@@ -117,6 +119,17 @@ struct compatible_type<A, B>
     std::is_constructible<A, B>{}, B, void>::type type;
 };
 
+template <class S, class C, typename = void>
+struct is_streamable : std::false_type { };
+
+template <class S, class C>
+struct is_streamable<S, C,
+  typename std::enable_if<
+    bool(sizeof(decltype(std::declval<std::ostream&>() <<
+      std::declval<C const&>())))
+  >::type
+> : std::true_type { };
+
 template <std::size_t I, typename A, typename ...B>
 struct type_at : type_at<I - 1, B...>
 {
@@ -153,7 +166,7 @@ struct is_move_or_copy_constructible
 
 }
 
-template <typename ...T>
+template <typename... T>
 struct variant
 {
   static_assert(!::detail::any_of<std::is_reference<T>...>{},
@@ -275,13 +288,11 @@ struct variant
 
       deleter_ = destructor_stub<user_type>;
 
-      copier_ = std::is_copy_constructible<user_type>{}
-        ? copier_stub<user_type>
-        : nullptr;
+      copier_ = get_copier<user_type>();
 
-      mover_ = std::is_move_constructible<user_type>{}
-        ? mover_stub<user_type>
-        : nullptr;
+      mover_ = get_mover<user_type>();
+
+      streamer_ = get_streamer<std::ostream, user_type>();
 
       store_type_ = ::detail::index_of<user_type, T...>{};
     }
@@ -318,13 +329,11 @@ struct variant
 
       deleter_ = destructor_stub<user_type>;
 
-      copier_ = std::is_copy_constructible<user_type>{}
-        ? copier_stub<user_type>
-        : nullptr;
+      copier_ = get_copier<user_type>();
 
-      mover_ = std::is_move_constructible<user_type>{}
-        ? mover_stub<user_type>
-        : nullptr;
+      mover_ = get_mover<user_type>();
+
+      streamer_ = get_streamer<std::ostream, user_type>();
 
       store_type_ = ::detail::index_of<user_type, T...>{};
     }
@@ -357,13 +366,11 @@ struct variant
 
     deleter_ = destructor_stub<user_type>;
 
-    copier_ = std::is_copy_constructible<user_type>{}
-      ? copier_stub<user_type>
-      : nullptr;
+    copier_ = get_copier<user_type>();
 
-    mover_ = std::is_move_constructible<user_type>{}
-      ? mover_stub<user_type>
-      : nullptr;
+    mover_ = get_mover<user_type>();
+
+    streamer_ = get_streamer<std::ostream, user_type>();
 
     store_type_ = ::detail::index_of<user_type, T...>{};
 
@@ -461,6 +468,78 @@ struct variant
   int store_type_index() const noexcept { return store_type_; }
 
 private:
+  typedef void (*mover_type)(variant&, variant&);
+  typedef void (*streamer_type)(std::ostream&, variant const&);
+
+  template <typename charT, typename traits>
+  friend std::basic_ostream<charT, traits>& operator<<(
+    std::basic_ostream<charT, traits>& os, variant<T...> const& v)
+  {
+    v.streamer_(os, v);
+
+    return os;
+  }
+
+  template <class U>
+  inline constexpr typename std::enable_if<
+    std::is_copy_constructible<U>{},
+    mover_type
+  >::type
+  get_copier() const
+  {
+    return copier_stub<U>;
+  }
+
+  template <class U>
+  inline constexpr typename std::enable_if<
+    !std::is_copy_constructible<U>{},
+    mover_type
+  >::type
+  get_copier() const
+  {
+    return nullptr;
+  }
+
+  template <class U>
+  inline constexpr typename std::enable_if<
+    std::is_move_constructible<U>{},
+    mover_type
+  >::type
+  get_mover() const
+  {
+    return mover_stub<U>;
+  }
+
+  template <class U>
+  inline constexpr typename std::enable_if<
+    !std::is_move_constructible<U>{},
+    mover_type
+  >::type
+  get_mover() const
+  {
+    return nullptr;
+  }
+
+  template <class S, class U>
+  inline constexpr typename std::enable_if<
+    ::detail::is_streamable<S, U>{},
+    streamer_type
+  >::type
+  get_streamer() const
+  {
+    return streamer_stub<S, U>;
+  }
+
+  template <class S, class U>
+  inline constexpr typename std::enable_if<
+    !::detail::is_streamable<S, U>{},
+    streamer_type
+  >::type
+  get_streamer() const
+  {
+    return nullptr;
+  }
+
   template <typename U>
   static void destructor_stub(void* const p)
   {
@@ -495,6 +574,8 @@ private:
 
       dst.mover_ = src.mover_;
 
+      dst.streamer_ = src.streamer_;
+
       dst.store_type_ = src.store_type_;
     }
   }
@@ -520,17 +601,9 @@ private:
 
     dst.mover_ = src.mover_;
 
-    dst.store_type_ = src.store_type_;
-  }
+    dst.streamer_ = src.streamer_;
 
-  template <typename U>
-  static typename std::enable_if<
-    !std::is_copy_constructible<U>{}
-    && !std::is_copy_assignable<U>{}
-  >::type
-  copier_stub(variant& src, variant& dst)
-  {
-    assert(0);
+    dst.store_type_ = src.store_type_;
   }
 
   template <typename U>
@@ -562,6 +635,8 @@ private:
 
       dst.mover_ = src.mover_;
 
+      dst.streamer_ = src.streamer_;
+
       dst.store_type_ = src.store_type_;
     }
   }
@@ -588,25 +663,27 @@ private:
 
     dst.mover_ = src.mover_;
 
+    dst.streamer_ = src.streamer_;
+
     dst.store_type_ = src.store_type_;
   }
 
-  template <typename U>
+  template <class S, typename U>
   static typename std::enable_if<
-    !std::is_move_constructible<U>{}
-    && !std::is_move_assignable<U>{}
+    ::detail::is_streamable<S, U>{}
   >::type
-  mover_stub(variant& src, variant& dst)
+  streamer_stub(S& os, variant const& v)
   {
-    assert(0);
+    os << v.get<U>();
   }
 
   typedef void (*deleter_type)(void*);
   deleter_type deleter_;
 
-  typedef void (*mover_type)(variant&, variant&);
   mover_type copier_;
   mover_type mover_;
+
+  streamer_type streamer_;
 
   int store_type_{ -1 };
 
