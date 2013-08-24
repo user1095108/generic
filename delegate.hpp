@@ -238,7 +238,8 @@ public:
 
   bool operator<(delegate const& rhs) const noexcept
   {
-    return (object_ptr_ < rhs.object_ptr_) || (stub_ptr_ < rhs.stub_ptr_);
+    return (object_ptr_ < rhs.object_ptr_) ||
+      ((object_ptr_ == rhs.object_ptr_) && (stub_ptr_ < rhs.stub_ptr_));
   }
 
   explicit operator bool() const noexcept { return stub_ptr_; }
