@@ -683,7 +683,7 @@ private:
 
   streamer_type streamer_;
 
-  int store_type_{ -1 };
+  int store_type_{-1};
 
   alignas(max_align_type) char store_[sizeof(max_type)];
 };
