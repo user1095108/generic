@@ -685,7 +685,7 @@ private:
 
   int store_type_{-1};
 
-  alignas(typename variant::max_align_type) char store_[sizeof(max_type)];
+  alignas(max_align_type) char store_[sizeof(max_type)];
 };
 
 #endif // VARIANT_HPP
