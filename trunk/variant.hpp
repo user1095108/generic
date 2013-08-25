@@ -250,7 +250,7 @@ struct variant
 
   template <
     typename U,
-    typename = typename std::enable_if<::detail::any_of<std::is_same<
+    typename = typename std::enable_if< ::detail::any_of<std::is_same<
       typename std::remove_reference<U>::type, T>...>{}
       && !std::is_same<typename std::decay<U>::type, variant>{}
     >::type
@@ -261,7 +261,7 @@ struct variant
   }
 
   template <typename U>
-  typename std::enable_if<::detail::any_of<std::is_same<
+  typename std::enable_if< ::detail::any_of<std::is_same<
     typename std::remove_reference<U>::type, T>...>{}
     && !std::is_rvalue_reference<U&&>{}
     && std::is_copy_assignable<typename std::remove_reference<U>::type>{}
