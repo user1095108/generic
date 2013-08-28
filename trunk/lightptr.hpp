@@ -41,7 +41,7 @@ struct light_ptr
 
   ~light_ptr() { dec_ref(); }
 
-  light_ptr(light_ptr const& other) noexcept { *this = other; }
+  light_ptr(light_ptr const& other) { *this = other; }
 
   light_ptr(light_ptr&& other) noexcept { *this = std::move(other); }
 
