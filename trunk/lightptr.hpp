@@ -31,9 +31,11 @@ struct light_ptr
 {
   using counter_type = std::size_t;
 
+  using element_type = typename ::detail::remove_array<T>::type;
+
   light_ptr() = default;
 
-  explicit light_ptr(typename ::detail::remove_array<T>::type* const p) :
+  explicit light_ptr(element_type* const p) :
     counter_ptr_(new atomic_type(counter_type(1))),
     ptr_(p)
   {
@@ -86,13 +88,22 @@ struct light_ptr
 
   explicit operator bool() const noexcept { return counter_ptr_; }
 
-  T& operator*() const noexcept { return *ptr_; }
+  T& operator*() const noexcept
+  {
+    return *static_cast<T*>(static_cast<void*>(ptr_));
+  }
 
-  T* operator->() const noexcept { return ptr_; }
+  T* operator->() const noexcept
+  {
+    return static_cast<T*>(static_cast<void*>(ptr_));
+  }
 
-  T* get() const noexcept { return counter_ptr_ ? ptr_ : nullptr; }
+  T* get() const noexcept
+  {
+    return counter_ptr_ ? static_cast<T*>(static_cast<void*>(ptr_)) : nullptr;
+  }
 
-  void reset(T* const p = nullptr)
+  void reset(element_type* const p = nullptr)
   {
     dec_ref();
 
@@ -142,7 +153,7 @@ private:
 
   atomic_type* counter_ptr_{};
 
-  typename ::detail::remove_array<T>::type* ptr_;
+  element_type* ptr_;
 };
 
 #endif // LIGHTPTR_HPP
