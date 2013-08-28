@@ -17,7 +17,7 @@ template <typename T> class delegate;
 template<class R, class ...A>
 class delegate<R (A...)>
 {
-  typedef R (*stub_ptr_type)(void*, A&&...);
+  using stub_ptr_type = R (*)(void*, A&&...);
 
   delegate(void* const o, stub_ptr_type const m) noexcept
     : object_ptr_(o),
@@ -84,7 +84,7 @@ public:
         functor_deleter<typename std::decay<T>::type>),
       store_size_(sizeof(T))
   {
-    typedef typename std::decay<T>::type functor_type;
+    using functor_type = typename std::decay<T>::type;
 
     new (store_.get()) functor_type(std::forward<T>(f));
 
@@ -124,7 +124,7 @@ public:
   >
   delegate& operator=(T&& f)
   {
-    typedef typename std::decay<T>::type functor_type;
+    using functor_type = typename std::decay<T>::type;
 
     if ((sizeof(T) > store_size_)
       || (decltype(store_.use_count())(1) != store_.use_count()))
@@ -253,7 +253,7 @@ public:
 private:
   friend class ::std::hash<delegate>;
 
-  typedef void (*deleter_type)(void*);
+  using deleter_type = void (*)(void*);
 
   void* object_ptr_;
   stub_ptr_type stub_ptr_{};
