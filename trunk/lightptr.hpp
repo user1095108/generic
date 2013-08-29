@@ -182,9 +182,9 @@ private:
     ++*counter_ptr_;
   }
 
-  static void default_deleter(void* const p)
+  static void default_deleter(element_type* const p)
   {
-    ::std::default_delete<T>()(static_cast<element_type*>(p));
+    ::std::default_delete<T>()(p);
   }
 
 private:
