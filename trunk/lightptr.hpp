@@ -62,17 +62,17 @@ struct light_ptr
 
   light_ptr(light_ptr&& other) noexcept { *this = std::move(other); }
 
-  light_ptr& operator=(light_ptr const& other)
+  light_ptr& operator=(light_ptr const& rhs)
   {
-    if (*this != other)
+    if (*this != rhs)
     {
       dec_ref();
 
-      if ((counter_ptr_ = other.counter_ptr_))
+      if ((counter_ptr_ = rhs.counter_ptr_))
       {
-        ptr_ = other.ptr_;
+        ptr_ = rhs.ptr_;
 
-        deleter_ = other.deleter_;
+        deleter_ = rhs.deleter_;
 
         inc_ref();
       }
