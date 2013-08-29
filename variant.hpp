@@ -477,7 +477,7 @@ private:
   }
 
   template <class U>
-  inline constexpr typename std::enable_if<
+  constexpr typename std::enable_if<
     std::is_copy_constructible<U>{},
     mover_type
   >::type
@@ -487,7 +487,7 @@ private:
   }
 
   template <class U>
-  inline constexpr typename std::enable_if<
+  constexpr typename std::enable_if<
     !std::is_copy_constructible<U>{},
     mover_type
   >::type
@@ -497,7 +497,7 @@ private:
   }
 
   template <class U>
-  inline constexpr typename std::enable_if<
+  constexpr typename std::enable_if<
     std::is_move_constructible<U>{},
     mover_type
   >::type
@@ -507,7 +507,7 @@ private:
   }
 
   template <class U>
-  inline constexpr typename std::enable_if<
+  constexpr typename std::enable_if<
     !std::is_move_constructible<U>{},
     mover_type
   >::type
@@ -517,7 +517,7 @@ private:
   }
 
   template <class S, class U>
-  inline constexpr typename std::enable_if<
+  constexpr typename std::enable_if<
     ::detail::is_streamable<S, U>{},
     streamer_type
   >::type
@@ -527,7 +527,7 @@ private:
   }
 
   template <class S, class U>
-  inline constexpr typename std::enable_if<
+  constexpr typename std::enable_if<
     !::detail::is_streamable<S, U>{},
     streamer_type
   >::type
