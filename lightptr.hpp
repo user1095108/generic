@@ -51,11 +51,9 @@ struct light_ptr
   light_ptr() = default;
 
   explicit light_ptr(element_type* const p,
-    deleter_type const d = default_deleter) :
-    counter_ptr_(new atomic_type(counter_type(1))),
-    ptr_(p),
-    deleter_(d)
+    deleter_type const d = default_deleter)
   {
+    reset(p, d);
   }
 
   ~light_ptr() { dec_ref(); }
