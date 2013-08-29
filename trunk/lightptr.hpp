@@ -188,6 +188,12 @@ private:
   deleter_type deleter_;
 };
 
+template<class T, class... Args>
+inline light_ptr<T> make_light(Args&&... args)
+{
+  return new T(::std::forward<Args>(args)...);
+}
+
 namespace std
 {
   template <typename T>
