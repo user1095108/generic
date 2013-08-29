@@ -171,7 +171,8 @@ private:
   template <typename U>
   static void default_deleter(void* const p)
   {
-    std::default_delete<U>()(static_cast<U*>(p));
+    std::default_delete<U>()(
+      static_cast<typename remove_array<U>::type*>(p));
   }
 
 private:
