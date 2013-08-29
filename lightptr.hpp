@@ -30,18 +30,6 @@ namespace detail
 template <typename T>
 struct light_ptr
 {
-  template <typename U, typename = void>
-  struct is_type_complete : ::std::false_type
-  {
-  };
-
-  template <typename U>
-  struct is_type_complete<U,
-    typename ::std::enable_if<bool(sizeof(U)) || true>::type> :
-    ::std::true_type
-  {
-  };
-
   template <typename U>
   struct remove_array
   {
@@ -63,7 +51,7 @@ struct light_ptr
   light_ptr() = default;
 
   explicit light_ptr(element_type* const p,
-    deleter_type const d = default_deleter<T>) :
+    deleter_type const d = default_deleter) :
     counter_ptr_(new atomic_type(counter_type(1))),
     ptr_(p),
     deleter_(d)
@@ -149,7 +137,7 @@ struct light_ptr
   }
 
   void reset(element_type* const p = nullptr,
-    deleter_type const d = default_deleter<T>)
+    deleter_type const d = default_deleter)
   {
     dec_ref();
 
@@ -194,17 +182,9 @@ private:
     ++*counter_ptr_;
   }
 
-  template <typename U>
-  static typename ::std::enable_if<is_type_complete<U>{}>::type
-  default_deleter(void* const p)
+  static void default_deleter(void* const p)
   {
     ::std::default_delete<T>()(static_cast<element_type*>(p));
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<!is_type_complete<U>{}>::type
-  default_deleter(void* const p)
-  {
   }
 
 private:
