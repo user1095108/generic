@@ -124,9 +124,8 @@ struct is_streamable : std::false_type { };
 
 template <class S, class C>
 struct is_streamable<S, C,
-  typename std::enable_if<
-    bool(sizeof(decltype(std::declval<S&>() << std::declval<C const&>())))
-  >::type
+  decltype(void(sizeof(decltype(std::declval<S&>()
+    << std::declval<C const&>())*)))
 > : std::true_type { };
 
 template <std::size_t I, typename A, typename ...B>
