@@ -111,7 +111,7 @@ struct light_ptr
 
   explicit operator bool() const noexcept { return counter_ptr_; }
 
-  typename ::detail::ref_type<element_type>::type
+  typename ::detail::ref_type<T>::type
   operator*() const noexcept
   {
     return *static_cast<T*>(static_cast<void*>(ptr_));
@@ -164,7 +164,7 @@ struct light_ptr
 private:
   void dec_ref()
   {
-    if (counter_ptr_ && *counter_ptr_ && !--*counter_ptr_)
+    if (counter_ptr_ && counter_ptr_->load() && !--*counter_ptr_)
     {
       delete counter_ptr_;
 
