@@ -191,7 +191,7 @@ private:
 template<class T, class... Args>
 inline light_ptr<T> make_light(Args&&... args)
 {
-  return new T(::std::forward<Args>(args)...);
+  return light_ptr<T>(new T(::std::forward<Args>(args)...));
 }
 
 namespace std
