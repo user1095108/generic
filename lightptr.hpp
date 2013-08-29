@@ -40,7 +40,7 @@ struct light_ptr
     using type = U;
   };
 
-  using counter_type = std::size_t;
+  using counter_type = ::std::size_t;
 
   using deleter_type = void (*)(void*);
 
@@ -60,7 +60,7 @@ struct light_ptr
 
   light_ptr(light_ptr const& other) { *this = other; }
 
-  light_ptr(light_ptr&& other) noexcept { *this = std::move(other); }
+  light_ptr(light_ptr&& other) noexcept { *this = ::std::move(other); }
 
   light_ptr& operator=(light_ptr const& rhs)
   {
@@ -170,11 +170,11 @@ private:
 
   static void default_deleter(void* const p)
   {
-    std::default_delete<T>()(p);
+    ::std::default_delete<T>()(p);
   }
 
 private:
-  using atomic_type = std::atomic<counter_type>;
+  using atomic_type = ::std::atomic<counter_type>;
 
   atomic_type* counter_ptr_{};
 
