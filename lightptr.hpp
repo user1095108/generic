@@ -12,32 +12,47 @@
 
 namespace detail
 {
-  template <typename T>
-  struct remove_array
+  template <typename U>
+  struct ref_type
   {
-    using type = T;
+    using type = U&;
   };
 
-  template <typename T>
-  struct remove_array<T[]>
+  template <>
+  struct ref_type<void>
   {
-    using type = T;
+    using type = void;
   };
 }
 
-template <typename T,
-  class D = typename std::default_delete<T> >
+template <typename T>
 struct light_ptr
 {
+  template <typename U>
+  struct remove_array
+  {
+    using type = U;
+  };
+
+  template <typename U>
+  struct remove_array<U[]>
+  {
+    using type = U;
+  };
+
   using counter_type = std::size_t;
 
-  using element_type = typename ::detail::remove_array<T>::type;
+  using deleter_type = void (*)(void*);
+
+  using element_type = typename remove_array<T>::type;
 
   light_ptr() = default;
 
-  explicit light_ptr(element_type* const p) :
+  explicit light_ptr(element_type* const p,
+    deleter_type const d = default_deleter<T>) :
     counter_ptr_(new atomic_type(counter_type(1))),
-    ptr_(p)
+    ptr_(p),
+    deleter_(d)
   {
   }
 
@@ -57,6 +72,8 @@ struct light_ptr
       {
         ptr_ = other.ptr_;
 
+        deleter_ = other.deleter_;
+
         inc_ref();
       }
       // else do nothing
@@ -70,6 +87,7 @@ struct light_ptr
   {
     counter_ptr_ = rhs.counter_ptr_;
     ptr_ = rhs.ptr_;
+    deleter_ = rhs.deleter_;
 
     rhs.counter_ptr_ = nullptr;
 
@@ -88,7 +106,8 @@ struct light_ptr
 
   explicit operator bool() const noexcept { return counter_ptr_; }
 
-  T& operator*() const noexcept
+  typename ::detail::ref_type<element_type>::type
+  operator*() const noexcept
   {
     return *static_cast<T*>(static_cast<void*>(ptr_));
   }
@@ -103,7 +122,8 @@ struct light_ptr
     return counter_ptr_ ? static_cast<T*>(static_cast<void*>(ptr_)) : nullptr;
   }
 
-  void reset(element_type* const p = nullptr)
+  void reset(element_type* const p = nullptr,
+    deleter_type const d = default_deleter<T>)
   {
     dec_ref();
 
@@ -112,6 +132,8 @@ struct light_ptr
       counter_ptr_ = new atomic_type(counter_type(1));
 
       ptr_ = p;
+
+      deleter_ = d;
     }
     else
     {
@@ -130,13 +152,11 @@ struct light_ptr
 private:
   void dec_ref()
   {
-    using deleter_type = D;
-
     if (counter_ptr_ && *counter_ptr_ && !--*counter_ptr_)
     {
-      deleter_type()(ptr_);
-
       delete counter_ptr_;
+
+      deleter_(ptr_);
     }
     // else do nothing
   }
@@ -148,12 +168,20 @@ private:
     ++*counter_ptr_;
   }
 
+  template <typename U>
+  static void default_deleter(void* const p)
+  {
+    std::default_delete<U>()(static_cast<U*>(p));
+  }
+
 private:
   using atomic_type = std::atomic<counter_type>;
 
   atomic_type* counter_ptr_{};
 
   element_type* ptr_;
+
+  deleter_type deleter_;
 };
 
 #endif // LIGHTPTR_HPP

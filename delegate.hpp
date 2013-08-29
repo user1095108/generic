@@ -12,6 +12,8 @@
 
 #include <utility>
 
+#include "lightptr.hpp"
+
 template <typename T> class delegate;
 
 template<class R, class ...A>
@@ -260,7 +262,7 @@ private:
 
   deleter_type deleter_;
 
-  std::shared_ptr<void> store_;
+  light_ptr<void> store_;
   std::size_t store_size_;
 
   template <class T>
