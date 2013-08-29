@@ -94,6 +94,11 @@ struct light_ptr
     return *this;
   }
 
+  bool operator<(light_ptr const& rhs) const noexcept
+  {
+    return get() < rhs.get();
+  }
+
   bool operator==(light_ptr const& rhs) const noexcept
   {
     return counter_ptr_ == rhs.counter_ptr_;
@@ -170,7 +175,7 @@ private:
 
   static void default_deleter(void* const p)
   {
-    ::std::default_delete<T>()(p);
+    ::std::default_delete<T>()(static_cast<element_type*>(p));
   }
 
 private:
@@ -182,5 +187,17 @@ private:
 
   deleter_type deleter_;
 };
+
+namespace std
+{
+  template <typename T>
+  struct hash
+  {
+    size_t operator()(light_ptr<T> const& l) const noexcept
+    {
+      return hash<typename light_ptr<T>::element_type*>(l.get());
+    }
+  };
+}
 
 #endif // LIGHTPTR_HPP
