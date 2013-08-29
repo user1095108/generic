@@ -56,7 +56,10 @@ struct light_ptr
     reset(p, d);
   }
 
-  ~light_ptr() { dec_ref(); }
+  ~light_ptr()
+  {
+    delete_ptr(counter_ptr_, ptr_, deleter_);
+  }
 
   light_ptr(light_ptr const& other) { *this = other; }
 
@@ -124,14 +127,7 @@ struct light_ptr
 
   T* get() const noexcept
   {
-    return counter_ptr_ ? static_cast<T*>(static_cast<void*>(ptr_)) : nullptr;
-  }
-
-  void swap(light_ptr& other) noexcept
-  {
-    ::std::swap(counter_ptr_, other.counter_ptr_);
-    ::std::swap(ptr_, other.ptr_);
-    ::std::swap(deleter_, other.deleter_);
+    return static_cast<T*>(static_cast<void*>(ptr_));
   }
 
   void reset(element_type* const p = nullptr,
@@ -150,8 +146,17 @@ struct light_ptr
     else
     {
       counter_ptr_ = nullptr;
+
+      ptr_ = nullptr;
     }
     // else do nothing
+  }
+
+  void swap(light_ptr& other) noexcept
+  {
+    ::std::swap(counter_ptr_, other.counter_ptr_);
+    ::std::swap(ptr_, other.ptr_);
+    ::std::swap(deleter_, other.deleter_);
   }
 
   bool unique() const noexcept { return counter_type(1) == use_count(); }
@@ -162,7 +167,7 @@ struct light_ptr
   }
 
 private:
-  void dec_ref()
+  void dec_ref() const
   {
     if (counter_ptr_ && *counter_ptr_ && !--*counter_ptr_)
     {
@@ -173,7 +178,7 @@ private:
     // else do nothing
   }
 
-  void inc_ref() noexcept
+  void inc_ref() const noexcept
   {
     assert(ptr_);
     assert(counter_ptr_);
@@ -185,12 +190,24 @@ private:
     ::std::default_delete<T>()(p);
   }
 
-private:
   using atomic_type = ::std::atomic<counter_type>;
 
+  static void delete_ptr(atomic_type* const counter_ptr,
+    element_type* const ptr, deleter_type const deleter)
+  {
+    if (counter_ptr && *counter_ptr && !--*counter_ptr)
+    {
+      delete counter_ptr;
+
+      deleter(ptr);
+    }
+    // else do nothing
+  }
+
+private:
   atomic_type* counter_ptr_{};
 
-  element_type* ptr_;
+  element_type* ptr_{};
 
   deleter_type deleter_;
 };
