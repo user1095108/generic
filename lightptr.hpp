@@ -131,9 +131,9 @@ struct light_ptr
 
   void swap(light_ptr& other) noexcept
   {
-    std::swap(counter_ptr_, other.counter_ptr_);
-    std::swap(ptr_, other.ptr_);
-    std::swap(deleter_, other.deleter_);
+    ::std::swap(counter_ptr_, other.counter_ptr_);
+    ::std::swap(ptr_, other.ptr_);
+    ::std::swap(deleter_, other.deleter_);
   }
 
   void reset(element_type* const p = nullptr,
