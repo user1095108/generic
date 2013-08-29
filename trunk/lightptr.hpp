@@ -48,7 +48,7 @@ struct light_ptr
 
   using deleter_type = void (*)(element_type*);
 
-  light_ptr() = default;
+  constexpr light_ptr() = default;
 
   explicit light_ptr(element_type* const p,
     deleter_type const d = default_deleter)
@@ -56,10 +56,7 @@ struct light_ptr
     reset(p, d);
   }
 
-  ~light_ptr()
-  {
-    delete_ptr(counter_ptr_, ptr_, deleter_);
-  }
+  ~light_ptr() { delete_ptr(counter_ptr_, ptr_, deleter_); }
 
   light_ptr(light_ptr const& other) { *this = other; }
 
@@ -71,15 +68,13 @@ struct light_ptr
     {
       dec_ref();
 
-      if ((counter_ptr_ = rhs.counter_ptr_))
-      {
-        ptr_ = rhs.ptr_;
+      counter_ptr_ = rhs.counter_ptr_;
 
-        deleter_ = rhs.deleter_;
+      ptr_ = rhs.ptr_;
 
-        inc_ref();
-      }
-      // else do nothing
+      deleter_ = rhs.deleter_;
+
+      inc_ref();
     }
     // else do nothing
 
@@ -125,31 +120,29 @@ struct light_ptr
     return static_cast<T*>(static_cast<void*>(ptr_));
   }
 
-  T* get() const noexcept
+  element_type* get() const noexcept { return ptr_; }
+
+  void reset() { reset(nullptr); }
+
+  void reset(::std::nullptr_t const p)
   {
-    return static_cast<T*>(static_cast<void*>(ptr_));
+    dec_ref();
+
+    counter_ptr_ = nullptr;
+
+    ptr_ = nullptr;
   }
 
-  void reset(element_type* const p = nullptr,
+  void reset(element_type* const p,
     deleter_type const d = default_deleter)
   {
     dec_ref();
 
-    if (p)
-    {
-      counter_ptr_ = new atomic_type(counter_type(1));
+    counter_ptr_ = new atomic_type(counter_type(1));
 
-      ptr_ = p;
+    ptr_ = p;
 
-      deleter_ = d;
-    }
-    else
-    {
-      counter_ptr_ = nullptr;
-
-      ptr_ = nullptr;
-    }
-    // else do nothing
+    deleter_ = d;
   }
 
   void swap(light_ptr& other) noexcept
