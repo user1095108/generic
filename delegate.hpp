@@ -77,18 +77,18 @@ public:
 
   template <
     typename T,
-    typename = typename std::enable_if<
-      !std::is_same<delegate, typename std::decay<T>::type>{}
+    typename = typename ::std::enable_if<
+      !::std::is_same<delegate, typename ::std::decay<T>::type>{}
     >::type
   >
   delegate(T&& f)
     : store_(operator new(sizeof(T)),
-        functor_deleter<typename std::decay<T>::type>),
+        functor_deleter<typename ::std::decay<T>::type>),
       store_size_(sizeof(T))
   {
-    using functor_type = typename std::decay<T>::type;
+    using functor_type = typename ::std::decay<T>::type;
 
-    new (store_.get()) functor_type(std::forward<T>(f));
+    new (store_.get()) functor_type(::std::forward<T>(f));
 
     object_ptr_ = store_.get();
 
@@ -120,13 +120,13 @@ public:
 
   template <
     typename T,
-    typename = typename std::enable_if<
-      !std::is_same<delegate, typename std::decay<T>::type>{}
+    typename = typename ::std::enable_if<
+      !::std::is_same<delegate, typename ::std::decay<T>::type>{}
     >::type
   >
   delegate& operator=(T&& f)
   {
-    using functor_type = typename std::decay<T>::type;
+    using functor_type = typename ::std::decay<T>::type;
 
     if ((sizeof(T) > store_size_)
       || (decltype(store_.use_count())(1) != store_.use_count()))
@@ -140,7 +140,7 @@ public:
       deleter_(store_.get());
     }
 
-    new (store_.get()) functor_type(std::forward<T>(f));
+    new (store_.get()) functor_type(::std::forward<T>(f));
 
     object_ptr_ = store_.get();
 
@@ -184,13 +184,13 @@ public:
   template <typename T>
   static delegate from(T&& f)
   {
-    return std::forward<T>(f);
+    return ::std::forward<T>(f);
   }
 
   static delegate from(R (* const function_ptr)(A...))
   {
     return [function_ptr](A&&... args) {
-      return (*function_ptr)(std::forward<A>(args)...); };
+      return (*function_ptr)(::std::forward<A>(args)...); };
   }
 
   template <class C>
@@ -198,7 +198,7 @@ public:
     R (C::* const method_ptr)(A...))
   {
     return [object_ptr, method_ptr](A&&... args) {
-      return (object_ptr->*method_ptr)(std::forward<A>(args)...); };
+      return (object_ptr->*method_ptr)(::std::forward<A>(args)...); };
   }
 
   template <class C>
@@ -206,14 +206,14 @@ public:
     R (C::* const method_ptr)(A...) const)
   {
     return [object_ptr, method_ptr](A&&... args) {
-      return (object_ptr->*method_ptr)(std::forward<A>(args)...); };
+      return (object_ptr->*method_ptr)(::std::forward<A>(args)...); };
   }
 
   template <class C>
   static delegate from(C& object, R (C::* const method_ptr)(A...))
   {
     return [&object, method_ptr](A&&... args) {
-      return (object.*method_ptr)(std::forward<A>(args)...); };
+      return (object.*method_ptr)(::std::forward<A>(args)...); };
   }
 
   template <class C>
@@ -221,7 +221,7 @@ public:
     R (C::* const method_ptr)(A...) const)
   {
     return [&object, method_ptr](A&&... args) {
-      return (object.*method_ptr)(std::forward<A>(args)...); };
+      return (object.*method_ptr)(::std::forward<A>(args)...); };
   }
 
   void reset() { stub_ptr_ = nullptr; store_.reset(); }
@@ -249,7 +249,7 @@ public:
   R operator()(A... args) const
   {
 //  assert(stub_ptr);
-    return stub_ptr_(object_ptr_, std::forward<A>(args)...);
+    return stub_ptr_(object_ptr_, ::std::forward<A>(args)...);
   }
 
 private:
@@ -263,7 +263,7 @@ private:
   deleter_type deleter_;
 
   light_ptr<void> store_;
-  std::size_t store_size_;
+  ::std::size_t store_size_;
 
   template <class T>
   static void destructor_stub(void* const p)
@@ -282,27 +282,27 @@ private:
   template <R (*function_ptr)(A...)>
   static R function_stub(void* const, A&&... args)
   {
-    return function_ptr(std::forward<A>(args)...);
+    return function_ptr(::std::forward<A>(args)...);
   }
 
   template <class C, R (C::*method_ptr)(A...)>
   static R method_stub(void* const object_ptr, A&&... args)
   {
     return (static_cast<C*>(object_ptr)->*method_ptr)(
-      std::forward<A>(args)...);
+      ::std::forward<A>(args)...);
   }
 
   template <class C, R (C::*method_ptr)(A...) const>
   static R const_method_stub(void* const object_ptr, A&&... args)
   {
     return (static_cast<C const*>(object_ptr)->*method_ptr)(
-      std::forward<A>(args)...);
+      ::std::forward<A>(args)...);
   }
 
   template <typename T>
   static R functor_stub(void* const object_ptr, A&&... args)
   {
-    return (*static_cast<T*>(object_ptr))(std::forward<A>(args)...);
+    return (*static_cast<T*>(object_ptr))(::std::forward<A>(args)...);
   }
 };
 
