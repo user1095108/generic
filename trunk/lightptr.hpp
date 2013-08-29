@@ -44,9 +44,9 @@ struct light_ptr
 
   using counter_type = ::std::size_t;
 
-  using deleter_type = void (*)(void*);
-
   using element_type = typename remove_array<T>::type;
+
+  using deleter_type = void (*)(element_type*);
 
   light_ptr() = default;
 
