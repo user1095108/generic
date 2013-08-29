@@ -8,6 +8,8 @@
 
 #include <memory>
 
+#include <utility>
+
 #include <type_traits>
 
 namespace detail
@@ -125,6 +127,13 @@ struct light_ptr
   T* get() const noexcept
   {
     return counter_ptr_ ? static_cast<T*>(static_cast<void*>(ptr_)) : nullptr;
+  }
+
+  void swap(light_ptr& other) noexcept
+  {
+    std::swap(counter_ptr_, other.counter_ptr_);
+    std::swap(ptr_, other.ptr_);
+    std::swap(deleter_, other.deleter_);
   }
 
   void reset(element_type* const p = nullptr,
