@@ -168,11 +168,9 @@ private:
     ++*counter_ptr_;
   }
 
-  template <typename U>
   static void default_deleter(void* const p)
   {
-    std::default_delete<U>()(
-      static_cast<typename remove_array<U>::type*>(p));
+    std::default_delete<T>()(static_cast<element_type*>(p));
   }
 
 private:
