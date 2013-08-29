@@ -18,7 +18,7 @@ namespace detail
 template <typename A, typename ...B>
 struct max_align_type
 {
-  typedef typename std::conditional<
+  typedef typename ::std::conditional<
     (alignof(A) > alignof(typename max_align_type<B...>::type)),
     A,
     typename max_align_type<B...>::type
@@ -28,7 +28,7 @@ struct max_align_type
 template <typename A, typename B>
 struct max_align_type<A, B>
 {
-  typedef typename std::conditional<(alignof(A) > alignof(B)), A, B>::type type;
+  typedef typename ::std::conditional<(alignof(A) > alignof(B)), A, B>::type type;
 };
 
 template <typename A>
@@ -40,7 +40,7 @@ struct max_align_type<A>
 template <typename A, typename ...B>
 struct max_type
 {
-  typedef typename std::conditional<
+  typedef typename ::std::conditional<
     (sizeof(A) > sizeof(typename max_type<B...>::type)),
     A,
     typename max_type<B...>::type
@@ -50,7 +50,7 @@ struct max_type
 template <typename A, typename B>
 struct max_type<A, B>
 {
-  typedef typename std::conditional<(sizeof(A) > sizeof(B)), A, B>::type type;
+  typedef typename ::std::conditional<(sizeof(A) > sizeof(B)), A, B>::type type;
 };
 
 template <typename A>
@@ -61,8 +61,8 @@ struct max_type<A>
 
 template <typename A, typename B, typename... C>
 struct index_of
-  : std::integral_constant<int,
-    std::is_same<A, B>{}
+  : ::std::integral_constant<int,
+    ::std::is_same<A, B>{}
       ? 0
       : (-1 == index_of<A, C...>{}) ? -1 : 1 + index_of<A, C...>{}>
 {
@@ -70,13 +70,13 @@ struct index_of
 
 template <typename A, typename B>
 struct index_of<A, B>
-  : std::integral_constant<int, std::is_same<A, B>{} - 1>
+  : ::std::integral_constant<int, ::std::is_same<A, B>{} - 1>
 {
 };
 
 template <typename A, typename... B>
 struct has_duplicates
-  : std::integral_constant<bool,
+  : ::std::integral_constant<bool,
       (-1 == index_of<A, B...>{} ? has_duplicates<B...>{} : true)
     >
 {
@@ -84,14 +84,14 @@ struct has_duplicates
 
 template <typename A>
 struct has_duplicates<A>
-  : std::integral_constant<bool, false>
+  : ::std::integral_constant<bool, false>
 {
 };
 
 template <typename A, typename B, typename... C>
 struct compatible_index_of
-  : std::integral_constant<int,
-    std::is_constructible<A, B>{}
+  : ::std::integral_constant<int,
+    ::std::is_constructible<A, B>{}
       ? 0
       : (-1 == compatible_index_of<A, C...>{})
         ? -1
@@ -101,34 +101,34 @@ struct compatible_index_of
 
 template <typename A, typename B>
 struct compatible_index_of<A, B>
-  : std::integral_constant<int, std::is_constructible<A, B>{} - 1>
+  : ::std::integral_constant<int, ::std::is_constructible<A, B>{} - 1>
 {
 };
 
 template <typename A, typename B, typename... C>
 struct compatible_type
 {
-  typedef typename std::conditional<std::is_constructible<A, B>{}, B,
+  typedef typename ::std::conditional<::std::is_constructible<A, B>{}, B,
     typename compatible_type<A, C...>::type>::type type;
 };
 
 template <typename A, typename B>
 struct compatible_type<A, B>
 {
-  typedef typename std::conditional<
-    std::is_constructible<A, B>{}, B, void>::type type;
+  typedef typename ::std::conditional<
+    ::std::is_constructible<A, B>{}, B, void>::type type;
 };
 
 template <class S, class C, typename = void>
-struct is_streamable : std::false_type { };
+struct is_streamable : ::std::false_type { };
 
 template <class S, class C>
 struct is_streamable<S, C,
-  decltype(void(sizeof(decltype(std::declval<S&>()
-    << std::declval<C const&>())*)))
-> : std::true_type { };
+  decltype(void(sizeof(decltype(::std::declval<S&>()
+    << ::std::declval<C const&>())*)))
+> : ::std::true_type { };
 
-template <std::size_t I, typename A, typename ...B>
+template <::std::size_t I, typename A, typename ...B>
 struct type_at : type_at<I - 1, B...>
 {
 };
@@ -140,7 +140,7 @@ struct type_at<0, A, B...>
 };
 
 template <bool B>
-using bool_ = std::integral_constant<bool, B>;
+using bool_ = ::std::integral_constant<bool, B>;
 
 template <class A, class ...B>
 struct all_of : bool_<A::value && all_of<B...>::value> { };
@@ -156,9 +156,9 @@ struct any_of<A> : bool_<A::value> { };
 
 template <class A>
 struct is_move_or_copy_constructible
-  : std::integral_constant<bool,
-    std::is_copy_constructible<A>{}
-    || std::is_move_constructible<A>{}>
+  : ::std::integral_constant<bool,
+    ::std::is_copy_constructible<A>{}
+    || ::std::is_move_constructible<A>{}>
 {
 };
 
@@ -167,9 +167,9 @@ struct is_move_or_copy_constructible
 template <typename... T>
 struct variant
 {
-  static_assert(!::detail::any_of<std::is_reference<T>...>{},
+  static_assert(!::detail::any_of<::std::is_reference<T>...>{},
     "reference types are unsupported");
-  static_assert(!::detail::any_of<std::is_void<T>...>{},
+  static_assert(!::detail::any_of<::std::is_void<T>...>{},
     "void type is unsupported");
   static_assert(::detail::all_of<
     ::detail::is_move_or_copy_constructible<T>...>{},
@@ -196,7 +196,7 @@ struct variant
 
   variant(variant const& other) { *this = other; }
 
-  variant(variant&& other) { *this = std::move(other); }
+  variant(variant&& other) { *this = ::std::move(other); }
 
   variant& operator=(variant const& rhs)
   {
@@ -216,7 +216,7 @@ struct variant
     }
     else
     {
-      throw std::bad_typeid();
+      throw ::std::bad_typeid();
     }
 
     return *this;
@@ -240,7 +240,7 @@ struct variant
     }
     else
     {
-      throw std::bad_typeid();
+      throw ::std::bad_typeid();
     }
 
     return *this;
@@ -248,27 +248,27 @@ struct variant
 
   template <
     typename U,
-    typename = typename std::enable_if< ::detail::any_of<std::is_same<
-      typename std::remove_reference<U>::type, T>...>{}
-      && !std::is_same<typename std::decay<U>::type, variant>{}
+    typename = typename ::std::enable_if< ::detail::any_of<::std::is_same<
+      typename ::std::remove_reference<U>::type, T>...>{}
+      && !::std::is_same<typename ::std::decay<U>::type, variant>{}
     >::type
   >
   variant(U&& f)
   {
-    this = std::forward<U>(f);
+    this = ::std::forward<U>(f);
   }
 
   template <typename U>
-  typename std::enable_if< ::detail::any_of<std::is_same<
-    typename std::remove_reference<U>::type, T>...>{}
-    && !std::is_rvalue_reference<U&&>{}
-    && std::is_copy_assignable<typename std::remove_reference<U>::type>{}
-    && !std::is_same<typename std::decay<U>::type, variant>{},
+  typename ::std::enable_if< ::detail::any_of<::std::is_same<
+    typename ::std::remove_reference<U>::type, T>...>{}
+    && !::std::is_rvalue_reference<U&&>{}
+    && ::std::is_copy_assignable<typename ::std::remove_reference<U>::type>{}
+    && !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
   operator=(U&& f)
   {
-    typedef typename std::remove_reference<U>::type user_type;
+    typedef typename ::std::remove_reference<U>::type user_type;
 
     if (::detail::index_of<user_type, T...>{} == store_type_)
     {
@@ -282,7 +282,7 @@ struct variant
       }
       // else do nothing
 
-      new (store_) user_type(std::forward<U>(f));
+      new (store_) user_type(::std::forward<U>(f));
 
       deleter_ = destructor_stub<user_type>;
 
@@ -290,7 +290,7 @@ struct variant
 
       mover_ = get_mover<user_type>();
 
-      streamer_ = get_streamer<std::ostream, user_type>();
+      streamer_ = get_streamer<::std::ostream, user_type>();
 
       store_type_ = ::detail::index_of<user_type, T...>{};
     }
@@ -299,21 +299,21 @@ struct variant
   }
 
   template <typename U>
-  typename std::enable_if<
-    ::detail::any_of<std::is_same<
-      typename std::remove_reference<U>::type, T>...>{}
-    && std::is_rvalue_reference<U&&>{}
-    && std::is_move_assignable<typename std::remove_reference<U>::type>{}
-    && !std::is_same<typename std::decay<U>::type, variant>{},
+  typename ::std::enable_if<
+    ::detail::any_of<::std::is_same<
+      typename ::std::remove_reference<U>::type, T>...>{}
+    && ::std::is_rvalue_reference<U&&>{}
+    && ::std::is_move_assignable<typename ::std::remove_reference<U>::type>{}
+    && !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
   operator=(U&& f)
   {
-    typedef typename std::remove_reference<U>::type user_type;
+    typedef typename ::std::remove_reference<U>::type user_type;
 
     if (::detail::index_of<user_type, T...>{} == store_type_)
     {
-      *static_cast<user_type*>(static_cast<void*>(store_)) = std::move(f);
+      *static_cast<user_type*>(static_cast<void*>(store_)) = ::std::move(f);
     }
     else
     {
@@ -323,7 +323,7 @@ struct variant
       }
       // else do nothing
 
-      new (store_) user_type(std::forward<U>(f));
+      new (store_) user_type(::std::forward<U>(f));
 
       deleter_ = destructor_stub<user_type>;
 
@@ -331,7 +331,7 @@ struct variant
 
       mover_ = get_mover<user_type>();
 
-      streamer_ = get_streamer<std::ostream, user_type>();
+      streamer_ = get_streamer<::std::ostream, user_type>();
 
       store_type_ = ::detail::index_of<user_type, T...>{};
     }
@@ -340,19 +340,19 @@ struct variant
   }
 
   template <typename U>
-  typename std::enable_if<
-    ::detail::any_of<std::is_same<
-      typename std::remove_reference<U>::type, T>...>{}
-    && !std::is_copy_assignable<
-      typename std::remove_reference<U>::type>{}
-    && !std::is_move_assignable<
-      typename std::remove_reference<U>::type>{}
-    && !std::is_same<typename std::decay<U>::type, variant>{},
+  typename ::std::enable_if<
+    ::detail::any_of<::std::is_same<
+      typename ::std::remove_reference<U>::type, T>...>{}
+    && !::std::is_copy_assignable<
+      typename ::std::remove_reference<U>::type>{}
+    && !::std::is_move_assignable<
+      typename ::std::remove_reference<U>::type>{}
+    && !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
   operator=(U&& f)
   {
-    typedef typename std::remove_reference<U>::type user_type;
+    typedef typename ::std::remove_reference<U>::type user_type;
 
     if (*this)
     {
@@ -360,7 +360,7 @@ struct variant
     }
     // else do nothing
 
-    new (store_) user_type(std::forward<U>(f));
+    new (store_) user_type(::std::forward<U>(f));
 
     deleter_ = destructor_stub<user_type>;
 
@@ -368,7 +368,7 @@ struct variant
 
     mover_ = get_mover<user_type>();
 
-    streamer_ = get_streamer<std::ostream, user_type>();
+    streamer_ = get_streamer<::std::ostream, user_type>();
 
     store_type_ = ::detail::index_of<user_type, T...>{};
 
@@ -384,9 +384,9 @@ struct variant
   }
 
   template <typename U>
-  typename std::enable_if<
+  typename ::std::enable_if<
     (-1 != ::detail::index_of<U, T...>{})
-    && (std::is_enum<U>{} || std::is_fundamental<U>{}),
+    && (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U
   >::type
   cget() const
@@ -397,12 +397,12 @@ struct variant
     }
     else
     {
-      throw std::bad_typeid();
+      throw ::std::bad_typeid();
     }
   }
 
   template <typename U>
-  typename std::enable_if<
+  typename ::std::enable_if<
     (-1 != ::detail::index_of<U, T...>{}),
     U&
   >::type
@@ -414,12 +414,12 @@ struct variant
     }
     else
     {
-      throw std::bad_typeid();
+      throw ::std::bad_typeid();
     }
   }
 
   template <typename U>
-  typename std::enable_if<
+  typename ::std::enable_if<
     (-1 != ::detail::index_of<U, T...>{}),
     U const&
   >::type
@@ -431,20 +431,20 @@ struct variant
     }
     else
     {
-      throw std::bad_typeid();
+      throw ::std::bad_typeid();
     }
   }
 
   template <typename U>
-  typename std::enable_if<
+  typename ::std::enable_if<
     (-1 == ::detail::index_of<U, T...>{})
     && (-1 != ::detail::compatible_index_of<U, T...>{})
-    && (std::is_enum<U>{} || std::is_fundamental<U>{}),
+    && (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U
   >::type
   get() const
   {
-    static_assert(std::is_same<
+    static_assert(::std::is_same<
       typename ::detail::type_at<
         ::detail::compatible_index_of<U, T...>{}, T...>::type,
       typename ::detail::compatible_type<U, T...>::type>{},
@@ -457,7 +457,7 @@ struct variant
     }
     else
     {
-      throw std::bad_typeid();
+      throw ::std::bad_typeid();
     }
   }
 
@@ -465,11 +465,11 @@ struct variant
 
 private:
   typedef void (*mover_type)(variant&, variant&);
-  typedef void (*streamer_type)(std::ostream&, variant const&);
+  typedef void (*streamer_type)(::std::ostream&, variant const&);
 
   template <typename charT, typename traits>
-  friend std::basic_ostream<charT, traits>& operator<<(
-    std::basic_ostream<charT, traits>& os, variant const& v)
+  friend ::std::basic_ostream<charT, traits>& operator<<(
+    ::std::basic_ostream<charT, traits>& os, variant const& v)
   {
     v.streamer_(os, v);
 
@@ -477,8 +477,8 @@ private:
   }
 
   template <class U>
-  constexpr typename std::enable_if<
-    std::is_copy_constructible<U>{},
+  constexpr typename ::std::enable_if<
+    ::std::is_copy_constructible<U>{},
     mover_type
   >::type
   get_copier() const
@@ -487,8 +487,8 @@ private:
   }
 
   template <class U>
-  constexpr typename std::enable_if<
-    !std::is_copy_constructible<U>{},
+  constexpr typename ::std::enable_if<
+    !::std::is_copy_constructible<U>{},
     mover_type
   >::type
   get_copier() const
@@ -497,8 +497,8 @@ private:
   }
 
   template <class U>
-  constexpr typename std::enable_if<
-    std::is_move_constructible<U>{},
+  constexpr typename ::std::enable_if<
+    ::std::is_move_constructible<U>{},
     mover_type
   >::type
   get_mover() const
@@ -507,8 +507,8 @@ private:
   }
 
   template <class U>
-  constexpr typename std::enable_if<
-    !std::is_move_constructible<U>{},
+  constexpr typename ::std::enable_if<
+    !::std::is_move_constructible<U>{},
     mover_type
   >::type
   get_mover() const
@@ -517,7 +517,7 @@ private:
   }
 
   template <class S, class U>
-  constexpr typename std::enable_if<
+  constexpr typename ::std::enable_if<
     ::detail::is_streamable<S, U>{},
     streamer_type
   >::type
@@ -527,7 +527,7 @@ private:
   }
 
   template <class S, class U>
-  constexpr typename std::enable_if<
+  constexpr typename ::std::enable_if<
     !::detail::is_streamable<S, U>{},
     streamer_type
   >::type
@@ -543,9 +543,9 @@ private:
   }
 
   template <typename U>
-  static typename std::enable_if<
-    std::is_copy_constructible<U>{}
-    && std::is_copy_assignable<U>{}
+  static typename ::std::enable_if<
+    ::std::is_copy_constructible<U>{}
+    && ::std::is_copy_assignable<U>{}
   >::type
   copier_stub(variant& src, variant& dst)
   {
@@ -577,9 +577,9 @@ private:
   }
 
   template <typename U>
-  static typename std::enable_if<
-    std::is_copy_constructible<U>{}
-    && !std::is_copy_assignable<U>{}
+  static typename ::std::enable_if<
+    ::std::is_copy_constructible<U>{}
+    && !::std::is_copy_assignable<U>{}
   >::type
   copier_stub(variant& src, variant& dst)
   {
@@ -603,16 +603,16 @@ private:
   }
 
   template <typename U>
-  static typename std::enable_if<
-    std::is_move_constructible<U>{}
-    && std::is_move_assignable<U>{}
+  static typename ::std::enable_if<
+    ::std::is_move_constructible<U>{}
+    && ::std::is_move_assignable<U>{}
   >::type
   mover_stub(variant& src, variant& dst)
   {
     if (src.store_type_ == dst.store_type_)
     {
       *static_cast<U*>(static_cast<void*>(dst.store_)) =
-        std::move(*static_cast<U*>(static_cast<void*>(src.store_)));
+        ::std::move(*static_cast<U*>(static_cast<void*>(src.store_)));
     }
     else
     {
@@ -622,7 +622,7 @@ private:
       }
       // else do nothing
 
-      new (dst.store_) U(std::move(*static_cast<U*>(static_cast<void*>(
+      new (dst.store_) U(::std::move(*static_cast<U*>(static_cast<void*>(
         src.store_))));
 
       dst.deleter_ = src.deleter_;
@@ -638,9 +638,9 @@ private:
   }
 
   template <typename U>
-  static typename std::enable_if<
-    std::is_move_constructible<U>{}
-    && !std::is_move_assignable<U>{}
+  static typename ::std::enable_if<
+    ::std::is_move_constructible<U>{}
+    && !::std::is_move_assignable<U>{}
   >::type
   mover_stub(variant& src, variant& dst)
   {
@@ -650,7 +650,7 @@ private:
     }
     // else do nothing
 
-    new (dst.store_) U(std::move(*static_cast<U*>(
+    new (dst.store_) U(::std::move(*static_cast<U*>(
       static_cast<void*>(src.store_))));
 
     dst.deleter_ = src.deleter_;
@@ -665,7 +665,7 @@ private:
   }
 
   template <class S, typename U>
-  static typename std::enable_if<
+  static typename ::std::enable_if<
     ::detail::is_streamable<S, U>{}
   >::type
   streamer_stub(S& os, variant const& v)
