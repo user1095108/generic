@@ -168,6 +168,7 @@ struct light_ptr
 
     counter_ptr_ = new ::detail::atomic_type(counter_type(1));
     ptr_ = p;
+
     deleter_ = d;
   }
 
