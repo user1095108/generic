@@ -181,7 +181,7 @@ struct light_ptr
 
   counter_type use_count() const noexcept
   {
-    return counter_ptr_ ? counter_ptr_->load() : counter_type{};
+    return counter_ptr_ ? counter_type(*counter_ptr_) : counter_type{};
   }
 
 private:
