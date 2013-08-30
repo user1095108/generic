@@ -93,9 +93,7 @@ struct light_ptr
       ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
       counter_ptr_ = rhs.counter_ptr_;
-
       ptr_ = rhs.ptr_;
-
       deleter_ = rhs.deleter_;
 
       ::detail::inc_ref(counter_ptr_);
