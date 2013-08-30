@@ -107,11 +107,16 @@ struct light_ptr
 
   light_ptr& operator=(light_ptr&& rhs) noexcept
   {
-    counter_ptr_ = rhs.counter_ptr_;
-    ptr_ = rhs.ptr_;
-    deleter_ = rhs.deleter_;
+    if (*this != rhs)
+    {
+      counter_ptr_ = rhs.counter_ptr_;
+      ptr_ = rhs.ptr_;
+      deleter_ = rhs.deleter_;
 
-    rhs.counter_ptr_ = nullptr;
+      rhs.counter_ptr_ = nullptr;
+      rhs.ptr_ = nullptr;
+    }
+    // else do nothing
 
     return *this;
   }
@@ -153,7 +158,6 @@ struct light_ptr
     ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
     counter_ptr_ = nullptr;
-
     ptr_ = nullptr;
   }
 
@@ -163,9 +167,7 @@ struct light_ptr
     ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
     counter_ptr_ = new ::detail::atomic_type(counter_type(1));
-
     ptr_ = p;
-
     deleter_ = d;
   }
 
