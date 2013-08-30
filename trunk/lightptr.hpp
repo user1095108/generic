@@ -72,7 +72,6 @@ struct light_ptr
     using type = U[];
   };
 
-
   template <typename U>
   struct remove_array
   {
