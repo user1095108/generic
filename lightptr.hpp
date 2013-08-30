@@ -96,7 +96,7 @@ struct light_ptr
 
   using element_type = typename remove_array<T>::type;
 
-  constexpr light_ptr() = default;
+  light_ptr() = default;
 
   explicit light_ptr(element_type* const p,
     deleter_type const d = default_deleter)
