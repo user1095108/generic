@@ -162,7 +162,7 @@ struct light_ptr
   {
     ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
-    counter_ptr_ = new atomic_type(counter_type(1));
+    counter_ptr_ = new ::detail::atomic_type(counter_type(1));
 
     ptr_ = p;
 
@@ -189,18 +189,16 @@ private:
     ::std::default_delete<T>()(static_cast<element_type*>(p));
   }
 
-  using atomic_type = ::detail::atomic_type;
-
 private:
-  atomic_type* counter_ptr_{};
+  ::detail::atomic_type* counter_ptr_{};
 
   element_type* ptr_{};
 
   deleter_type deleter_;
 };
 
-template<class T, class... Args>
-inline light_ptr<T> make_light(Args&&... args)
+template<class T, class ...Args>
+inline light_ptr<T> make_light(Args&& ...args)
 {
   return light_ptr<T>(new T(::std::forward<Args>(args)...));
 }
