@@ -35,8 +35,7 @@ namespace detail
   inline void dec_ref(atomic_type* const counter_ptr,
     void* const ptr, deleter_type const deleter)
   {
-    if (counter_ptr &&
-      !counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed))
+    if (counter_ptr && !--*counter_ptr)
     {
       delete counter_ptr;
 
@@ -56,6 +55,25 @@ template <typename T>
 struct light_ptr
 {
   template <typename U>
+  struct deletion_type
+  {
+    using type = U;
+  };
+
+  template <typename U>
+  struct deletion_type<U[]>
+  {
+    using type = U[];
+  };
+
+  template <typename U, std::size_t N>
+  struct deletion_type<U[N]>
+  {
+    using type = U[];
+  };
+
+
+  template <typename U>
   struct remove_array
   {
     using type = U;
@@ -63,6 +81,12 @@ struct light_ptr
 
   template <typename U>
   struct remove_array<U[]>
+  {
+    using type = U;
+  };
+
+  template <typename U, std::size_t N>
+  struct remove_array<U[N]>
   {
     using type = U;
   };
@@ -192,7 +216,8 @@ struct light_ptr
 private:
   static void default_deleter(void* const p)
   {
-    ::std::default_delete<T>()(static_cast<element_type*>(p));
+    ::std::default_delete<typename deletion_type<T>::type>()(
+      static_cast<element_type*>(p));
   }
 
 private:
