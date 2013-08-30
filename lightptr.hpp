@@ -35,7 +35,8 @@ namespace detail
   inline void dec_ref(atomic_type* const counter_ptr,
     void* const ptr, deleter_type const deleter)
   {
-    if (counter_ptr && !--*counter_ptr)
+    if (counter_ptr &&
+      !counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed))
     {
       delete counter_ptr;
 
@@ -47,7 +48,7 @@ namespace detail
   inline void inc_ref(atomic_type* const counter_ptr)
   {
     assert(counter_ptr);
-    ++*counter_ptr;
+    counter_ptr->fetch_add(counter_type(1), ::std::memory_order_relaxed);
   }
 }
 
@@ -181,7 +182,9 @@ struct light_ptr
 
   counter_type use_count() const noexcept
   {
-    return counter_ptr_ ? counter_type(*counter_ptr_) : counter_type{};
+    return counter_ptr_ ?
+      counter_ptr_->load(::std::memory_order_relaxed) :
+      counter_type{};
   }
 
 private:
