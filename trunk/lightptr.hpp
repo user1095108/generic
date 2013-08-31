@@ -163,12 +163,12 @@ struct light_ptr
 
   bool operator==(::std::nullptr_t const) const noexcept
   {
-    return ptr_;
+    return !ptr_;
   }
 
   bool operator!=(::std::nullptr_t const) const noexcept
   {
-    return !ptr_;
+    return ptr_;
   }
 
   explicit operator bool() const noexcept { return ptr_; }
