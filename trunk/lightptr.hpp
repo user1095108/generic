@@ -97,7 +97,7 @@ struct light_ptr
 
   using element_type = typename remove_array<T>::type;
 
-  rsing deleter_type = ::detail::deleter_type<element_type>;
+  using deleter_type = ::detail::deleter_type<element_type>;
 
   light_ptr() = default;
 
