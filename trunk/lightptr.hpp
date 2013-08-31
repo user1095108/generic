@@ -35,7 +35,8 @@ namespace detail
   inline void dec_ref(atomic_type* const counter_ptr,
     void* const ptr, deleter_type const deleter)
   {
-    if (counter_ptr && !--*counter_ptr)
+    if (counter_ptr && (counter_type(1) ==
+      counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed)))
     {
       delete counter_ptr;
 
@@ -66,7 +67,7 @@ struct light_ptr
     using type = U[];
   };
 
-  template <typename U, std::size_t N>
+  template <typename U, ::std::size_t N>
   struct deletion_type<U[N]>
   {
     using type = U[];
@@ -84,7 +85,7 @@ struct light_ptr
     using type = U;
   };
 
-  template <typename U, std::size_t N>
+  template <typename U, ::std::size_t N>
   struct remove_array<U[N]>
   {
     using type = U;
@@ -160,7 +161,17 @@ struct light_ptr
     return !operator==(rhs);
   }
 
-  explicit operator bool() const noexcept { return counter_ptr_; }
+  bool operator==(::std::nullptr_t const) const noexcept
+  {
+    return !ptr_;
+  }
+
+  bool operator!=(::std::nullptr_t const) const noexcept
+  {
+    return !operator==(nullptr);
+  }
+
+  explicit operator bool() const noexcept { return ptr_; }
 
   typename ::detail::ref_type<T>::type
   operator*() const noexcept
@@ -177,7 +188,7 @@ struct light_ptr
 
   void reset() { reset(nullptr); }
 
-  void reset(::std::nullptr_t const p)
+  void reset(::std::nullptr_t const)
   {
     ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
