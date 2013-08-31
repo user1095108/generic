@@ -18,7 +18,8 @@ namespace detail
 
   using atomic_type = ::std::atomic<counter_type>;
 
-  using deleter_type = void (*)(void*);
+  template <typename T>
+  using deleter_type = void (*)(T*);
 
   template <typename U>
   struct ref_type
@@ -32,8 +33,9 @@ namespace detail
     using type = void;
   };
 
+  template <typename T>
   inline void dec_ref(atomic_type* const counter_ptr,
-    void* const ptr, deleter_type const deleter)
+    T* const ptr, deleter_type<T> const deleter)
   {
     if (counter_ptr && (counter_type(1) ==
       counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed)))
@@ -93,9 +95,9 @@ struct light_ptr
 
   using counter_type = ::detail::counter_type;
 
-  using deleter_type = ::detail::deleter_type;
-
   using element_type = typename remove_array<T>::type;
+
+  rsing deleter_type = ::detail::deleter_type<element_type>;
 
   light_ptr() = default;
 
@@ -224,10 +226,9 @@ struct light_ptr
   }
 
 private:
-  static void default_deleter(void* const p)
+  static void default_deleter(element_type* const p)
   {
-    ::std::default_delete<typename deletion_type<T>::type>()(
-      static_cast<element_type*>(p));
+    ::std::default_delete<typename deletion_type<T>::type>()(p);
   }
 
 private:
