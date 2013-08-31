@@ -18,79 +18,81 @@ namespace detail
 template <typename A, typename ...B>
 struct max_align_type
 {
-  typedef typename ::std::conditional<
+  using type = typename ::std::conditional<
     (alignof(A) > alignof(typename max_align_type<B...>::type)),
     A,
     typename max_align_type<B...>::type
-  >::type type;
+  >::type;
 };
 
 template <typename A, typename B>
 struct max_align_type<A, B>
 {
-  typedef typename ::std::conditional<(alignof(A) > alignof(B)), A, B>::type type;
+  using type = typename ::std::conditional<
+    (alignof(A) > alignof(B)), A, B>::type;
 };
 
 template <typename A>
 struct max_align_type<A>
 {
-  typedef A type;
+  using type = A;
 };
 
 template <typename A, typename ...B>
 struct max_type
 {
-  typedef typename ::std::conditional<
+  using type = typename ::std::conditional<
     (sizeof(A) > sizeof(typename max_type<B...>::type)),
     A,
     typename max_type<B...>::type
-  >::type type;
+  >::type;
 };
 
 template <typename A, typename B>
 struct max_type<A, B>
 {
-  typedef typename ::std::conditional<(sizeof(A) > sizeof(B)), A, B>::type type;
+  using type = typename ::std::conditional<
+    (sizeof(A) > sizeof(B)), A, B>::type;
 };
 
 template <typename A>
 struct max_type<A>
 {
-  typedef A type;
+  using type = A;
 };
 
 template <typename A, typename B, typename... C>
-struct index_of
-  : ::std::integral_constant<int,
-    ::std::is_same<A, B>{}
-      ? 0
-      : (-1 == index_of<A, C...>{}) ? -1 : 1 + index_of<A, C...>{}>
+struct index_of :
+  ::std::integral_constant<int,
+    ::std::is_same<A, B>{} ?
+    0 :
+    (-1 == index_of<A, C...>{}) ? -1 : 1 + index_of<A, C...>{}>
 {
 };
 
 template <typename A, typename B>
-struct index_of<A, B>
-  : ::std::integral_constant<int, ::std::is_same<A, B>{} - 1>
+struct index_of<A, B> :
+  ::std::integral_constant<int, ::std::is_same<A, B>{} - 1>
 {
 };
 
 template <typename A, typename... B>
-struct has_duplicates
-  : ::std::integral_constant<bool,
-      (-1 == index_of<A, B...>{} ? has_duplicates<B...>{} : true)
-    >
+struct has_duplicates :
+  ::std::integral_constant<bool,
+    (-1 == index_of<A, B...>{} ? has_duplicates<B...>{} : true)
+  >
 {
 };
 
 template <typename A>
-struct has_duplicates<A>
-  : ::std::integral_constant<bool, false>
+struct has_duplicates<A> :
+  ::std::integral_constant<bool, false>
 {
 };
 
 template <typename A, typename B, typename... C>
-struct compatible_index_of
-  : ::std::integral_constant<int,
+struct compatible_index_of :
+  ::std::integral_constant<int,
     ::std::is_constructible<A, B>{}
       ? 0
       : (-1 == compatible_index_of<A, C...>{})
@@ -100,23 +102,24 @@ struct compatible_index_of
 };
 
 template <typename A, typename B>
-struct compatible_index_of<A, B>
-  : ::std::integral_constant<int, ::std::is_constructible<A, B>{} - 1>
+struct compatible_index_of<A, B> :
+  ::std::integral_constant<int, ::std::is_constructible<A, B>{} - 1>
 {
 };
 
 template <typename A, typename B, typename... C>
 struct compatible_type
 {
-  typedef typename ::std::conditional<::std::is_constructible<A, B>{}, B,
-    typename compatible_type<A, C...>::type>::type type;
+  using type = typename ::std::conditional<
+    ::std::is_constructible<A, B>{}, B,
+      typename compatible_type<A, C...>::type>::type;
 };
 
 template <typename A, typename B>
 struct compatible_type<A, B>
 {
-  typedef typename ::std::conditional<
-    ::std::is_constructible<A, B>{}, B, void>::type type;
+  using type = typename ::std::conditional<
+    ::std::is_constructible<A, B>{}, B, void>::type;
 };
 
 template <class S, class C, typename = void>
@@ -136,7 +139,7 @@ struct type_at : type_at<I - 1, B...>
 template <typename A, typename ...B>
 struct type_at<0, A, B...>
 {
-  typedef A type;
+  using type = A;
 };
 
 template <bool B>
@@ -155,10 +158,10 @@ template <class A>
 struct any_of<A> : bool_<A::value> { };
 
 template <class A>
-struct is_move_or_copy_constructible
-  : ::std::integral_constant<bool,
-    ::std::is_copy_constructible<A>{}
-    || ::std::is_move_constructible<A>{}>
+struct is_move_or_copy_constructible :
+  ::std::integral_constant<bool,
+    ::std::is_copy_constructible<A>{} ||
+    ::std::is_move_constructible<A>{}>
 {
 };
 
