@@ -33,9 +33,9 @@ namespace detail
     using type = void;
   };
 
-  template <typename T>
+  template <typename T, typename U>
   inline void dec_ref(atomic_type* const counter_ptr,
-    T* const ptr, deleter_type<T> const deleter)
+    T* const ptr, deleter_type<U> const deleter)
   {
     if (counter_ptr && (counter_type(1) ==
       counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed)))
@@ -57,22 +57,22 @@ namespace detail
 template <typename T>
 struct light_ptr
 {
-  template <typename U>
+  template <typename U, typename V>
   struct deletion_type
   {
-    using type = U;
+    using type = V;
   };
 
-  template <typename U>
-  struct deletion_type<U[]>
+  template <typename U, typename V>
+  struct deletion_type<U[], V>
   {
-    using type = U[];
+    using type = V[];
   };
 
-  template <typename U, ::std::size_t N>
-  struct deletion_type<U[N]>
+  template <typename U, typename V, ::std::size_t N>
+  struct deletion_type<U[N], V>
   {
-    using type = U[];
+    using type = V[];
   };
 
   template <typename U>
@@ -101,8 +101,9 @@ struct light_ptr
 
   light_ptr() = default;
 
-  explicit light_ptr(element_type* const p,
-    deleter_type const d = default_deleter)
+  template <typename U>
+  explicit light_ptr(U* const p,
+    deleter_type const d = default_deleter<U>)
   {
     reset(p, d);
   }
@@ -198,10 +199,11 @@ struct light_ptr
     ptr_ = nullptr;
   }
 
-  void reset(element_type* const p,
-    deleter_type const d = default_deleter)
+  template <typename U>
+  void reset(U* const p,
+    deleter_type const d = default_deleter<U>)
   {
-    ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
+    ::detail::dec_ref<U>(counter_ptr_, ptr_, deleter_);
 
     counter_ptr_ = new ::detail::atomic_type(counter_type(1));
     ptr_ = p;
@@ -225,10 +227,10 @@ struct light_ptr
       counter_type{};
   }
 
-private:
+  template <typename U>
   static void default_deleter(element_type* const p)
   {
-    ::std::default_delete<typename deletion_type<T>::type>()(p);
+    ::std::default_delete<typename deletion_type<T, U>::type>()(p);
   }
 
 private:
