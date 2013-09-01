@@ -33,9 +33,9 @@ namespace detail
     using type = void;
   };
 
-  template <typename T, typename U>
+  template <typename T>
   inline void dec_ref(atomic_type* const counter_ptr,
-    T* const ptr, deleter_type<U> const deleter)
+    T* const ptr, deleter_type<T> const deleter)
   {
     if (counter_ptr && (counter_type(1) ==
       counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed)))
@@ -200,10 +200,9 @@ struct light_ptr
   }
 
   template <typename U>
-  void reset(U* const p,
-    deleter_type const d = default_deleter<U>)
+  void reset(U* const p, deleter_type const d = default_deleter<U>)
   {
-    ::detail::dec_ref<U>(counter_ptr_, ptr_, deleter_);
+    ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
     counter_ptr_ = new ::detail::atomic_type(counter_type(1));
     ptr_ = p;
@@ -230,7 +229,8 @@ struct light_ptr
   template <typename U>
   static void default_deleter(element_type* const p)
   {
-    ::std::default_delete<typename deletion_type<T, U>::type>()(p);
+    ::std::default_delete<typename deletion_type<T, U>::type>()(
+      static_cast<U*>(p));
   }
 
 private:
