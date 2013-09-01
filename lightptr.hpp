@@ -93,8 +93,6 @@ struct light_ptr
     using type = U;
   };
 
-  using counter_type = ::detail::counter_type;
-
   using element_type = typename remove_array<T>::type;
 
   using deleter_type = ::detail::deleter_type<element_type>;
@@ -204,7 +202,7 @@ struct light_ptr
   {
     ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
-    counter_ptr_ = new ::detail::atomic_type(counter_type(1));
+    counter_ptr_ = new ::detail::atomic_type(::detail::counter_type(1));
     ptr_ = p;
 
     deleter_ = d;
@@ -217,13 +215,16 @@ struct light_ptr
     ::std::swap(deleter_, other.deleter_);
   }
 
-  bool unique() const noexcept { return counter_type(1) == use_count(); }
+  bool unique() const noexcept
+  {
+    return ::detail::counter_type(1) == use_count();
+  }
 
-  counter_type use_count() const noexcept
+  ::detail::counter_type use_count() const noexcept
   {
     return counter_ptr_ ?
       counter_ptr_->load(::std::memory_order_relaxed) :
-      counter_type{};
+      ::detail::counter_type{};
   }
 
   template <typename U>
