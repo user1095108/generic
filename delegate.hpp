@@ -225,6 +225,8 @@ public:
 
   void reset() { stub_ptr_ = nullptr; store_.reset(); }
 
+  void reset_stub() { stub_ptr_ = nullptr; }
+
   void swap(delegate& other) noexcept { ::std::swap(*this, other); }
 
   bool operator==(delegate const& rhs) const noexcept
