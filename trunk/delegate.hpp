@@ -227,7 +227,13 @@ public:
 
   void reset_stub() { stub_ptr_ = nullptr; }
 
-  void swap(delegate& other) noexcept { ::std::swap(*this, other); }
+  void swap(delegate& other) noexcept
+  {
+    ::std::swap(object_ptr_, other.object_ptr_);
+    ::std::swap(stub_ptr_, other.stub_ptr_);
+    store_.swap(other.store_);
+    ::std::swap(store_size_, other.store_size_);
+  }
 
   bool operator==(delegate const& rhs) const noexcept
   {
