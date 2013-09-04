@@ -19,7 +19,7 @@ template <typename T> class delegate;
 template<class R, class ...A>
 class delegate<R (A...)>
 {
-  static constexpr auto max_store_size = 5 * sizeof(::std::size_t);
+  static constexpr auto max_store_size = 10 * sizeof(::std::size_t);
 
   using stub_ptr_type = R (*)(void*, A&&...);
 
