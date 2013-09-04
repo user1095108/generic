@@ -1,6 +1,6 @@
 #pragma once
-#ifndef DELEGATE_HPP
-# define DELEGATE_HPP
+#ifndef ARRAYDELEGATE_HPP
+# define ARRAYDELEGATE_HPP
 
 #include <cassert>
 
@@ -386,4 +386,4 @@ namespace std
   };
 }
 
-#endif // DELEGATE_HPP
+#endif // ARRAYDELEGATE_HPP
