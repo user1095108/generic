@@ -103,14 +103,30 @@ public:
 
   delegate& operator=(delegate const& rhs)
   {
-    rhs.copier_(*this, rhs);
+    if (rhs.deleter_)
+    {
+      rhs.copier_(*this, rhs);
+    }
+    else
+    {
+      object_ptr_ = rhs.object_ptr_;
+      stub_ptr_ = rhs.stub_ptr_;
+    }
 
     return *this;
   }
 
   delegate& operator=(delegate&& rhs)
   {
-    rhs.mover_(*this, ::std::move(rhs));
+    if (rhs.deleter_)
+    {
+      rhs.mover_(*this, ::std::move(rhs));
+    }
+    else
+    {
+      object_ptr_ = rhs.object_ptr_;
+      stub_ptr_ = rhs.stub_ptr_;
+    }
 
     return *this;
   }
@@ -296,46 +312,36 @@ private:
 
   alignas(::max_align_t) char store_[max_store_size];
 
-  template <class T>
+  template <typename T>
   static void copier_stub(delegate& dst, delegate const& src)
   {
+    new (dst.store_) T(*static_cast<T const*>(
+      static_cast<void const*>(src.store_)));
+
     dst.stub_ptr_ = src.stub_ptr_;
+    dst.object_ptr_ = dst.store_;
 
-    if ((dst.deleter_ = src.deleter_))
-    {
-      new (dst.store_) T(*static_cast<T const*>(static_cast<void const*>(
-        src.store_)));
+    assert(src.deleter_);
+    dst.deleter_ = src.deleter_;
 
-      dst.object_ptr_ = dst.store_;
-
-      dst.copier_ = src.copier_;
-      dst.mover_= src.mover_;
-    }
-    else
-    {
-      dst.object_ptr_ = src.object_ptr_;
-    }
+    dst.copier_ = src.copier_;
+    dst.mover_ = src.mover_;
   }
 
-  template <class T>
+  template <typename T>
   static void mover_stub(delegate& dst, delegate&& src)
   {
+    new (dst.store_) T(::std::move(*static_cast<T*>(
+      static_cast<void*>(src.store_))));
+
     dst.stub_ptr_ = src.stub_ptr_;
+    dst.object_ptr_ = dst.store_;
 
-    if ((dst.deleter_ = src.deleter_))
-    {
-      new (dst.store_) T(::std::move(*static_cast<T*>(static_cast<void*>(
-        src.store_))));
+    assert(src.deleter_);
+    dst.deleter_ = src.deleter_;
 
-      dst.object_ptr_ = dst.store_;
-
-      dst.copier_ = src.copier_;
-      dst.mover_= src.mover_;
-    }
-    else
-    {
-      dst.object_ptr_ = src.object_ptr_;
-    }
+    dst.copier_ = src.copier_;
+    dst.mover_ = src.mover_;
   }
 
   template <class T>
