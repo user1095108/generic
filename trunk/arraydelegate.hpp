@@ -312,8 +312,6 @@ private:
     else
     {
       dst.object_ptr_ = src.object_ptr_;
-
-      dst.deleter_ = nullptr;
     }
   }
 
@@ -335,8 +333,6 @@ private:
     else
     {
       dst.object_ptr_ = src.object_ptr_;
-
-      dst.deleter_ = nullptr;
     }
   }
 
