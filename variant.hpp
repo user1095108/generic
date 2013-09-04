@@ -215,7 +215,7 @@ struct variant
     }
     else if (rhs.copier_)
     {
-      rhs.copier_(const_cast<variant&>(rhs), *this);
+      rhs.copier_(*this, const_cast<variant&>(rhs));
     }
     else
     {
@@ -239,7 +239,7 @@ struct variant
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(rhs, *this);
+      rhs.mover_(*this, rhs);
     }
     else
     {
@@ -550,7 +550,7 @@ private:
     ::std::is_copy_constructible<U>{}
     && ::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(variant& src, variant& dst)
+  copier_stub(variant& dst, variant& src)
   {
     if (src.store_type_ == dst.store_type_)
     {
@@ -584,7 +584,7 @@ private:
     ::std::is_copy_constructible<U>{}
     && !::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(variant& src, variant& dst)
+  copier_stub(variant& dst, variant& src)
   {
     if (dst)
     {
@@ -610,7 +610,7 @@ private:
     ::std::is_move_constructible<U>{}
     && ::std::is_move_assignable<U>{}
   >::type
-  mover_stub(variant& src, variant& dst)
+  mover_stub(variant& dst, variant& src)
   {
     if (src.store_type_ == dst.store_type_)
     {
@@ -645,7 +645,7 @@ private:
     ::std::is_move_constructible<U>{}
     && !::std::is_move_assignable<U>{}
   >::type
-  mover_stub(variant& src, variant& dst)
+  mover_stub(variant& dst, variant& src)
   {
     if (dst)
     {
