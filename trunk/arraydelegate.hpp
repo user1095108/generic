@@ -14,67 +14,67 @@
 
 #include <utility>
 
-template <typename T> class arraydelegate;
+template <typename T> class delegate;
 
 template<class R, class ...A>
-class arraydelegate<R (A...)>
+class delegate<R (A...)>
 {
   static constexpr auto max_store_size = 5 * sizeof(::std::size_t);
 
   using stub_ptr_type = R (*)(void*, A&&...);
 
-  arraydelegate(void* const o, stub_ptr_type const m) noexcept
+  delegate(void* const o, stub_ptr_type const m) noexcept
     : object_ptr_(o),
       stub_ptr_(m)
   {
   }
 
 public:
-  arraydelegate() = default;
+  delegate() = default;
 
-  arraydelegate(arraydelegate const& other) { *this = other; }
+  delegate(delegate const& other) { *this = other; }
 
-  arraydelegate(arraydelegate&& other) { *this = ::std::move(other); }
+  delegate(delegate&& other) { *this = ::std::move(other); }
 
-  arraydelegate(::std::nullptr_t const) noexcept : arraydelegate() { }
+  delegate(::std::nullptr_t const) noexcept : delegate() { }
 
   template <class C>
-  explicit arraydelegate(C const* const o) noexcept
+  explicit delegate(C const* const o) noexcept
     : object_ptr_(const_cast<C*>(o))
   {
   }
 
   template <class C>
-  explicit arraydelegate(C const& o) noexcept
+  explicit delegate(C const& o) noexcept
     : object_ptr_(const_cast<C*>(&o))
   {
   }
 
-  arraydelegate(R (* const function_ptr)(A...))
+  delegate(R (* const function_ptr)(A...))
   {
     *this = from(function_ptr);
   }
 
   template <class C>
-  arraydelegate(C* const object_ptr, R (C::* const method_ptr)(A...))
+  delegate(C* const object_ptr, R (C::* const method_ptr)(A...))
   {
     *this = from(object_ptr, method_ptr);
   }
 
   template <class C>
-  arraydelegate(C* const object_ptr, R (C::* const method_ptr)(A...) const)
+  delegate(C* const object_ptr, R (C::* const method_ptr)(A...) const)
   {
     *this = from(object_ptr, method_ptr);
   }
 
   template <class C>
-  arraydelegate(C& object, R (C::* const method_ptr)(A...))
+  delegate(C& object, R (C::* const method_ptr)(A...))
   {
     *this = from(object, method_ptr);
   }
 
   template <class C>
-  arraydelegate(C const& object, R (C::* const method_ptr)(A...) const)
+  delegate(C const& object, R (C::* const method_ptr)(A...) const)
   {
     *this = from(object, method_ptr);
   }
@@ -82,10 +82,10 @@ public:
   template <
     typename T,
     typename = typename ::std::enable_if<
-      !::std::is_same<arraydelegate, typename ::std::decay<T>::type>{}
+      !::std::is_same<delegate, typename ::std::decay<T>::type>{}
     >::type
   >
-  arraydelegate(T&& f)
+  delegate(T&& f)
   {
     using functor_type = typename ::std::decay<T>::type;
 
@@ -101,33 +101,33 @@ public:
     mover_ = mover_stub<functor_type>;
   }
 
-  arraydelegate& operator=(arraydelegate const& rhs)
+  delegate& operator=(delegate const& rhs)
   {
     rhs.copier_(*this, rhs);
 
     return *this;
   }
 
-  arraydelegate& operator=(arraydelegate&& rhs)
+  delegate& operator=(delegate&& rhs)
   {
     rhs.mover_(*this, ::std::move(rhs));
 
     return *this;
   }
 
-  arraydelegate& operator=(R (* const rhs)(A...))
+  delegate& operator=(R (* const rhs)(A...))
   {
     return *this = from(rhs);
   }
 
   template <class C>
-  arraydelegate& operator=(R (C::* const rhs)(A...))
+  delegate& operator=(R (C::* const rhs)(A...))
   {
     return *this = from(static_cast<C*>(object_ptr_), rhs);
   }
 
   template <class C>
-  arraydelegate& operator=(R (C::* const rhs)(A...) const)
+  delegate& operator=(R (C::* const rhs)(A...) const)
   {
     return *this = from(static_cast<C const*>(object_ptr_), rhs);
   }
@@ -135,10 +135,10 @@ public:
   template <
     typename T,
     typename = typename ::std::enable_if<
-      !::std::is_same<arraydelegate, typename ::std::decay<T>::type>{}
+      !::std::is_same<delegate, typename ::std::decay<T>::type>{}
     >::type
   >
-  arraydelegate& operator=(T&& f)
+  delegate& operator=(T&& f)
   {
     using functor_type = typename ::std::decay<T>::type;
 
@@ -165,49 +165,49 @@ public:
   }
 
   template <R (* const function_ptr)(A...)>
-  static arraydelegate from() noexcept
+  static delegate from() noexcept
   {
     return { nullptr, function_stub<function_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...)>
-  static arraydelegate from(C* const object_ptr) noexcept
+  static delegate from(C* const object_ptr) noexcept
   {
     return { object_ptr, method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...) const>
-  static arraydelegate from(C const* const object_ptr) noexcept
+  static delegate from(C const* const object_ptr) noexcept
   {
     return { const_cast<C*>(object_ptr), const_method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...)>
-  static arraydelegate from(C& object) noexcept
+  static delegate from(C& object) noexcept
   {
     return { &object, method_stub<C, method_ptr> };
   }
 
   template <class C, R (C::* const method_ptr)(A...) const>
-  static arraydelegate from(C const& object) noexcept
+  static delegate from(C const& object) noexcept
   {
     return { const_cast<C*>(&object), const_method_stub<C, method_ptr> };
   }
 
   template <typename T>
-  static arraydelegate from(T&& f)
+  static delegate from(T&& f)
   {
     return ::std::forward<T>(f);
   }
 
-  static arraydelegate from(R (* const function_ptr)(A...))
+  static delegate from(R (* const function_ptr)(A...))
   {
     return [function_ptr](A&&... args) {
       return (*function_ptr)(::std::forward<A>(args)...); };
   }
 
   template <class C>
-  static arraydelegate from(C* const object_ptr,
+  static delegate from(C* const object_ptr,
     R (C::* const method_ptr)(A...))
   {
     return [object_ptr, method_ptr](A&&... args) {
@@ -215,7 +215,7 @@ public:
   }
 
   template <class C>
-  static arraydelegate from(C const* const object_ptr,
+  static delegate from(C const* const object_ptr,
     R (C::* const method_ptr)(A...) const)
   {
     return [object_ptr, method_ptr](A&&... args) {
@@ -223,14 +223,14 @@ public:
   }
 
   template <class C>
-  static arraydelegate from(C& object, R (C::* const method_ptr)(A...))
+  static delegate from(C& object, R (C::* const method_ptr)(A...))
   {
     return [&object, method_ptr](A&&... args) {
       return (object.*method_ptr)(::std::forward<A>(args)...); };
   }
 
   template <class C>
-  static arraydelegate from(C const& object,
+  static delegate from(C const& object,
     R (C::* const method_ptr)(A...) const)
   {
     return [&object, method_ptr](A&&... args) {
@@ -241,19 +241,19 @@ public:
 
   void reset_stub() noexcept { stub_ptr_ = nullptr; }
 
-  void swap(arraydelegate& other) noexcept { ::std::swap(*this, other); }
+  void swap(delegate& other) noexcept { ::std::swap(*this, other); }
 
-  bool operator==(arraydelegate const& rhs) const noexcept
+  bool operator==(delegate const& rhs) const noexcept
   {
     return (object_ptr_ == rhs.object_ptr_) && (stub_ptr_ == rhs.stub_ptr_);
   }
 
-  bool operator!=(arraydelegate const& rhs) const noexcept
+  bool operator!=(delegate const& rhs) const noexcept
   {
     return !operator==(rhs);
   }
 
-  bool operator<(arraydelegate const& rhs) const noexcept
+  bool operator<(delegate const& rhs) const noexcept
   {
     return (object_ptr_ < rhs.object_ptr_) ||
       ((object_ptr_ == rhs.object_ptr_) && (stub_ptr_ < rhs.stub_ptr_));
@@ -278,11 +278,11 @@ public:
   }
 
 private:
-  friend class ::std::hash<arraydelegate>;
+  friend class ::std::hash<delegate>;
 
-  using copier_type = void (*)(arraydelegate&, arraydelegate const&);
+  using copier_type = void (*)(delegate&, delegate const&);
 
-  using mover_type = void (*)(arraydelegate&, arraydelegate&&);
+  using mover_type = void (*)(delegate&, delegate&&);
 
   using deleter_type = void (*)(void*);
 
@@ -297,7 +297,7 @@ private:
   alignas(::max_align_t) char store_[max_store_size];
 
   template <class T>
-  static void copier_stub(arraydelegate& dst, arraydelegate const& src)
+  static void copier_stub(delegate& dst, delegate const& src)
   {
     dst.stub_ptr_ = src.stub_ptr_;
 
@@ -318,7 +318,7 @@ private:
   }
 
   template <class T>
-  static void mover_stub(arraydelegate& dst, arraydelegate&& src)
+  static void mover_stub(delegate& dst, delegate&& src)
   {
     dst.stub_ptr_ = src.stub_ptr_;
 
@@ -374,13 +374,13 @@ private:
 namespace std
 {
   template <typename R, typename ...A>
-  struct hash<arraydelegate<R (A...)> >
+  struct hash<delegate<R (A...)> >
   {
-    size_t operator()(arraydelegate<R (A...)> const& d) const noexcept
+    size_t operator()(delegate<R (A...)> const& d) const noexcept
     {
       auto const seed(hash<void*>()(d.object_ptr_));
 
-      return hash<typename arraydelegate<R (A...)>::stub_ptr_type>()(
+      return hash<typename delegate<R (A...)>::stub_ptr_type>()(
         d.stub_ptr_) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
   };
