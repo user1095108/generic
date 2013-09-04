@@ -101,45 +101,18 @@ public:
     mover_ = mover_stub<functor_type>;
   }
 
-  ~delegate()
-  {
-    if (deleter_)
-    {
-      deleter_(this);
-    }
-    // else do nothing
-  }
+  ~delegate() { deleter_(this); }
 
   delegate& operator=(delegate const& rhs)
   {
-    if (rhs.deleter_)
-    {
-      rhs.copier_(*this, rhs);
-    }
-    else
-    {
-      object_ptr_ = rhs.object_ptr_;
-      stub_ptr_ = rhs.stub_ptr_;
-
-      deleter_ = nullptr;
-    }
+    rhs.copier_(*this, rhs);
 
     return *this;
   }
 
   delegate& operator=(delegate&& rhs)
   {
-    if (rhs.deleter_)
-    {
-      rhs.mover_(*this, ::std::move(rhs));
-    }
-    else
-    {
-      object_ptr_ = rhs.object_ptr_;
-      stub_ptr_ = rhs.stub_ptr_;
-
-      deleter_ = nullptr;
-    }
+    rhs.mover_(*this, ::std::move(rhs));
 
     return *this;
   }
@@ -307,23 +280,26 @@ public:
   }
 
 private:
-  friend class ::std::hash<delegate>;
+  static void default_deleter_stub(void* const)
+  {
+  }
 
-  using copier_type = void (*)(delegate&, delegate const&);
+  template <class T>
+  static void deleter_stub(void* const p)
+  {
+    static_cast<T*>(p)->~T();
+  }
 
-  using mover_type = void (*)(delegate&, delegate&&);
+  static void default_copier_stub(delegate& dst, delegate const& src)
+  {
+    dst.object_ptr_ = src.object_ptr_;
+    dst.stub_ptr_ = src.stub_ptr_;
 
-  using deleter_type = void (*)(void*);
+    dst.copier_ = default_copier_stub;
+    dst.mover_ = default_mover_stub;
 
-  void* object_ptr_;
-  stub_ptr_type stub_ptr_{};
-
-  copier_type copier_;
-  mover_type mover_;
-
-  deleter_type deleter_{};
-
-  alignas(::max_align_t) char store_[max_store_size];
+    dst.deleter_ = default_deleter_stub;
+  }
 
   template <typename T>
   static void copier_stub(delegate& dst, delegate const& src)
@@ -334,11 +310,18 @@ private:
     dst.stub_ptr_ = src.stub_ptr_;
     dst.object_ptr_ = dst.store_;
 
-    assert(src.deleter_);
     dst.deleter_ = src.deleter_;
 
-    dst.copier_ = src.copier_;
-    dst.mover_ = src.mover_;
+    dst.copier_ = default_copier_stub;
+    dst.mover_ = default_mover_stub;
+  }
+
+  static void default_mover_stub(delegate& dst, delegate&& src)
+  {
+    dst.object_ptr_ = src.object_ptr_;
+    dst.stub_ptr_ = src.stub_ptr_;
+
+    dst.deleter_ = default_deleter_stub;
   }
 
   template <typename T>
@@ -350,18 +333,30 @@ private:
     dst.stub_ptr_ = src.stub_ptr_;
     dst.object_ptr_ = dst.store_;
 
-    assert(src.deleter_);
     dst.deleter_ = src.deleter_;
 
     dst.copier_ = src.copier_;
     dst.mover_ = src.mover_;
   }
 
-  template <class T>
-  static void deleter_stub(void* const p)
-  {
-    static_cast<T*>(p)->~T();
-  }
+private:
+  friend class ::std::hash<delegate>;
+
+  using copier_type = void (*)(delegate&, delegate const&);
+
+  using mover_type = void (*)(delegate&, delegate&&);
+
+  using deleter_type = void (*)(void*);
+
+  void* object_ptr_;
+  stub_ptr_type stub_ptr_{};
+
+  copier_type copier_{&default_copier_stub};
+  mover_type mover_{&default_mover_stub};
+
+  deleter_type deleter_{&default_deleter_stub};
+
+  alignas(::max_align_t) char store_[max_store_size];
 
   template <R (*function_ptr)(A...)>
   static R function_stub(void* const, A&&... args)
