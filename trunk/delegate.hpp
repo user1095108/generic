@@ -279,17 +279,17 @@ private:
   ::std::size_t store_size_;
 
   template <class T>
-  static void deleter_stub(void* const p)
-  {
-    static_cast<T*>(p)->~T();
-  }
-
-  template <class T>
   static void functor_deleter(void* const p)
   {
     static_cast<T*>(p)->~T();
 
     operator delete(p);
+  }
+
+  template <class T>
+  static void deleter_stub(void* const p)
+  {
+    static_cast<T*>(p)->~T();
   }
 
   template <R (*function_ptr)(A...)>
