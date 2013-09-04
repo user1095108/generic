@@ -34,6 +34,8 @@ public:
 
   delegate(delegate&&) = default;
 
+  delegate(::std::nullptr_t const) noexcept : delegate() { }
+
   template <class C>
   explicit delegate(C const* const o) noexcept
     : object_ptr_(const_cast<C*>(o))
@@ -225,15 +227,9 @@ public:
 
   void reset() { stub_ptr_ = nullptr; store_.reset(); }
 
-  void reset_stub() { stub_ptr_ = nullptr; }
+  void reset_stub() noexcept { stub_ptr_ = nullptr; }
 
-  void swap(delegate& other) noexcept
-  {
-    ::std::swap(object_ptr_, other.object_ptr_);
-    ::std::swap(stub_ptr_, other.stub_ptr_);
-    store_.swap(other.store_);
-    ::std::swap(store_size_, other.store_size_);
-  }
+  void swap(delegate& other) noexcept { ::std::swap(*this, other); }
 
   bool operator==(delegate const& rhs) const noexcept
   {
@@ -249,6 +245,16 @@ public:
   {
     return (object_ptr_ < rhs.object_ptr_) ||
       ((object_ptr_ == rhs.object_ptr_) && (stub_ptr_ < rhs.stub_ptr_));
+  }
+
+  bool operator==(::std::nullptr_t const) const noexcept
+  {
+    return !stub_ptr_;
+  }
+
+  bool operator!=(::std::nullptr_t const) const noexcept
+  {
+    return stub_ptr_;
   }
 
   explicit operator bool() const noexcept { return stub_ptr_; }
