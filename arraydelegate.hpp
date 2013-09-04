@@ -306,8 +306,6 @@ private:
 
       dst.object_ptr_ = dst.store_;
 
-      dst.deleter_ = src.deleter_;
-
       dst.copier_ = src.copier_;
       dst.mover_= src.mover_;
     }
@@ -330,8 +328,6 @@ private:
         src.store_))));
 
       dst.object_ptr_ = dst.store_;
-
-      dst.deleter_ = src.deleter_;
 
       dst.copier_ = src.copier_;
       dst.mover_= src.mover_;
