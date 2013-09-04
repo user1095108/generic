@@ -268,7 +268,7 @@ public:
 private:
   friend class ::std::hash<delegate>;
 
-  using deleter_type = void (*)(void*);
+  using deleter_type = void (*)(void const*);
 
   void* object_ptr_;
   stub_ptr_type stub_ptr_{};
@@ -287,9 +287,9 @@ private:
   }
 
   template <class T>
-  static void deleter_stub(void* const p)
+  static void deleter_stub(void const* const p)
   {
-    static_cast<T*>(p)->~T();
+    static_cast<T const*>(p)->~T();
   }
 
   template <R (*function_ptr)(A...)>
