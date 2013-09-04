@@ -345,10 +345,10 @@ private:
   void* object_ptr_;
   stub_ptr_type stub_ptr_{};
 
-  copier_type copier_{&default_copier_stub};
-  mover_type mover_{&default_mover_stub};
+  copier_type copier_{default_copier_stub};
+  mover_type mover_{default_mover_stub};
 
-  deleter_type deleter_{&default_deleter_stub};
+  deleter_type deleter_{default_deleter_stub};
 
   alignas(::max_align_t) char store_[max_store_size];
 
