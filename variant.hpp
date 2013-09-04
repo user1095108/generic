@@ -482,8 +482,7 @@ private:
 
   template <class U>
   constexpr typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{},
-    copier_type
+    ::std::is_copy_constructible<U>{}, copier_type
   >::type
   get_copier() const
   {
@@ -492,8 +491,7 @@ private:
 
   template <class U>
   constexpr typename ::std::enable_if<
-    !::std::is_copy_constructible<U>{},
-    copier_type
+    !::std::is_copy_constructible<U>{}, copier_type
   >::type
   get_copier() const
   {
@@ -502,8 +500,7 @@ private:
 
   template <class U>
   constexpr typename ::std::enable_if<
-    ::std::is_move_constructible<U>{},
-    mover_type
+    ::std::is_move_constructible<U>{}, mover_type
   >::type
   get_mover() const
   {
@@ -512,8 +509,7 @@ private:
 
   template <class U>
   constexpr typename ::std::enable_if<
-    !::std::is_move_constructible<U>{},
-    mover_type
+    !::std::is_move_constructible<U>{}, mover_type
   >::type
   get_mover() const
   {
