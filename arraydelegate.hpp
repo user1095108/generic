@@ -101,7 +101,7 @@ public:
     mover_ = mover_stub<functor_type>;
   }
 
-  ~delegate() { deleter_(this); }
+//~delegate() { deleter_(this); }
 
   delegate& operator=(delegate const& rhs)
   {
@@ -334,19 +334,18 @@ private:
 private:
   friend class ::std::hash<delegate>;
 
-  using copier_type = void (*)(delegate&, delegate const&);
-
-  using mover_type = void (*)(delegate&, delegate&&);
-
   using deleter_type = void (*)(void const*);
+
+  using copier_type = void (*)(delegate&, delegate const&);
+  using mover_type = void (*)(delegate&, delegate&&);
 
   void* object_ptr_;
   stub_ptr_type stub_ptr_{};
 
+  deleter_type deleter_{default_deleter_stub};
+
   copier_type copier_{default_copier_stub};
   mover_type mover_{default_mover_stub};
-
-  deleter_type deleter_{default_deleter_stub};
 
   alignas(::max_align_t) char store_[max_store_size];
 
