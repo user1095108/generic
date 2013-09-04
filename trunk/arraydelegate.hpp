@@ -274,9 +274,7 @@ public:
   }
 
 private:
-  static void default_deleter_stub(void const* const)
-  {
-  }
+  static void default_deleter_stub(void const* const) { }
 
   template <class T>
   static void deleter_stub(void const* const p)
