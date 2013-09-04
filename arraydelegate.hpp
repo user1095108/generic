@@ -87,6 +87,7 @@ public:
   >
   arraydelegate(T&& f)
   {
+    static_assert(sizeof(T) <= sizeof(store_), "increase store_ size");
     using functor_type = typename ::std::decay<T>::type;
 
     new (store_) functor_type(::std::forward<T>(f));
@@ -139,6 +140,7 @@ public:
   >
   arraydelegate& operator=(T&& f)
   {
+    static_assert(sizeof(T) <= sizeof(store_), "increase store_ size");
     using functor_type = typename ::std::decay<T>::type;
 
     if (deleter_)
