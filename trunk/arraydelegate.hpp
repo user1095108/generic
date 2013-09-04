@@ -292,7 +292,7 @@ private:
   copier_type copier_;
   mover_type mover_;
 
-  deleter_type deleter_;
+  deleter_type deleter_{};
 
   alignas(::max_align_t) char store_[max_store_size];
 
