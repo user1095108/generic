@@ -144,13 +144,7 @@ public:
   {
     using functor_type = typename ::std::decay<T>::type;
 
-    if (deleter_)
-    {
-      deleter_(store_);
-
-      deleter_ = nullptr;
-    }
-    // else do nothing
+    deleter_(store_);
 
     static_assert(sizeof(T) <= sizeof(store_), "increase store_ size");
     new (store_) functor_type(::std::forward<T>(f));
@@ -280,14 +274,14 @@ public:
   }
 
 private:
-  static void default_deleter_stub(void* const)
+  static void default_deleter_stub(void const* const)
   {
   }
 
   template <class T>
-  static void deleter_stub(void* const p)
+  static void deleter_stub(void const* const p)
   {
-    static_cast<T*>(p)->~T();
+    static_cast<T const*>(p)->~T();
   }
 
   static void default_copier_stub(delegate& dst, delegate const& src)
@@ -346,7 +340,7 @@ private:
 
   using mover_type = void (*)(delegate&, delegate&&);
 
-  using deleter_type = void (*)(void*);
+  using deleter_type = void (*)(void const*);
 
   void* object_ptr_;
   stub_ptr_type stub_ptr_{};
