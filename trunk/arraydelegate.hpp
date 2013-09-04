@@ -292,7 +292,7 @@ private:
 
   deleter_type deleter_;
 
-  alignas(max_align_t) char store_[max_store_size];
+  alignas(::max_align_t) char store_[max_store_size];
 
   template <class T>
   static void copier_stub(arraydelegate& dst, arraydelegate const& src)
