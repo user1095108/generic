@@ -96,7 +96,7 @@ public:
 
     stub_ptr_ = functor_stub<functor_type>;
 
-    deleter_ = destructor_stub<functor_type>;
+    deleter_ = deleter_stub<functor_type>;
   }
 
   delegate& operator=(delegate const&) = default;
@@ -147,7 +147,7 @@ public:
 
     stub_ptr_ = functor_stub<functor_type>;
 
-    deleter_ = destructor_stub<functor_type>;
+    deleter_ = deleter_stub<functor_type>;
 
     return *this;
   }
@@ -279,7 +279,7 @@ private:
   ::std::size_t store_size_;
 
   template <class T>
-  static void destructor_stub(void* const p)
+  static void deleter_stub(void* const p)
   {
     static_cast<T*>(p)->~T();
   }
