@@ -239,7 +239,7 @@ struct variant
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(*this, rhs);
+      rhs.mover_(*this, ::std::move(rhs));
     }
     else
     {
@@ -467,7 +467,8 @@ struct variant
   int store_type_index() const noexcept { return store_type_; }
 
 private:
-  typedef void (*mover_type)(variant&, variant&);
+  typedef void (*copier_type)(variant&, variant&);
+  typedef void (*mover_type)(variant&, variant&&);
   typedef void (*streamer_type)(::std::ostream&, variant const&);
 
   template <typename charT, typename traits>
@@ -482,7 +483,7 @@ private:
   template <class U>
   constexpr typename ::std::enable_if<
     ::std::is_copy_constructible<U>{},
-    mover_type
+    copier_type
   >::type
   get_copier() const
   {
@@ -492,7 +493,7 @@ private:
   template <class U>
   constexpr typename ::std::enable_if<
     !::std::is_copy_constructible<U>{},
-    mover_type
+    copier_type
   >::type
   get_copier() const
   {
@@ -610,7 +611,7 @@ private:
     ::std::is_move_constructible<U>{}
     && ::std::is_move_assignable<U>{}
   >::type
-  mover_stub(variant& dst, variant& src)
+  mover_stub(variant& dst, variant&& src)
   {
     if (src.store_type_ == dst.store_type_)
     {
@@ -645,7 +646,7 @@ private:
     ::std::is_move_constructible<U>{}
     && !::std::is_move_assignable<U>{}
   >::type
-  mover_stub(variant& dst, variant& src)
+  mover_stub(variant& dst, variant&& src)
   {
     if (dst)
     {
@@ -679,7 +680,7 @@ private:
   typedef void (*deleter_type)(void*);
   deleter_type deleter_;
 
-  mover_type copier_;
+  copier_type copier_;
   mover_type mover_;
 
   streamer_type streamer_;
