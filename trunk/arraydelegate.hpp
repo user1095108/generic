@@ -95,7 +95,7 @@ public:
     object_ptr_ = store_;
     stub_ptr_ = functor_stub<functor_type>;
 
-    deleter_ = destructor_stub<functor_type>;
+    deleter_ = deleter_stub<functor_type>;
 
     copier_ = copier_stub<functor_type>;
     mover_ = mover_stub<functor_type>;
@@ -156,7 +156,7 @@ public:
     object_ptr_ = store_;
     stub_ptr_ = functor_stub<functor_type>;
 
-    deleter_ = destructor_stub<functor_type>;
+    deleter_ = deleter_stub<functor_type>;
 
     copier_ = copier_stub<functor_type>;
     mover_ = mover_stub<functor_type>;
@@ -339,7 +339,7 @@ private:
   }
 
   template <class T>
-  static void destructor_stub(void* const p)
+  static void deleter_stub(void* const p)
   {
     static_cast<T*>(p)->~T();
   }
