@@ -101,6 +101,15 @@ public:
     mover_ = mover_stub<functor_type>;
   }
 
+  ~delegate()
+  {
+    if (deleter_)
+    {
+      deleter_(this);
+    }
+    // else do nothing
+  }
+
   delegate& operator=(delegate const& rhs)
   {
     if (rhs.deleter_)
@@ -111,6 +120,8 @@ public:
     {
       object_ptr_ = rhs.object_ptr_;
       stub_ptr_ = rhs.stub_ptr_;
+
+      deleter_ = nullptr;
     }
 
     return *this;
@@ -126,6 +137,8 @@ public:
     {
       object_ptr_ = rhs.object_ptr_;
       stub_ptr_ = rhs.stub_ptr_;
+
+      deleter_ = nullptr;
     }
 
     return *this;
