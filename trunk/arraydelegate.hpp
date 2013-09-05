@@ -14,6 +14,57 @@
 
 #include <utility>
 
+namespace detail
+{
+  struct holder
+  {
+    virtual ~holder() { }
+
+    virtual void* get(void*) = 0;
+
+    virtual void clone(void*) = 0;
+    virtual void move(void*) = 0;
+  };
+
+  template <typename T>
+  struct any_store : holder
+  {
+    template <typename U>
+    any_store(U&& t) : held(::std::forward<U>(t)) { }
+
+    void* get(void* const) override { return &held; }
+
+    void clone(void* const dst) override
+    {
+      new (dst) any_store<T>(held);
+    }
+
+    void move(void* const dst) override
+    {
+      new (dst) any_store<T>(::std::move(held));
+    }
+
+  private:
+    T held;
+  };
+
+  template <>
+  struct any_store<::std::nullptr_t> : holder
+  {
+    void* get(void* const p) override { return p; }
+
+    void clone(void* const dst) override
+    {
+      new (dst) any_store<::std::nullptr_t>();
+    }
+
+    void move(void* const dst) override
+    {
+      new (dst) any_store<::std::nullptr_t>();
+    }
+  };
+}
+
 template <typename T> class delegate;
 
 template<class R, class ...A>
@@ -90,29 +141,33 @@ public:
     using functor_type = typename ::std::decay<T>::type;
 
     static_assert(sizeof(T) <= sizeof(store_), "increase store_ size");
-    new (store_) functor_type(::std::forward<T>(f));
+    holder_ = new (store_) ::detail::any_store<functor_type>(
+      ::std::forward<T>(f));
 
-    object_ptr_ = store_;
+    object_ptr_ = holder_->get(store_);
     stub_ptr_ = functor_stub<functor_type>;
-
-    deleter_ = deleter_stub<functor_type>;
-
-    copier_ = copier_stub<functor_type>;
-    mover_ = mover_stub<functor_type>;
   }
 
-//~delegate() { deleter_(this); }
+  ~delegate() { holder_->::detail::holder::~holder(); }
 
   delegate& operator=(delegate const& rhs)
   {
-    rhs.copier_(*this, rhs);
+    holder_->::detail::holder::~holder();
+    rhs.holder_->clone(store_);
+
+    object_ptr_ = holder_->get(rhs.object_ptr_);
+    stub_ptr_ = rhs.stub_ptr_;
 
     return *this;
   }
 
   delegate& operator=(delegate&& rhs)
   {
-    rhs.mover_(*this, ::std::move(rhs));
+    holder_->::detail::holder::~holder();
+    rhs.holder_->move(store_);
+
+    object_ptr_ = holder_->get(rhs.object_ptr_);
+    stub_ptr_ = rhs.stub_ptr_;
 
     return *this;
   }
@@ -144,18 +199,14 @@ public:
   {
     using functor_type = typename ::std::decay<T>::type;
 
-    deleter_(store_);
+    holder_->::detail::holder::~holder();
 
     static_assert(sizeof(T) <= sizeof(store_), "increase store_ size");
-    new (store_) functor_type(::std::forward<T>(f));
+    holder_ = new (store_) ::detail::any_store<functor_type>(
+      ::std::forward<T>(f));
 
-    object_ptr_ = store_;
+    object_ptr_ = holder_->get(store_);
     stub_ptr_ = functor_stub<functor_type>;
-
-    deleter_ = deleter_stub<functor_type>;
-
-    copier_ = copier_stub<functor_type>;
-    mover_ = mover_stub<functor_type>;
 
     return *this;
   }
@@ -274,80 +325,14 @@ public:
   }
 
 private:
-  static void default_deleter_stub(void const* const) { }
-
-  template <class T>
-  static void deleter_stub(void const* const p)
-  {
-    static_cast<T const*>(p)->~T();
-  }
-
-  static void default_copier_stub(delegate& dst, delegate const& src)
-  {
-    dst.object_ptr_ = src.object_ptr_;
-    dst.stub_ptr_ = src.stub_ptr_;
-
-    dst.copier_ = default_copier_stub;
-    dst.mover_ = default_mover_stub;
-
-    dst.deleter_ = default_deleter_stub;
-  }
-
-  template <typename T>
-  static void copier_stub(delegate& dst, delegate const& src)
-  {
-    new (dst.store_) T(*static_cast<T const*>(
-      static_cast<void const*>(src.store_)));
-
-    dst.stub_ptr_ = src.stub_ptr_;
-    dst.object_ptr_ = dst.store_;
-
-    dst.deleter_ = src.deleter_;
-
-    dst.copier_ = default_copier_stub;
-    dst.mover_ = default_mover_stub;
-  }
-
-  static void default_mover_stub(delegate& dst, delegate&& src)
-  {
-    dst.object_ptr_ = src.object_ptr_;
-    dst.stub_ptr_ = src.stub_ptr_;
-
-    dst.deleter_ = default_deleter_stub;
-  }
-
-  template <typename T>
-  static void mover_stub(delegate& dst, delegate&& src)
-  {
-    new (dst.store_) T(::std::move(*static_cast<T*>(
-      static_cast<void*>(src.store_))));
-
-    dst.stub_ptr_ = src.stub_ptr_;
-    dst.object_ptr_ = dst.store_;
-
-    dst.deleter_ = src.deleter_;
-
-    dst.copier_ = src.copier_;
-    dst.mover_ = src.mover_;
-  }
-
-private:
   friend class ::std::hash<delegate>;
-
-  using deleter_type = void (*)(void const*);
-
-  using copier_type = void (*)(delegate&, delegate const&);
-  using mover_type = void (*)(delegate&, delegate&&);
 
   void* object_ptr_;
   stub_ptr_type stub_ptr_{};
 
-  deleter_type deleter_{default_deleter_stub};
-
-  copier_type copier_{default_copier_stub};
-  mover_type mover_{default_mover_stub};
-
   alignas(::max_align_t) char store_[max_store_size];
+
+  ::detail::holder* holder_{new (store_) ::detail::any_store<::std::nullptr_t>};
 
   template <R (*function_ptr)(A...)>
   static R function_stub(void* const, A&&... args)
