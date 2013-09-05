@@ -134,7 +134,6 @@ public:
     alignas(functor_type) static char store_[max_stores][sizeof(T)];
     static ::std::size_t store_index;
 
-    qDebug() << "free";
     deleter_(store_);
 
     assert(store_index != max_stores);
