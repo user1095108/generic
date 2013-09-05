@@ -144,7 +144,7 @@ public:
     holder_ = new (store_) ::detail::any_store<functor_type>(
       ::std::forward<T>(f));
 
-    object_ptr_ = holder_->get(store_);
+    object_ptr_ = store_;
     stub_ptr_ = functor_stub<functor_type>;
   }
 
@@ -205,7 +205,7 @@ public:
     holder_ = new (store_) ::detail::any_store<functor_type>(
       ::std::forward<T>(f));
 
-    object_ptr_ = holder_->get(store_);
+    object_ptr_ = store_;
     stub_ptr_ = functor_stub<functor_type>;
 
     return *this;
