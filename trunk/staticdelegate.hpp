@@ -26,6 +26,8 @@ class delegate<R (A...)>
   }
 
 public:
+  static constexpr auto const max_stores = 200;
+
   delegate() = default;
 
   delegate(delegate const&) = default;
@@ -85,9 +87,11 @@ public:
   {
     using functor_type = typename ::std::decay<T>::type;
 
-    alignas(functor_type) static char store_[sizeof(T)];
+    alignas(functor_type) static char store_[max_stores][sizeof(T)];
+    static ::std::size_t store_index;
 
-    new (store_) functor_type(::std::forward<T>(f));
+    assert(store_index != max_stores);
+    new (store_[store_index++]) functor_type(::std::forward<T>(f));
 
     object_ptr_ = store_;
 
@@ -127,11 +131,14 @@ public:
   {
     using functor_type = typename ::std::decay<T>::type;
 
-    alignas(functor_type) static char store_[sizeof(T)];
+    alignas(functor_type) static char store_[max_stores][sizeof(T)];
+    static ::std::size_t store_index;
 
+    qDebug() << "free";
     deleter_(store_);
 
-    new (store_) functor_type(::std::forward<T>(f));
+    assert(store_index != max_stores);
+    new (store_[store_index++]) functor_type(::std::forward<T>(f));
 
     object_ptr_ = store_;
 
