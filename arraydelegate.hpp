@@ -55,12 +55,12 @@ namespace detail
 
     void clone(void* const dst) override
     {
-      new (dst) any_store<::std::nullptr_t>();
+      new (dst) any_store<::std::nullptr_t>;
     }
 
     void move(void* const dst) override
     {
-      new (dst) any_store<::std::nullptr_t>();
+      new (dst) any_store<::std::nullptr_t>;
     }
   };
 }
