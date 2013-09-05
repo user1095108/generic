@@ -166,7 +166,7 @@ public:
     holder_->::detail::holder::~holder();
     rhs.holder_->move(store_);
 
-    object_ptr_ = holder_->get(rhs.object_ptr_);
+    object_ptr_ = holder_->get(nullptr);
     stub_ptr_ = rhs.stub_ptr_;
 
     return *this;
@@ -205,7 +205,7 @@ public:
     holder_ = new (store_) ::detail::any_store<functor_type>(
       ::std::forward<T>(f));
 
-    object_ptr_ = holder_->get(store_);
+    object_ptr_ = holder_->get(nullptr);
     stub_ptr_ = functor_stub<functor_type>;
 
     return *this;
