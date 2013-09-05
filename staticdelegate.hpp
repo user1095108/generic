@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#include <bitset>
+
 #include <memory>
 
 #include <new>
@@ -15,18 +17,21 @@
 #include "lightptr.hpp"
 namespace
 {
+  template<typename T> constexpr const T &as_const(T &t) { return t; }
+  
   template <typename T>
   struct static_allocator
   {
     static constexpr ::std::size_t const max_instances = 16;
 
-    static bool memory_map_[max_instances];
+    static ::std::bitset<max_instances> memory_map_;
     static typename ::std::aligned_storage<sizeof(T), alignof(T)>::type
       store_[max_instances];
   };
 
   template <typename T>
-  bool static_allocator<T>::memory_map_[static_allocator<T>::max_instances];
+  ::std::bitset<static_allocator<T>::max_instances>
+    static_allocator<T>::memory_map_;
 
   template <typename T>
   typename ::std::aligned_storage<sizeof(T), alignof(T)>::type
@@ -41,7 +46,7 @@ namespace
 
     for (; i != allocator::max_instances; ++i)
     {
-      if (!allocator::memory_map_[i])
+      if (!as_const(allocator::memory_map_)[i])
       {
         auto p(new (&allocator::store_[i]) T(::std::forward<A>(args)...));
 
@@ -63,7 +68,7 @@ namespace
 
     auto const i(p - static_cast<T const*>(static_cast<void const*>(
       allocator::store_)));
-    assert(allocator::memory_map_[i]);
+    assert(as_const(allocator::memory_map_)[i]);
 
     allocator::memory_map_[i] = false;
 
