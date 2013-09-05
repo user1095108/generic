@@ -101,7 +101,7 @@ public:
     mover_ = mover_stub<functor_type>;
   }
 
-//~delegate() { deleter_(this); }
+  ~delegate() { deleter_(this); }
 
   delegate& operator=(delegate const& rhs)
   {
