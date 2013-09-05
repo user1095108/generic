@@ -105,14 +105,14 @@ public:
 
   delegate& operator=(delegate const& rhs)
   {
-    rhs.copier_(*this, rhs);
+    rhs.copier_(*this, const_cast<delegate&>(rhs));
 
     return *this;
   }
 
   delegate& operator=(delegate&& rhs)
   {
-    rhs.mover_(*this, ::std::move(rhs));
+    rhs.mover_(*this, rhs);
 
     return *this;
   }
@@ -282,19 +282,19 @@ private:
     static_cast<T const*>(p)->~T();
   }
 
-  static void default_copier_stub(delegate& dst, delegate const& src)
+  static void default_copier_stub(delegate& dst, delegate& src)
   {
     dst.object_ptr_ = src.object_ptr_;
     dst.stub_ptr_ = src.stub_ptr_;
 
     dst.copier_ = default_copier_stub;
-    dst.mover_ = default_mover_stub;
+    dst.mover_ = default_copier_stub;
 
     dst.deleter_ = default_deleter_stub;
   }
 
   template <typename T>
-  static void copier_stub(delegate& dst, delegate const& src)
+  static void copier_stub(delegate& dst, delegate& src)
   {
     new (dst.store_) T(*static_cast<T const*>(
       static_cast<void const*>(src.store_)));
@@ -304,20 +304,12 @@ private:
 
     dst.deleter_ = src.deleter_;
 
-    dst.copier_ = default_copier_stub;
-    dst.mover_ = default_mover_stub;
-  }
-
-  static void default_mover_stub(delegate& dst, delegate&& src)
-  {
-    dst.object_ptr_ = src.object_ptr_;
-    dst.stub_ptr_ = src.stub_ptr_;
-
-    dst.deleter_ = default_deleter_stub;
+    dst.copier_ = src.copier_;
+    dst.mover_ = src.mover_;
   }
 
   template <typename T>
-  static void mover_stub(delegate& dst, delegate&& src)
+  static void mover_stub(delegate& dst, delegate& src)
   {
     new (dst.store_) T(::std::move(*static_cast<T*>(
       static_cast<void*>(src.store_))));
@@ -336,8 +328,8 @@ private:
 
   using deleter_type = void (*)(void const*);
 
-  using copier_type = void (*)(delegate&, delegate const&);
-  using mover_type = void (*)(delegate&, delegate&&);
+  using copier_type = void (*)(delegate&, delegate&);
+  using mover_type = void (*)(delegate&, delegate&);
 
   void* object_ptr_;
   stub_ptr_type stub_ptr_{};
@@ -345,7 +337,7 @@ private:
   deleter_type deleter_{default_deleter_stub};
 
   copier_type copier_{default_copier_stub};
-  mover_type mover_{default_mover_stub};
+  mover_type mover_{default_copier_stub};
 
   alignas(::max_align_t) char store_[max_store_size];
 
