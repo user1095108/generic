@@ -43,9 +43,11 @@ namespace
     {
       if (!allocator::memory_map_[i])
       {
+        auto p(new (&allocator::store_[i]) T(::std::forward<A>(args)...));
+
         allocator::memory_map_[i] = true;
 
-        return new (&allocator::store_[i]) T(::std::forward<A>(args)...);
+        return p;
       }
       // else do nothing
     }
@@ -63,10 +65,10 @@ namespace
       allocator::store_)));
     assert(allocator::memory_map_[i]);
 
+    allocator::memory_map_[i] = false;
+
     static_cast<T const*>(static_cast<void const*>(
       &allocator::store_[i]))->~T();
-
-    allocator::memory_map_[i] = false;
   }
 }
 
