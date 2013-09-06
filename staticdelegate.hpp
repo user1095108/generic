@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#include <cstdlib>
+
 #include <memory>
 
 #include <new>
@@ -21,6 +23,8 @@ namespace
   {
     static constexpr ::std::size_t const max_instances = 8 * sizeof(unsigned);
 
+    static void cleanup() { delete [] store_; }
+
     static unsigned memory_map_;
     static typename ::std::aligned_storage<sizeof(T),
       alignof(T)>::type* store_;
@@ -31,8 +35,9 @@ namespace
 
   template <typename T>
   typename ::std::aligned_storage<sizeof(T), alignof(T)>::type*
-    static_store<T>::store_{new typename ::std::aligned_storage<sizeof(T),
-      alignof(T)>::type[static_store<T>::max_instances]};
+    static_store<T>::store_{(::std::atexit(static_store<T>::cleanup),
+      new typename ::std::aligned_storage<sizeof(T),
+        alignof(T)>::type[static_store<T>::max_instances])};
 
   template <typename T, typename ...A>
   inline T* static_new(A&& ...args)
