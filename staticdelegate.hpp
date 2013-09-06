@@ -39,7 +39,7 @@ namespace
     static_store<T>::store_[static_store<T>::max_instances];
 
   template <typename T, typename ...A>
-  T* static_new(A&& ...args)
+  inline T* static_new(A&& ...args)
   {
     using static_store = static_store<T>;
 
@@ -61,7 +61,7 @@ namespace
   }
 
   template <typename T>
-  void static_delete(T const* const p)
+  inline void static_delete(T const* const p)
   {
     using static_store = static_store<T>;
 
@@ -188,8 +188,6 @@ public:
 
     stub_ptr_ = functor_stub<functor_type>;
 
-    deleter_ = deleter_stub<functor_type>;
-
     return *this;
   }
 
@@ -309,12 +307,8 @@ public:
 private:
   friend class ::std::hash<delegate>;
 
-  using deleter_type = void (*)(void const*);
-
   void* object_ptr_;
   stub_ptr_type stub_ptr_{};
-
-  deleter_type deleter_;
 
   light_ptr<void> store_;
 
@@ -324,12 +318,6 @@ private:
     static_cast<T const*>(p)->~T();
 
     static_delete(static_cast<T const*>(p));
-  }
-
-  template <class T>
-  static void deleter_stub(void const* const p)
-  {
-    static_cast<T const*>(p)->~T();
   }
 
   template <R (*function_ptr)(A...)>
