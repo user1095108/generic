@@ -21,7 +21,7 @@ namespace
   template <typename T>
   struct static_store
   {
-    static constexpr ::std::size_t const max_instances = 8 * sizeof(unsigned);
+    static constexpr auto const max_instances = 8 * sizeof(unsigned);
 
     static void cleanup() { delete [] store_; }
 
