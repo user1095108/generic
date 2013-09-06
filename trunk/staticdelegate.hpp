@@ -32,7 +32,7 @@ namespace
 
   template <typename T>
   ::std::bitset<static_store<T>::max_instances>
-    static_store<T>::memory_map_;
+    static_store<T>::memory_map_{(long long unsigned)(-1)};
 
   template <typename T>
   typename ::std::aligned_storage<sizeof(T), alignof(T)>::type
@@ -43,21 +43,14 @@ namespace
   {
     using static_store = static_store<T>;
 
-    for (::std::size_t i{}; i != static_store::max_instances; ++i)
-    {
-      if (!as_const(static_store::memory_map_)[i])
-      {
-        auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
+    auto const i(__builtin_ffsll(static_store::memory_map_.to_ulong()));
+    //assert(static_store::max_instances != i);
 
-        static_store::memory_map_[i] = true;
+    auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
 
-        return p;
-      }
-      // else do nothing
-    }
+    static_store::memory_map_[i] = false;
 
-    assert(0);
-    return nullptr;
+    return p;
   }
 
   template <typename T>
@@ -67,9 +60,9 @@ namespace
 
     auto const i(p - static_cast<T const*>(static_cast<void const*>(
       static_store::store_)));
-    assert(as_const(static_store::memory_map_)[i]);
+    //assert(!as_const(static_store::memory_map_)[i]);
 
-    static_store::memory_map_[i] = false;
+    static_store::memory_map_[i] = true;
 
     static_cast<T const*>(static_cast<void const*>(
       &static_store::store_[i]))->~T();
