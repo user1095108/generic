@@ -4,8 +4,6 @@
 
 #include <cassert>
 
-#include <bitset>
-
 #include <memory>
 
 #include <new>
