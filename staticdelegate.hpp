@@ -35,7 +35,7 @@ namespace
     template <typename U>
     static int ffz(U v)
     {
-      return 8 * sizeof(v) - __lzcnt64((~v) & -(~v));
+      return 8 * sizeof(v) - __lzcnt64(v & -v);
     }
 #elif __INTEL_COMPILER
     template <typename U>
