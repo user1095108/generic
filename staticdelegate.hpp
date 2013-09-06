@@ -27,7 +27,7 @@ namespace
     template <typename U>
     static int ffz(U v)
     {
-      return __builtin_ffsll(~v) - 1;
+      return __builtin_ctzll(~v);
     }
 #else
     template <typename U>
