@@ -78,7 +78,6 @@ namespace
     using static_store = static_store<T>;
 
     auto const i(static_store::ffz(static_store::memory_map_));
-    //assert((i >= 0) && (static_store::max_instances != i));
 
     auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
 
