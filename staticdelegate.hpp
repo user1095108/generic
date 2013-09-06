@@ -29,6 +29,18 @@ namespace
     {
       return __builtin_ctzll(~v);
     }
+#elif _MSC_VER && !__INTEL_COMPILER
+    template <typename U>
+    static int ffz(U v)
+    {
+      return 8 * sizeof(v) - __lzcnt64(~(v & -v));
+    }
+#elif __INTEL_COMPILER
+    template <typename U>
+    static int ffz(U v)
+    {
+      return _bit_scan_forward(~v);
+    }
 #else
     template <typename U>
     static int ffz(U v)
