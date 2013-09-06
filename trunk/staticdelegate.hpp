@@ -42,9 +42,7 @@ namespace
   {
     using allocator = static_allocator<T>;
 
-    ::std::size_t i{};
-
-    for (; i != allocator::max_instances; ++i)
+    for (::std::size_t i{}; i != allocator::max_instances; ++i)
     {
       if (!as_const(allocator::memory_map_)[i])
       {
