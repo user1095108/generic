@@ -18,24 +18,45 @@
 
 namespace
 {
-  template <typename T>
+  template <typename T, typename A = unsigned>
   struct static_store
   {
-    static constexpr auto const max_instances = 8 * sizeof(unsigned);
+    static constexpr auto const max_instances = 8 * sizeof(A);
+
+#ifdef __GNUC__
+    template <typename U>
+    static int ffz(U v)
+    {
+      return __builtin_ffsll(~v) - 1;
+    }
+#else
+    template <typename U>
+    static int ffz(U v)
+    {
+      int b{};
+
+      for (; (v & 1); ++b)
+      {
+        v >>= 1;
+      }
+
+      return b;
+    }
+#endif // __GNUC__
 
     static void cleanup() { delete [] store_; }
 
-    static unsigned memory_map_;
+    static A memory_map_;
     static typename ::std::aligned_storage<sizeof(T),
       alignof(T)>::type* store_;
   };
 
-  template <typename T>
-  unsigned static_store<T>::memory_map_{unsigned(-1)};
+  template <typename T, typename A>
+  A static_store<T, A>::memory_map_;
 
-  template <typename T>
+  template <typename T, typename A>
   typename ::std::aligned_storage<sizeof(T), alignof(T)>::type*
-    static_store<T>::store_{(::std::atexit(static_store<T>::cleanup),
+    static_store<T, A>::store_{(::std::atexit(static_store<T>::cleanup),
       new typename ::std::aligned_storage<sizeof(T),
         alignof(T)>::type[static_store<T>::max_instances])};
 
@@ -44,12 +65,12 @@ namespace
   {
     using static_store = static_store<T>;
 
-    auto const i(__builtin_ffs(static_store::memory_map_) - 1);
-    //assert(static_store::max_instances != i);
+    auto const i(static_store::ffz(static_store::memory_map_));
+    //assert((i >= 0) && (static_store::max_instances != i));
 
     auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
 
-    static_store::memory_map_ &= ~(1 << i);
+    static_store::memory_map_ |= 1 << i;
 
     return p;
   }
@@ -63,7 +84,7 @@ namespace
       static_store::store_)));
     //assert(!as_const(static_store::memory_map_)[i]);
 
-    static_store::memory_map_ |= 1 << i;
+    static_store::memory_map_ &= ~(1 << i);
 
     static_cast<T const*>(static_cast<void const*>(
       &static_store::store_[i]))->~T();
