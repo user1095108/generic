@@ -23,7 +23,7 @@ namespace
   template <typename T>
   struct static_store
   {
-    static constexpr ::std::size_t const max_instances = 16;
+    static constexpr ::std::size_t const max_instances = 64;
 
     static ::std::bitset<max_instances> memory_map_;
     static typename ::std::aligned_storage<sizeof(T), alignof(T)>::type
