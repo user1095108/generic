@@ -15,12 +15,13 @@
 #include <utility>
 
 #include "lightptr.hpp"
+
 namespace
 {
   template<typename T> constexpr const T &as_const(T &t) { return t; }
 
   template <typename T>
-  struct static_allocator
+  struct static_store
   {
     static constexpr ::std::size_t const max_instances = 16;
 
@@ -30,25 +31,25 @@ namespace
   };
 
   template <typename T>
-  ::std::bitset<static_allocator<T>::max_instances>
-    static_allocator<T>::memory_map_;
+  ::std::bitset<static_store<T>::max_instances>
+    static_store<T>::memory_map_;
 
   template <typename T>
   typename ::std::aligned_storage<sizeof(T), alignof(T)>::type
-    static_allocator<T>::store_[static_allocator<T>::max_instances];
+    static_store<T>::store_[static_store<T>::max_instances];
 
   template <typename T, typename ...A>
   T* static_new(A&& ...args)
   {
-    using allocator = static_allocator<T>;
+    using static_store = static_store<T>;
 
-    for (::std::size_t i{}; i != allocator::max_instances; ++i)
+    for (::std::size_t i{}; i != static_store::max_instances; ++i)
     {
-      if (!as_const(allocator::memory_map_)[i])
+      if (!as_const(static_store::memory_map_)[i])
       {
-        auto p(new (&allocator::store_[i]) T(::std::forward<A>(args)...));
+        auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
 
-        allocator::memory_map_[i] = true;
+        static_store::memory_map_[i] = true;
 
         return p;
       }
@@ -62,16 +63,16 @@ namespace
   template <typename T>
   void static_delete(T const* const p)
   {
-    using allocator = static_allocator<T>;
+    using static_store = static_store<T>;
 
     auto const i(p - static_cast<T const*>(static_cast<void const*>(
-      allocator::store_)));
-    assert(as_const(allocator::memory_map_)[i]);
+      static_store::store_)));
+    assert(as_const(static_store::memory_map_)[i]);
 
-    allocator::memory_map_[i] = false;
+    static_store::memory_map_[i] = false;
 
     static_cast<T const*>(static_cast<void const*>(
-      &allocator::store_[i]))->~T();
+      &static_store::store_[i]))->~T();
   }
 }
 
