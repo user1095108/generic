@@ -32,7 +32,7 @@ namespace
 
   template <typename T>
   ::std::bitset<static_store<T>::max_instances>
-    static_store<T>::memory_map_{(long unsigned)(-1)};
+    static_store<T>::memory_map_{(unsigned long long)(-1)};
 
   template <typename T>
   typename ::std::aligned_storage<sizeof(T), alignof(T)>::type
@@ -43,7 +43,7 @@ namespace
   {
     using static_store = static_store<T>;
 
-    auto const i(__builtin_ffsl(static_store::memory_map_.to_ulong()));
+    auto const i(__builtin_ffsll(static_store::memory_map_.to_ullong()));
     //assert(static_store::max_instances != i);
 
     auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
