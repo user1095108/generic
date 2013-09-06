@@ -23,6 +23,8 @@ namespace
   {
     static constexpr auto const max_instances = 8 * sizeof(A);
 
+    static void cleanup() { delete [] store_; }
+
 #ifdef __GNUC__
     template <typename U>
     static int ffz(U v)
@@ -55,8 +57,6 @@ namespace
       return b;
     }
 #endif // __GNUC__
-
-    static void cleanup() { delete [] store_; }
 
     static A memory_map_;
     static typename ::std::aligned_storage<sizeof(T),
