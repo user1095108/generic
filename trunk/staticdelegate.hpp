@@ -24,8 +24,8 @@ namespace
     static constexpr ::std::size_t const max_instances = 64;
 
     static ::std::bitset<max_instances> memory_map_;
-    static typename ::std::aligned_storage<sizeof(T), alignof(T)>::type
-      store_[max_instances];
+    static typename ::std::aligned_storage<sizeof(T),
+      alignof(T)>::type* store_;
   };
 
   template <typename T>
@@ -33,8 +33,10 @@ namespace
     static_store<T>::memory_map_{(unsigned long long)(-1)};
 
   template <typename T>
-  typename ::std::aligned_storage<sizeof(T), alignof(T)>::type
-    static_store<T>::store_[static_store<T>::max_instances];
+  typename ::std::aligned_storage<sizeof(T), alignof(T)>::type*
+    static_store<T>::store_{new typename
+      ::std::aligned_storage<sizeof(T), alignof(T)>::type[
+        static_store<T>::max_instances]};
 
   template <typename T, typename ...A>
   inline T* static_new(A&& ...args)
