@@ -56,7 +56,7 @@ namespace
 
       return b;
     }
-#endif // __GNUC__
+#endif
 
     static A memory_map_;
     static typename ::std::aligned_storage<sizeof(T),
