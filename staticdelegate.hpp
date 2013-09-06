@@ -45,7 +45,7 @@ namespace
     template <typename U>
     static int ffz(U v)
     {
-      int b{};
+      decltype(ffz()) b{};
 
       for (; (v & 1); ++b)
       {
