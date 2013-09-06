@@ -18,8 +18,6 @@
 
 namespace
 {
-  template<typename T> constexpr const T &as_const(T &t) { return t; }
-
   template <typename T>
   struct static_store
   {
