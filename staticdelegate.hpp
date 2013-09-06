@@ -148,7 +148,7 @@ public:
   >
   delegate(T&& f)
   {
-    *this = ::std::move(f);
+    *this = ::std::forward<T>(f);
   }
 
   delegate& operator=(delegate const&) = default;
