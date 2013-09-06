@@ -19,7 +19,7 @@ namespace
   template <typename T>
   struct static_store
   {
-    static constexpr ::std::size_t const max_instances = 32;
+    static constexpr ::std::size_t const max_instances = 8 * sizeof(unsigned);
 
     static unsigned memory_map_;
     static typename ::std::aligned_storage<sizeof(T),
@@ -31,9 +31,8 @@ namespace
 
   template <typename T>
   typename ::std::aligned_storage<sizeof(T), alignof(T)>::type*
-    static_store<T>::store_{new typename
-      ::std::aligned_storage<sizeof(T), alignof(T)>::type[
-        static_store<T>::max_instances]};
+    static_store<T>::store_{new typename ::std::aligned_storage<sizeof(T),
+      alignof(T)>::type[static_store<T>::max_instances]};
 
   template <typename T, typename ...A>
   inline T* static_new(A&& ...args)
