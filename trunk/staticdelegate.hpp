@@ -142,21 +142,18 @@ public:
 
   delegate(::std::nullptr_t const) noexcept : delegate() { }
 
-  template <class C>
+  template <class C, typename =
+    typename ::std::enable_if<::std::is_class<C>{}>::type >
   explicit delegate(C const* const o) noexcept
     : object_ptr_(const_cast<C*>(o))
   {
   }
 
-  template <class C>
+  template <class C, typename =
+    typename ::std::enable_if<::std::is_class<C>{}>::type >
   explicit delegate(C const& o) noexcept
     : object_ptr_(const_cast<C*>(&o))
   {
-  }
-
-  delegate(R (* const function_ptr)(A...))
-  {
-    *this = from(function_ptr);
   }
 
   template <class C>
@@ -189,19 +186,20 @@ public:
       !::std::is_same<delegate, typename ::std::decay<T>::type>{}
     >::type
   >
-  delegate(T&& f)
+  delegate(T&& f) :
+    store_(static_new<typename ::std::decay<T>::type>(::std::forward<T>(f)),
+      functor_deleter<typename ::std::decay<T>::type>)
   {
-    *this = ::std::forward<T>(f);
+    using functor_type = typename ::std::decay<T>::type;
+
+    object_ptr_ = store_.get();
+
+    stub_ptr_ = functor_stub<functor_type>;
   }
 
   delegate& operator=(delegate const&) = default;
 
   delegate& operator=(delegate&& rhs) = default;
-
-  delegate& operator=(R (* const rhs)(A...))
-  {
-    return *this = from(rhs);
-  }
 
   template <class C>
   delegate& operator=(R (C::* const rhs)(A...))
@@ -273,8 +271,7 @@ public:
 
   static delegate from(R (* const function_ptr)(A...))
   {
-    return [function_ptr](A&&... args) {
-      return (*function_ptr)(::std::forward<A>(args)...); };
+    return function_ptr;
   }
 
   template <class C>
