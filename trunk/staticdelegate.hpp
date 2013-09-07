@@ -6,6 +6,8 @@
 
 #include <cstdlib>
 
+#include <atomic>
+
 #include <memory>
 
 #include <new>
@@ -22,6 +24,8 @@ namespace
   struct static_store
   {
     static constexpr auto const max_instances = 8 * sizeof(A);
+
+    using memory_map_type = A;
 
     static void cleanup() { delete [] store_; }
 
@@ -58,10 +62,16 @@ namespace
     }
 #endif
 
+    static ::std::atomic_flag lock_;
+
     static A memory_map_;
+
     static typename ::std::aligned_storage<sizeof(T),
       alignof(T)>::type* store_;
   };
+
+  template <typename T, typename A>
+  ::std::atomic_flag static_store<T, A>::lock_;
 
   template <typename T, typename A>
   A static_store<T, A>::memory_map_;
@@ -77,11 +87,15 @@ namespace
   {
     using static_store = static_store<T>;
 
+    while (static_store::lock_.test_and_set(::std::memory_order_acquire));
+
     auto const i(static_store::ffz(static_store::memory_map_));
 
     auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
 
     static_store::memory_map_ |= 1 << i;
+
+    static_store::lock_.clear(::std::memory_order_release);
 
     return p;
   }
@@ -95,7 +109,11 @@ namespace
       static_store::store_)));
     //assert(!as_const(static_store::memory_map_)[i]);
 
+    while (static_store::lock_.test_and_set(::std::memory_order_acquire));
+
     static_store::memory_map_ &= ~(1 << i);
+
+    static_store::lock_.clear(::std::memory_order_release);
 
     static_cast<T const*>(static_cast<void const*>(
       &static_store::store_[i]))->~T();
