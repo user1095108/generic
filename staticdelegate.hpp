@@ -143,14 +143,14 @@ public:
   delegate(::std::nullptr_t const) noexcept : delegate() { }
 
   template <class C, typename =
-    typename ::std::enable_if<::std::is_class<C>{}>::type >
+    typename ::std::enable_if<::std::is_class<C>{}>::type>
   explicit delegate(C const* const o) noexcept
     : object_ptr_(const_cast<C*>(o))
   {
   }
 
   template <class C, typename =
-    typename ::std::enable_if<::std::is_class<C>{}>::type >
+    typename ::std::enable_if<::std::is_class<C>{}>::type>
   explicit delegate(C const& o) noexcept
     : object_ptr_(const_cast<C*>(&o))
   {
