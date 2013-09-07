@@ -38,21 +38,18 @@ public:
 
   delegate(::std::nullptr_t const) noexcept : delegate() { }
 
-  template <class C>
+  template <class C, typename =
+    typename ::std::enable_if<::std::is_class<C>{}>::type >
   explicit delegate(C const* const o) noexcept
     : object_ptr_(const_cast<C*>(o))
   {
   }
 
-  template <class C>
+  template <class C, typename =
+    typename ::std::enable_if<::std::is_class<C>{}>::type >
   explicit delegate(C const& o) noexcept
     : object_ptr_(const_cast<C*>(&o))
   {
-  }
-
-  delegate(R (* const function_ptr)(A...))
-  {
-    *this = from(function_ptr);
   }
 
   template <class C>
@@ -89,7 +86,8 @@ public:
   {
     using functor_type = typename ::std::decay<T>::type;
 
-    static_assert(sizeof(T) <= sizeof(store_), "increase store_ size");
+    static_assert(sizeof(functor_type) <= sizeof(store_),
+      "increase store_ size");
     new (store_) functor_type(::std::forward<T>(f));
 
     object_ptr_ = store_;
@@ -117,11 +115,6 @@ public:
     return *this;
   }
 
-  delegate& operator=(R (* const rhs)(A...))
-  {
-    return *this = from(rhs);
-  }
-
   template <class C>
   delegate& operator=(R (C::* const rhs)(A...))
   {
@@ -146,7 +139,8 @@ public:
 
     deleter_(store_);
 
-    static_assert(sizeof(T) <= sizeof(store_), "increase store_ size");
+    static_assert(sizeof(functor_type) <= sizeof(store_),
+      "increase store_ size");
     new (store_) functor_type(::std::forward<T>(f));
 
     object_ptr_ = store_;
@@ -198,8 +192,7 @@ public:
 
   static delegate from(R (* const function_ptr)(A...))
   {
-    return [function_ptr](A&&... args) {
-      return (*function_ptr)(::std::forward<A>(args)...); };
+    return function_ptr;
   }
 
   template <class C>

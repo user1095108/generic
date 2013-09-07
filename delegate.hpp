@@ -36,21 +36,18 @@ public:
 
   delegate(::std::nullptr_t const) noexcept : delegate() { }
 
-  template <class C>
+  template <class C, typename =
+    typename ::std::enable_if<::std::is_class<C>{}>::type >
   explicit delegate(C const* const o) noexcept
     : object_ptr_(const_cast<C*>(o))
   {
   }
 
-  template <class C>
+  template <class C, typename =
+    typename ::std::enable_if<::std::is_class<C>{}>::type >
   explicit delegate(C const& o) noexcept
     : object_ptr_(const_cast<C*>(&o))
   {
-  }
-
-  delegate(R (* const function_ptr)(A...))
-  {
-    *this = from(function_ptr);
   }
 
   template <class C>
@@ -84,9 +81,9 @@ public:
     >::type
   >
   delegate(T&& f)
-    : store_(operator new(sizeof(T)),
+    : store_(operator new(sizeof(typename ::std::decay<T>::type)),
         functor_deleter<typename ::std::decay<T>::type>),
-      store_size_(sizeof(T))
+      store_size_(sizeof(typename ::std::decay<T>::type))
   {
     using functor_type = typename ::std::decay<T>::type;
 
@@ -102,11 +99,6 @@ public:
   delegate& operator=(delegate const&) = default;
 
   delegate& operator=(delegate&& rhs) = default;
-
-  delegate& operator=(R (* const rhs)(A...))
-  {
-    return *this = from(rhs);
-  }
 
   template <class C>
   delegate& operator=(R (C::* const rhs)(A...))
@@ -130,9 +122,10 @@ public:
   {
     using functor_type = typename ::std::decay<T>::type;
 
-    if ((sizeof(T) > store_size_) || !store_.unique())
+    if ((sizeof(functor_type) > store_size_) || !store_.unique())
     {
-      store_.reset(operator new(sizeof(T)), functor_deleter<functor_type>);
+      store_.reset(operator new(sizeof(functor_type)),
+        functor_deleter<functor_type>);
 
       store_size_ = sizeof(T);
     }
@@ -190,8 +183,7 @@ public:
 
   static delegate from(R (* const function_ptr)(A...))
   {
-    return [function_ptr](A&&... args) {
-      return (*function_ptr)(::std::forward<A>(args)...); };
+    return function_ptr;
   }
 
   template <class C>
