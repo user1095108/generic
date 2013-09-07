@@ -196,34 +196,38 @@ public:
   }
 
   template <class C>
+  using member_pair =
+    ::std::pair<C* const, R (C::* const)(A...)>;
+
+  template <class C>
+  using const_member_pair =
+    ::std::pair<C const* const, R (C::* const)(A...) const>;
+
+  template <class C>
   static delegate from(C* const object_ptr,
     R (C::* const method_ptr)(A...))
   {
-    return [object_ptr, method_ptr](A&&... args) {
-      return (object_ptr->*method_ptr)(::std::forward<A>(args)...); };
+    return member_pair<C>(object_ptr, method_ptr);
   }
 
   template <class C>
   static delegate from(C const* const object_ptr,
     R (C::* const method_ptr)(A...) const)
   {
-    return [object_ptr, method_ptr](A&&... args) {
-      return (object_ptr->*method_ptr)(::std::forward<A>(args)...); };
+    return const_member_pair<C>(object_ptr, method_ptr);
   }
 
   template <class C>
   static delegate from(C& object, R (C::* const method_ptr)(A...))
   {
-    return [&object, method_ptr](A&&... args) {
-      return (object.*method_ptr)(::std::forward<A>(args)...); };
+    return member_pair<C>(&object, method_ptr);
   }
 
   template <class C>
   static delegate from(C const& object,
     R (C::* const method_ptr)(A...) const)
   {
-    return [&object, method_ptr](A&&... args) {
-      return (object.*method_ptr)(::std::forward<A>(args)...); };
+    return const_member_pair<C>(&object, method_ptr);
   }
 
   void reset() { stub_ptr_ = nullptr; }
@@ -354,10 +358,45 @@ private:
       ::std::forward<A>(args)...);
   }
 
+  template <typename>
+  struct is_member_pair : std::false_type { };
+
+  template <class C>
+  struct is_member_pair<::std::pair<C* const,
+    R (C::* const)(A...)> > : std::true_type
+  {
+  };
+
+  template <typename>
+  struct is_const_member_pair : std::false_type { };
+
+  template <class C>
+  struct is_const_member_pair<::std::pair<C const* const,
+    R (C::* const)(A...) const> > : std::true_type
+  {
+  };
+
   template <typename T>
-  static R functor_stub(void* const object_ptr, A&&... args)
+  static typename ::std::enable_if<
+    !(is_member_pair<T>{} ||
+    is_const_member_pair<T>{}),
+    R
+  >::type
+  functor_stub(void* const object_ptr, A&&... args)
   {
     return (*static_cast<T*>(object_ptr))(::std::forward<A>(args)...);
+  }
+
+  template <typename T>
+  static typename ::std::enable_if<
+    is_member_pair<T>{} ||
+    is_const_member_pair<T>{},
+    R
+  >::type
+  functor_stub(void* const object_ptr, A&&... args)
+  {
+    return (static_cast<T*>(object_ptr)->first->*
+      static_cast<T*>(object_ptr)->second)(::std::forward<A>(args)...);
   }
 };
 
