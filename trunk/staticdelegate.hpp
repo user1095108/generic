@@ -101,11 +101,11 @@ namespace
   }
 
   template <typename T>
-  inline void static_delete(T const* const p)
+  inline void static_delete(T* const p)
   {
     using static_store = static_store<T>;
 
-    auto const i(p - static_cast<T const*>(static_cast<void const*>(
+    auto const i(p - static_cast<T*>(static_cast<void*>(
       static_store::store_)));
     //assert(!as_const(static_store::memory_map_)[i]);
 
@@ -113,8 +113,7 @@ namespace
 
     static_store::memory_map_ &= ~(1 << i);
 
-    static_cast<T const*>(static_cast<void const*>(
-      &static_store::store_[i]))->~T();
+    static_cast<T*>(static_cast<void*>(&static_store::store_[i]))->~T();
 
     static_store::lock_.clear(::std::memory_order_release);
   }
@@ -360,7 +359,7 @@ private:
   template <class T>
   static void functor_deleter(void* const p)
   {
-    static_delete(static_cast<T const*>(p));
+    static_delete(static_cast<T*>(p));
   }
 
   template <R (*function_ptr)(A...)>
