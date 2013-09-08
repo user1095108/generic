@@ -31,19 +31,19 @@ namespace
 
 #ifdef __GNUC__
     template <typename U>
-    static int ffz(U v)
+    static int ffz(U const v)
     {
       return __builtin_ctzll(~v);
     }
 #elif _MSC_VER && !__INTEL_COMPILER
     template <typename U>
-    static int ffz(U v)
+    static int ffz(U const v)
     {
       return 8 * sizeof(v) - __lzcnt64(v & -v);
     }
 #elif __INTEL_COMPILER
     template <typename U>
-    static int ffz(U v)
+    static int ffz(U const v)
     {
       return _bit_scan_forward(~v);
     }
