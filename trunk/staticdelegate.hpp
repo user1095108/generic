@@ -113,10 +113,10 @@ namespace
 
     static_store::memory_map_ &= ~(1 << i);
 
-    static_store::lock_.clear(::std::memory_order_release);
-
     static_cast<T const*>(static_cast<void const*>(
       &static_store::store_[i]))->~T();
+
+    static_store::lock_.clear(::std::memory_order_release);
   }
 }
 
