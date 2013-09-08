@@ -360,8 +360,6 @@ private:
   template <class T>
   static void functor_deleter(void* const p)
   {
-    static_cast<T const*>(p)->~T();
-
     static_delete(static_cast<T const*>(p));
   }
 
