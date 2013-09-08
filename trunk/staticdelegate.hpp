@@ -101,12 +101,12 @@ namespace
   }
 
   template <typename T>
-  inline void static_delete(void* const p)
+  inline void static_delete(T* const p)
   {
     using static_store = static_store<T>;
 
-    auto const i(static_cast<T*>(p) -
-      static_cast<T*>(static_cast<void*>(static_store::store_)));
+    auto const i(p - static_cast<T*>(static_cast<void*>(
+      static_store::store_)));
     //assert(!as_const(static_store::memory_map_)[i]);
 
     while (static_store::lock_.test_and_set(::std::memory_order_acquire));
@@ -187,7 +187,7 @@ public:
   >
   delegate(T&& f) :
     store_(static_new<typename ::std::decay<T>::type>(::std::forward<T>(f)),
-      static_delete<typename ::std::decay<T>::type>)
+      functor_deleter<typename ::std::decay<T>::type>)
   {
     using functor_type = typename ::std::decay<T>::type;
 
@@ -223,7 +223,7 @@ public:
     using functor_type = typename ::std::decay<T>::type;
 
     store_.reset(static_new<functor_type>(::std::forward<T>(f)),
-      static_delete<functor_type>);
+      functor_deleter<functor_type>);
 
     object_ptr_ = store_.get();
 
@@ -355,6 +355,12 @@ private:
   stub_ptr_type stub_ptr_{};
 
   light_ptr<void> store_;
+
+  template <class T>
+  static void functor_deleter(void* const p)
+  {
+    static_delete(static_cast<T*>(p));
+  }
 
   template <R (*function_ptr)(A...)>
   static R function_stub(void* const, A&&... args)
