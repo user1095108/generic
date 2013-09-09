@@ -271,12 +271,12 @@ public:
   }
 
 private:
-  static void default_deleter_stub(void const* const) { }
+  static void default_deleter_stub(void* const) { }
 
   template <class T>
-  static void deleter_stub(void const* const p)
+  static void deleter_stub(void* const p)
   {
-    static_cast<T const*>(p)->~T();
+    static_cast<T*>(p)->~T();
   }
 
   static void default_copier_stub(delegate& dst, delegate& src)
@@ -323,7 +323,7 @@ private:
 private:
   friend class ::std::hash<delegate>;
 
-  using deleter_type = void (*)(void const*);
+  using deleter_type = void (*)(void*);
 
   using copier_type = void (*)(delegate&, delegate&);
   using mover_type = void (*)(delegate&, delegate&);
