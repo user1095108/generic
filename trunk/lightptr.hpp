@@ -100,8 +100,7 @@ struct light_ptr
   light_ptr() = default;
 
   template <typename U>
-  explicit light_ptr(U* const p,
-    deleter_type const d = default_deleter<U>)
+  explicit light_ptr(U* const p, deleter_type const d = default_deleter<U>)
   {
     reset(p, d);
   }
