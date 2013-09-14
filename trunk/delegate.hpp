@@ -21,9 +21,9 @@ class delegate<R (A...)>
 {
   using stub_ptr_type = R (*)(void*, A&&...);
 
-  delegate(void* const o, stub_ptr_type const m) noexcept
-    : object_ptr_(o),
-      stub_ptr_(m)
+  delegate(void* const o, stub_ptr_type const m) noexcept :
+    object_ptr_(o),
+    stub_ptr_(m)
   {
   }
 
@@ -38,15 +38,15 @@ public:
 
   template <class C, typename =
     typename ::std::enable_if<::std::is_class<C>{}>::type>
-  explicit delegate(C const* const o) noexcept
-    : object_ptr_(const_cast<C*>(o))
+  explicit delegate(C const* const o) noexcept :
+    object_ptr_(const_cast<C*>(o))
   {
   }
 
   template <class C, typename =
     typename ::std::enable_if<::std::is_class<C>{}>::type>
-  explicit delegate(C const& o) noexcept
-    : object_ptr_(const_cast<C*>(&o))
+  explicit delegate(C const& o) noexcept :
+    object_ptr_(const_cast<C*>(&o))
   {
   }
 
@@ -80,10 +80,10 @@ public:
       !::std::is_same<delegate, typename ::std::decay<T>::type>{}
     >::type
   >
-  delegate(T&& f)
-    : store_(operator new(sizeof(typename ::std::decay<T>::type)),
-        functor_deleter<typename ::std::decay<T>::type>),
-      store_size_(sizeof(typename ::std::decay<T>::type))
+  delegate(T&& f) :
+    store_(operator new(sizeof(typename ::std::decay<T>::type)),
+      functor_deleter<typename ::std::decay<T>::type>),
+    store_size_(sizeof(typename ::std::decay<T>::type))
   {
     using functor_type = typename ::std::decay<T>::type;
 

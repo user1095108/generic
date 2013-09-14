@@ -1,6 +1,6 @@
 #pragma once
-#ifndef DELEGATE_HPP
-# define DELEGATE_HPP
+#ifndef STATICDELEGATE_HPP
+# define STATICDELEGATE_HPP
 
 #include <cassert>
 
@@ -143,15 +143,15 @@ public:
 
   template <class C, typename =
     typename ::std::enable_if<::std::is_class<C>{}>::type>
-  explicit delegate(C const* const o) noexcept
-    : object_ptr_(const_cast<C*>(o))
+  explicit delegate(C const* const o) noexcept :
+    object_ptr_(const_cast<C*>(o))
   {
   }
 
   template <class C, typename =
     typename ::std::enable_if<::std::is_class<C>{}>::type>
-  explicit delegate(C const& o) noexcept
-    : object_ptr_(const_cast<C*>(&o))
+  explicit delegate(C const& o) noexcept :
+    object_ptr_(const_cast<C*>(&o))
   {
   }
 
@@ -439,4 +439,4 @@ namespace std
   };
 }
 
-#endif // DELEGATE_HPP
+#endif // STATICDELEGATE_HPP
