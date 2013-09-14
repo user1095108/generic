@@ -4,11 +4,11 @@
 
 #include <cassert>
 
-#include <climits>
-
 #include <cstdlib>
 
 #include <atomic>
+
+#include <limits>
 
 #include <memory>
 
@@ -25,7 +25,8 @@ namespace
   template <typename T, typename A = unsigned>
   struct static_store
   {
-    static constexpr auto const max_instances = CHAR_BIT * sizeof(A);
+    static constexpr auto const max_instances =
+      ::std::numeric_limits<unsigned char>::digits * sizeof(A);
 
     static void cleanup() { delete [] store_; }
 
