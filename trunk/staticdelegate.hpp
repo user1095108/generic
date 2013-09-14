@@ -27,8 +27,6 @@ namespace
   {
     static constexpr auto const max_instances = CHAR_BIT * sizeof(A);
 
-    using memory_map_type = A;
-
     static void cleanup() { delete [] store_; }
 
 #ifdef __GNUC__
