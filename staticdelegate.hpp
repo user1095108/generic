@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#include <climits>
+
 #include <cstdlib>
 
 #include <atomic>
@@ -23,7 +25,7 @@ namespace
   template <typename T, typename A = unsigned>
   struct static_store
   {
-    static constexpr auto const max_instances = 8 * sizeof(A);
+    static constexpr auto const max_instances = CHAR_BIT * sizeof(A);
 
     using memory_map_type = A;
 
