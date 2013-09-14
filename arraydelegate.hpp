@@ -34,21 +34,21 @@ public:
 
   delegate(delegate const& other) { *this = other; }
 
-  delegate(delegate&& other) { *this = ::std::move(other); }
+  delegate(delegate&& other) noexcept { *this = ::std::move(other); }
 
   delegate(::std::nullptr_t const) noexcept : delegate() { }
 
   template <class C, typename =
     typename ::std::enable_if<::std::is_class<C>{}>::type>
-  explicit delegate(C const* const o) noexcept
-    : object_ptr_(const_cast<C*>(o))
+  explicit delegate(C const* const o) noexcept :
+    object_ptr_(const_cast<C*>(o))
   {
   }
 
   template <class C, typename =
     typename ::std::enable_if<::std::is_class<C>{}>::type>
-  explicit delegate(C const& o) noexcept
-    : object_ptr_(const_cast<C*>(&o))
+  explicit delegate(C const& o) noexcept :
+    object_ptr_(const_cast<C*>(&o))
   {
   }
 
