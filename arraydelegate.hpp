@@ -284,10 +284,10 @@ private:
     dst.object_ptr_ = src.object_ptr_;
     dst.stub_ptr_ = src.stub_ptr_;
 
+    dst.deleter_ = default_deleter_stub;
+
     dst.copier_ = default_copier_stub;
     dst.mover_ = default_copier_stub;
-
-    dst.deleter_ = default_deleter_stub;
   }
 
   template <typename T>
