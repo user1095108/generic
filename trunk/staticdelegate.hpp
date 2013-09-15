@@ -100,7 +100,7 @@ namespace
 
     auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
 
-    static_store::memory_map_ |= 1 << i;
+    static_store::memory_map_ |= 1ull << i;
 
     static_store::lock_.clear(::std::memory_order_release);
 
@@ -121,7 +121,7 @@ namespace
       ::std::this_thread::yield();
     }
 
-    static_store::memory_map_ &= ~(1 << i);
+    static_store::memory_map_ &= ~(1ull << i);
 
     static_cast<T*>(static_cast<void*>(&static_store::store_[i]))->~T();
 
