@@ -82,9 +82,9 @@ namespace
 
   template <typename T, typename A>
   typename ::std::aligned_storage<sizeof(T), alignof(T)>::type*
-    static_store<T, A>::store_{(::std::atexit(static_store<T>::cleanup),
+    static_store<T, A>::store_{(::std::atexit(static_store<T, A>::cleanup),
       new typename ::std::aligned_storage<sizeof(T),
-        alignof(T)>::type[static_store<T>::max_instances])};
+        alignof(T)>::type[static_store<T, A>::max_instances])};
 
   template <typename T, typename ...A>
   inline T* static_new(A&& ...args)
