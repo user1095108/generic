@@ -49,7 +49,7 @@ namespace detail
 
   inline void inc_ref(atomic_type* const counter_ptr)
   {
-    assert(counter_ptr);
+    //assert(counter_ptr);
     counter_ptr->fetch_add(counter_type(1), ::std::memory_order_relaxed);
   }
 }
