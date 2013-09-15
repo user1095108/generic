@@ -14,6 +14,8 @@
 
 #include <new>
 
+#include <thread>
+
 #include <type_traits>
 
 #include <utility>
@@ -40,7 +42,8 @@ namespace
     template <typename U>
     static int ffz(U const v)
     {
-      return 8 * sizeof(v) - __lzcnt64(v & -v);
+      return ::std::numeric_limits<unsigned char>::digits * sizeof(v) -
+        __lzcnt64(v & -v);
     }
 #elif __INTEL_COMPILER
     template <typename U>
@@ -88,7 +91,10 @@ namespace
   {
     using static_store = static_store<T>;
 
-    while (static_store::lock_.test_and_set(::std::memory_order_acquire));
+    while (static_store::lock_.test_and_set(::std::memory_order_acquire))
+    {
+      ::std::this_thread::yield();
+    }
 
     auto const i(static_store::ffz(static_store::memory_map_));
 
@@ -110,7 +116,10 @@ namespace
       static_store::store_)));
     //assert(!as_const(static_store::memory_map_)[i]);
 
-    while (static_store::lock_.test_and_set(::std::memory_order_acquire));
+    while (static_store::lock_.test_and_set(::std::memory_order_acquire))
+    {
+      ::std::this_thread::yield();
+    }
 
     static_store::memory_map_ &= ~(1 << i);
 
