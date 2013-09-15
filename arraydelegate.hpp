@@ -230,7 +230,7 @@ public:
     return const_member_pair<C>(&object, method_ptr);
   }
 
-  void reset() { stub_ptr_ = nullptr; }
+  void reset() noexcept { stub_ptr_ = nullptr; }
 
   void reset_stub() noexcept { stub_ptr_ = nullptr; }
 
