@@ -96,15 +96,23 @@ namespace
       ::std::this_thread::yield();
     }
 
-    auto const i(static_store::ffz(static_store::memory_map_));
+    if (::std::numeric_limits<decltype(static_store::memory_map_)>::max() ==
+      static_store::memory_map_)
+    {
+      return nullptr;
+    }
+    else
+    {
+      auto const i(static_store::ffz(static_store::memory_map_));
 
-    auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
+      auto p(new (&static_store::store_[i]) T(::std::forward<A>(args)...));
 
-    static_store::memory_map_ |= 1ull << i;
+      static_store::memory_map_ |= 1ull << i;
 
-    static_store::lock_.clear(::std::memory_order_release);
+      static_store::lock_.clear(::std::memory_order_release);
 
-    return p;
+      return p;
+    }
   }
 
   template <typename T>
