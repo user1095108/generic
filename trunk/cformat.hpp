@@ -33,7 +33,7 @@ inline ::std::string cformat(char const* format, ...)
 
   va_start(ap, format);
 
-  ::std::string::size_type const len(::std::vsnprintf(0, 0, format, ap) + 1);
+  auto const len(::std::vsnprintf(0, 0, format, ap) + 1);
 
 #ifdef _MSC_VER
   #include "alloca.h"
@@ -46,7 +46,7 @@ inline ::std::string cformat(char const* format, ...)
 
   va_start(ap, format);
 
-  if (::std::vsprintf(s, format, ap) < 0)
+  if (::std::vsnprintf(s, len, format, ap) < 0)
   {
     va_end(ap);
 
@@ -56,7 +56,7 @@ inline ::std::string cformat(char const* format, ...)
   {
     va_end(ap);
 
-    return {s, len - 1};
+    return {s, ::std::string::size_type(len - 1)};
   }
 }
 
