@@ -1,35 +1,29 @@
-#include <memory>
-
 #include "cformat.hpp"
 
 namespace generic
 {
 
 //////////////////////////////////////////////////////////////////////////////
-std::string cformat(char const* format, ...)
+::std::string cformat(char const* format, ...)
 {
   va_list ap;
 
   va_start(ap, format);
 
-  std::unique_ptr<char[]> s;
+  ::std::string::size_type const len(::std::vsnprintf(0, 0, format, ap) + 1);
 
-  try
-  {
-    s.reset(new char[vsnprintf(0, 0, format, ap) + 1]);
-  }
-  catch (...)
-  {
-    va_end(ap);
-
-    throw;
-  }
+#ifdef _MSC_VER
+  #include "alloca.h"
+  char* const s(static_cast<char*>(_malloca(len)));
+#else
+  char s[len];
+#endif
 
   va_end(ap);
 
   va_start(ap, format);
 
-  if (std::vsprintf(s.get(), format, ap) < 0)
+  if (::std::vsprintf(s, format, ap) < 0)
   {
     va_end(ap);
 
@@ -39,7 +33,7 @@ std::string cformat(char const* format, ...)
   {
     va_end(ap);
 
-    return s.get();
+    return {s, len};
   }
 }
 
