@@ -14,7 +14,7 @@
 
 namespace detail
 {
-  using counter_type = ::std::size_t;
+  using counter_type = unsigned;
 
   using atomic_type = ::std::atomic<counter_type>;
 
