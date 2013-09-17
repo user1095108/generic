@@ -36,7 +36,7 @@ inline ::std::string cformat(char const* format, ...)
   auto const len(::std::vsnprintf(0, 0, format, ap) + 1);
 
 #ifdef _MSC_VER
-  #include "alloca.h"
+  #include <malloc.h>
   char* const s(static_cast<char*>(_malloca(len)));
 #else
   char s[len];
