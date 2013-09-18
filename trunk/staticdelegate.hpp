@@ -99,7 +99,7 @@ namespace
     if (::std::numeric_limits<decltype(static_store::memory_map_)>::max() ==
       static_store::memory_map_)
     {
-      return nullptr;
+      return static_cast<T*>(::operator new(sizeof(T)));
     }
     else
     {
@@ -120,20 +120,31 @@ namespace
   {
     using static_store = static_store<T>;
 
-    auto const i(p - static_cast<T*>(static_cast<void*>(
-      static_store::store_)));
-    //assert(!as_const(static_store::memory_map_)[i]);
-
-    while (static_store::lock_.test_and_set(::std::memory_order_acquire))
+    if (static_cast<char*>(static_cast<void*>(p)) >=
+      static_cast<char*>(static_cast<void*>(static_store::store_)) &&
+      (static_cast<char*>(static_cast<void*>(static_store::store_)) +
+        static_store::max_instances * sizeof(T) >
+      static_cast<char*>(static_cast<void*>(p))))
     {
-      ::std::this_thread::yield();
+      auto const i(p - static_cast<T*>(static_cast<void*>(
+        static_store::store_)));
+      //assert(!as_const(static_store::memory_map_)[i]);
+
+      while (static_store::lock_.test_and_set(::std::memory_order_acquire))
+      {
+        ::std::this_thread::yield();
+      }
+
+      static_store::memory_map_ &= ~(1ull << i);
+
+      static_cast<T*>(static_cast<void*>(&static_store::store_[i]))->~T();
+
+      static_store::lock_.clear(::std::memory_order_release);
     }
-
-    static_store::memory_map_ &= ~(1ull << i);
-
-    static_cast<T*>(static_cast<void*>(&static_store::store_[i]))->~T();
-
-    static_store::lock_.clear(::std::memory_order_release);
+    else
+    {
+      ::operator delete(p);
+    }
   }
 }
 
