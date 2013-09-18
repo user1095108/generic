@@ -71,7 +71,7 @@ public:
   ::std::size_t used() const { return ::std::size_t(ptr_ - buf_); }
 
 private:
-  static ::std::size_t align(std::size_t const n) noexcept
+  static constexpr ::std::size_t align(std::size_t const n) noexcept
   {
     return (n + alignment - 1) & -alignment;
   }
@@ -107,18 +107,11 @@ public:
 
   using value_type = T;
 
-  template <class _Up>
-  struct rebind
-  {
-    using other = stack_allocator<_Up, N>;
-  };
+  template <class U> struct rebind { using other = stack_allocator<U, N>; };
 
   stack_allocator() = default;
 
-  stack_allocator(stack_store<N>& s) noexcept :
-    store_(&s)
-  {
-  }
+  stack_allocator(stack_store<N>& s) noexcept : store_(&s) { }
 
   template <class U>
   stack_allocator(stack_allocator<U, N> const& other) noexcept :
