@@ -86,9 +86,7 @@ inline constexpr typename ::std::enable_if<bool(sizeof...(A)),
     typename ::detail::front<A...>::type> >::type
 minmax(A const ...args)
 {
-  using T = typename ::detail::front<A...>::type;
-
-  return ::std::pair<T, T>(min(args...), max(args...));
+  return {min(args...), max(args...)};
 }
 
 #endif // ALGORITHM_HPP
