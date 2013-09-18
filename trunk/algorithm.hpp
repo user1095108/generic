@@ -2,12 +2,28 @@
 #ifndef ALGORITHM_HPP
 # define ALGORUTHM_HPP
 
+#include <cstddef>
+
 #include <type_traits>
 
 #include <utility>
 
 namespace detail
 {
+
+template <::std::size_t I, typename A, typename ...B>
+struct type_at : type_at<I - 1, B...>
+{
+};
+
+template <typename A, typename ...B>
+struct type_at<0, A, B...>
+{
+  using type = A;
+};
+
+template <typename ...A>
+using front = type_at<0, A...>;
 
 template <bool B>
 using bool_ = ::std::integral_constant<bool, B>;
@@ -32,7 +48,7 @@ inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
   T>::type
 max(T const a, T const b, A const ...args)
 {
-  return a > b ? max(a, args...) : min(b, args...);
+  return a > b ? max(a, args...) : max(b, args...);
 }
 
 template <typename T>
@@ -50,21 +66,15 @@ min(T const a, T const b, A const ...args)
   return a < b ? min(a, args...) : min(b, args...);
 }
 
-template <typename T>
-inline constexpr ::std::pair<T, T> minmax(T const a, T const b)
+template <typename ...A>
+inline constexpr typename ::std::enable_if<bool(sizeof...(A) >= 2),
+  ::std::pair<typename ::detail::front<A...>::type,
+    typename ::detail::front<A...>::type> >::type
+minmax(A const ...args)
 {
-  return a < b ? ::std::pair<T, T>(a, b) : ::std::pair<T, T>(b, a);
-}
+  using T = typename ::detail::front<A...>::type;
 
-template <typename T, typename ...A>
-inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  ::detail::all_of<::std::is_same<typename ::std::decay<A>::type, T>...>{},
-  ::std::pair<T, T> >::type
-minmax(T const a, T const b, A const ...args)
-{
-  return a < b ?
-    ::std::pair<T, T>(min(a, args...), max(b, args...)) :
-    ::std::pair<T, T>(min(b, args...), max(a, args...));
+  return ::std::pair<T, T>(min(args...), max(args...));
 }
 
 #endif // ALGORITHM_HPP
