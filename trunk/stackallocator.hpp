@@ -39,6 +39,7 @@ public:
     }
     else
     {
+      assert(0);
       return static_cast<char*>(::operator new(n));
     }
   }
