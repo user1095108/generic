@@ -51,14 +51,6 @@ min(T const a, T const b, A const ...args)
 }
 
 template <typename T, typename ...A>
-inline constexpr typename ::std::enable_if<!bool(sizeof...(A)),
-  ::std::pair<T, T> >::type
-min(T const a, T const b, A const ...args)
-{
-  return a < b ? a : b;
-}
-
-template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
   ::detail::all_of<::std::is_same<A, T>...>{},
   ::std::pair<T, T> >::type
@@ -68,6 +60,5 @@ minmax(T const a, T const b, A const ...args)
     a < b ? min(a, args...) : min(b, args...),
     a > b ? max(a, args...) : max(b, args...));
 }
-
 
 #endif // ALGORITHM_HPP
