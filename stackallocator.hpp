@@ -78,7 +78,7 @@ private:
 
   bool pointer_in_buffer(char* const p) noexcept
   {
-    return (buf_ <= p) && (p <= buf_ + N);
+    return (buf_ <= p) && (p < buf_ + N);
   }
 
 private:
