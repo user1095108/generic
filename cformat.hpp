@@ -30,13 +30,13 @@ inline ::std::string cformat(char const* format, ...)
 
   va_start(ap, format);
 
-  auto const len(::std::vsnprintf(0, 0, format, ap));
+  auto const len(::std::vsnprintf(0, 0, format, ap) + 1);
 
 #ifdef _MSC_VER
   #include <malloc.h>
   char* const s(static_cast<char*>(_malloca(len)));
 #else
-  char s[len + 1];
+  char s[len];
 #endif
 
   va_end(ap);
@@ -53,7 +53,7 @@ inline ::std::string cformat(char const* format, ...)
   {
     va_end(ap);
 
-    return {s, ::std::string::size_type(len)};
+    return {s, ::std::string::size_type(len - 1)};
   }
 }
 
