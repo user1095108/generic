@@ -120,8 +120,8 @@ namespace
   {
     using static_store = static_store<T>;
 
-    if (static_cast<char*>(static_cast<void*>(p)) >=
-      static_cast<char*>(static_cast<void*>(static_store::store_)) &&
+    if ((static_cast<char*>(static_cast<void*>(p)) >=
+      static_cast<char*>(static_cast<void*>(static_store::store_))) &&
       (static_cast<char*>(static_cast<void*>(static_store::store_)) +
         static_store::max_instances * sizeof(T) >
       static_cast<char*>(static_cast<void*>(p))))
