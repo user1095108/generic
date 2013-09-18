@@ -28,8 +28,7 @@ inline constexpr T max(T const a, T const b)
 
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  ::detail::all_of<::std::is_same<
-    typename ::std::decay<A>::type, typename ::std::decay<T>::type>...>{},
+  ::detail::all_of<::std::is_same<typename ::std::decay<A>::type, T>...>{},
   T>::type
 max(T const a, T const b, A const ...args)
 {
@@ -44,8 +43,7 @@ inline constexpr T min(T const a, T const b)
 
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  ::detail::all_of<::std::is_same<
-    typename ::std::decay<A>::type, typename ::std::decay<T>::type>...>{},
+  ::detail::all_of<::std::is_same<typename ::std::decay<A>::type, T>...>{},
   T>::type
 min(T const a, T const b, A const ...args)
 {
@@ -60,8 +58,7 @@ inline constexpr ::std::pair<T, T> minmax(T const a, T const b)
 
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  ::detail::all_of<::std::is_same<
-    typename ::std::decay<A>::type, typename ::std::decay<T>::type>...>{},
+  ::detail::all_of<::std::is_same<typename ::std::decay<A>::type, T>...>{},
   ::std::pair<T, T> >::type
 minmax(T const a, T const b, A const ...args)
 {
