@@ -39,12 +39,11 @@ public:
     }
     else
     {
-      assert(0);
       return static_cast<char*>(::operator new(n));
     }
   }
 
-  void deallocate(char* p, std::size_t n) noexcept
+  void deallocate(char* const p, std::size_t n) noexcept
   {
     assert(pointer_in_buffer(ptr_) &&
       "stack_allocator has outlived stack_store");
