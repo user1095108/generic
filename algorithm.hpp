@@ -62,9 +62,9 @@ inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
   ::std::pair<T, T> >::type
 minmax(T const a, T const b, A const ...args)
 {
-  return ::std::pair<T, T>(
-    a < b ? min(a, args...) : min(b, args...),
-    a > b ? max(a, args...) : max(b, args...));
+  return a < b ?
+    ::std::pair<T, T>(min(a, args...), max(b, args...)) :
+    ::std::pair<T, T>(min(b, args...), max(a, args...));
 }
 
 #endif // ALGORITHM_HPP
