@@ -81,7 +81,7 @@ min(T const a, T const b, A const ...args)
 }
 
 template <typename ...A>
-inline constexpr typename ::std::enable_if<bool(sizeof...(A) >= 2),
+inline constexpr typename ::std::enable_if<bool(sizeof...(A)),
   ::std::pair<typename ::detail::front<A...>::type,
     typename ::detail::front<A...>::type> >::type
 minmax(A const ...args)
