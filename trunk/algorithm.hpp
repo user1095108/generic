@@ -22,8 +22,22 @@ struct type_at<0, A, B...>
   using type = A;
 };
 
-template <typename ...A>
-using front = type_at<0, A...>;
+template <typename A, typename ...B>
+struct front
+{
+  using type = A;
+};
+
+template <typename A, typename ...B>
+struct back : back<B...>
+{
+};
+
+template <typename A>
+struct back<A>
+{
+  using type = A;
+};
 
 template <bool B>
 using bool_ = ::std::integral_constant<bool, B>;
