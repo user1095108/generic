@@ -71,7 +71,7 @@ public:
   ::std::size_t used() const { return ::std::size_t(ptr_ - buf_); }
 
 private:
-  static constexpr ::std::size_t align(std::size_t const n) noexcept
+  static constexpr ::std::size_t align(::std::size_t const n) noexcept
   {
     return (n + alignment - 1) & -alignment;
   }
