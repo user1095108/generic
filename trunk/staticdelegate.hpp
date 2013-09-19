@@ -24,7 +24,7 @@
 
 namespace
 {
-  template <typename T, typename A = unsigned char>
+  template <typename T, typename A = unsigned short>
   struct static_store
   {
     static_assert(::std::is_unsigned<A>{}, "A has to be unsigned");
