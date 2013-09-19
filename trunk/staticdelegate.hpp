@@ -24,7 +24,7 @@
 
 namespace
 {
-  template <typename T, typename A = unsigned>
+  template <typename T, typename A = unsigned char>
   struct static_store
   {
     static constexpr auto const max_instances =
