@@ -35,11 +35,22 @@ namespace
     static void cleanup() { delete [] store_; }
 
 #ifdef __GNUC__
-    template <typename U>
-    static int ffz(U const v)
+    static int ffz(unsigned long long const v)
     {
       return __builtin_ctzll(~v);
     }
+
+    static int ffz(unsigned long const v)
+    {
+      return __builtin_ctzl(~v);
+    }
+
+    template <typename U>
+    static int ffz(U const v)
+    {
+      return __builtin_ctz(~v);
+    }
+
 #elif _MSC_VER && !__INTEL_COMPILER
     template <typename U>
     static int ffz(U const v)
