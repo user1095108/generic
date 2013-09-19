@@ -27,6 +27,8 @@ namespace
   template <typename T, typename A = unsigned char>
   struct static_store
   {
+    static_assert(::std::is_unsigned<A>{}, "A has to be unsigned");
+
     static constexpr auto const max_instances =
       ::std::numeric_limits<unsigned char>::digits * sizeof(A);
 
