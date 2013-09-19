@@ -101,7 +101,7 @@ namespace
     if (::std::numeric_limits<decltype(static_store::memory_map_)>::max() ==
       static_store::memory_map_)
     {
-      return static_cast<T*>(::operator new(sizeof(T)));
+      return new T(::std::forward<A>(args)...);
     }
     else
     {
@@ -145,7 +145,7 @@ namespace
     }
     else
     {
-      ::operator delete(p);
+      delete p;
     }
   }
 }
