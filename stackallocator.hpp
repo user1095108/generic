@@ -134,7 +134,7 @@ public:
   }
 
   template <class U, class ...A>
-  void construct(U* p, A&& ...args)
+  void construct(U* const p, A&& ...args)
   {
     new (p) U(::std::forward<A>(args)...);
   }
