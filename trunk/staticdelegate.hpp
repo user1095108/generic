@@ -112,6 +112,8 @@ namespace
     if (::std::numeric_limits<decltype(static_store::memory_map_)>::max() ==
       static_store::memory_map_)
     {
+      static_store::lock_.clear(::std::memory_order_release);
+
       return new T(::std::forward<A>(args)...);
     }
     else
