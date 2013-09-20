@@ -170,9 +170,9 @@ class delegate<R (A...)>
 {
   using stub_ptr_type = R (*)(void*, A&&...);
 
-  delegate(void* const o, stub_ptr_type const m) noexcept
-    : object_ptr_(o),
-      stub_ptr_(m)
+  delegate(void* const o, stub_ptr_type const m) noexcept :
+    object_ptr_(o),
+    stub_ptr_(m)
   {
   }
 
@@ -242,7 +242,7 @@ public:
 
   delegate& operator=(delegate const&) = default;
 
-  delegate& operator=(delegate&& rhs) = default;
+  delegate& operator=(delegate&&) = default;
 
   template <class C>
   delegate& operator=(R (C::* const rhs)(A...))

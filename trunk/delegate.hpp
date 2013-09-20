@@ -98,7 +98,7 @@ public:
 
   delegate& operator=(delegate const&) = default;
 
-  delegate& operator=(delegate&& rhs) = default;
+  delegate& operator=(delegate&&) = default;
 
   template <class C>
   delegate& operator=(R (C::* const rhs)(A...))
