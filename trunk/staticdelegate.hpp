@@ -356,6 +356,8 @@ public:
 
   void reset_stub() noexcept { stub_ptr_ = nullptr; }
 
+  stub_ptr_type stub() const noexcept { return stub_ptr_; }
+
   void swap(delegate& other) noexcept { ::std::swap(*this, other); }
 
   bool operator==(delegate const& rhs) const noexcept
