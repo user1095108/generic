@@ -16,7 +16,7 @@
 
 #include <vector>
 
-#include "generic/delegate.hpp"
+#include "delegate.hpp"
 
 class thread_pool
 {
@@ -53,7 +53,7 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 inline void thread_pool::execute(delegate_type e)
 {
-  if (fc_.fetch_sub(1) <= 0)
+  if (fc_.fetch_sub(1, ::std::memory_order_relaxed) <= 0)
   {
     spawn_thread();
   }
@@ -71,7 +71,7 @@ inline void thread_pool::execute(delegate_type e)
 //////////////////////////////////////////////////////////////////////////////
 inline void thread_pool::exit()
 {
-  ::thread_pool::qf_.store(true);
+  ::thread_pool::qf_.store(true, ::std::memory_order_relaxed);
 
   cv_.notify_all();
 }

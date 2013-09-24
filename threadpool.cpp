@@ -2,8 +2,6 @@
 
 #include <utility>
 
-#include <QCoreApplication>
-
 #include "threadpool.hpp"
 
 ::std::mutex thread_pool::cm_;
@@ -22,7 +20,7 @@ void thread_pool::init(unsigned size)
 
   delegates_.reserve(size);
 
-  fc_.store(size);
+  fc_.store(size, ::std::memory_order_relaxed);
 
   while (size--)
   {
@@ -40,12 +38,12 @@ void thread_pool::run()
     {
       ::std::unique_lock<decltype(cm_)> l(cm_);
 
-      while (!qf_.load() && delegates_.empty())
+      while (!qf_.load(::std::memory_order_relaxed) && delegates_.empty())
       {
         cv_.wait(l);
       }
 
-      if (qf_.load())
+      if (qf_.load(::std::memory_order_relaxed))
       {
         break;
       }
@@ -59,6 +57,6 @@ void thread_pool::run()
 
     c();
 
-    fc_.fetch_add(1);
+    fc_.fetch_add(1, ::std::memory_order_relaxed);
   }
 }
