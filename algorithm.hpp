@@ -51,7 +51,7 @@ struct all_of<A> : bool_<A::value> { };
 }
 
 template <typename T>
-inline constexpr T max(T const a, T const b)
+inline constexpr T max(T a, T b)
 {
   return a > b ? a : b;
 }
@@ -60,13 +60,13 @@ template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
   ::detail::all_of<::std::is_same<A, T>...>{},
   T>::type
-max(T const a, T const b, A const ...args)
+max(T a, T b, A ...args)
 {
   return a > b ? max(a, args...) : max(b, args...);
 }
 
 template <typename T>
-inline constexpr T min(T const a, T const b)
+inline constexpr T min(T a, T b)
 {
   return a < b ? a : b;
 }
@@ -75,7 +75,7 @@ template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
   ::detail::all_of<::std::is_same<A, T>...>{},
   T>::type
-min(T const a, T const b, A const ...args)
+min(T a, T b, A ...args)
 {
   return a < b ? min(a, args...) : min(b, args...);
 }
@@ -84,7 +84,7 @@ template <typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)),
   ::std::pair<typename ::detail::front<A...>::type,
     typename ::detail::front<A...>::type> >::type
-minmax(A const ...args)
+minmax(A ...args)
 {
   return {min(args...), max(args...)};
 }
