@@ -127,7 +127,7 @@ public:
       store_.reset(operator new(sizeof(functor_type)),
         functor_deleter<functor_type>);
 
-      store_size_ = sizeof(T);
+      store_size_ = sizeof(functor_type);
     }
     else
     {
