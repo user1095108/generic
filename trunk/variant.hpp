@@ -180,9 +180,9 @@ struct variant
   static_assert(!::detail::has_duplicates<T...>{},
     "duplicate types are unsupported");
 
-  typedef typename ::detail::max_align_type<T...>::type max_align_type;
+  using max_align_type = typename ::detail::max_align_type<T...>::type;
 
-  typedef typename ::detail::max_type<T...>::type max_type;
+  using max_type = typename ::detail::max_type<T...>::type;
 
   static constexpr auto const max_align = alignof(max_align_type);
 
@@ -271,7 +271,7 @@ struct variant
   >::type
   operator=(U&& f)
   {
-    typedef typename ::std::remove_reference<U>::type user_type;
+    using user_type = typename ::std::remove_reference<U>::type;
 
     if (::detail::index_of<user_type, T...>{} == store_type_)
     {
@@ -312,7 +312,7 @@ struct variant
   >::type
   operator=(U&& f)
   {
-    typedef typename ::std::remove_reference<U>::type user_type;
+    using user_type = typename ::std::remove_reference<U>::type;
 
     if (::detail::index_of<user_type, T...>{} == store_type_)
     {
@@ -355,7 +355,7 @@ struct variant
   >::type
   operator=(U&& f)
   {
-    typedef typename ::std::remove_reference<U>::type user_type;
+    using user_type = typename ::std::remove_reference<U>::type;
 
     if (*this)
     {
@@ -467,9 +467,9 @@ struct variant
   int store_type_index() const noexcept { return store_type_; }
 
 private:
-  typedef void (*copier_type)(variant&, variant&);
-  typedef void (*mover_type)(variant&, variant&&);
-  typedef void (*streamer_type)(::std::ostream&, variant const&);
+  using copier_type = void (*)(variant&, variant&);
+  using mover_type = void (*)(variant&, variant&&);
+  using streamer_type = void (*)(::std::ostream&, variant const&);
 
   template <typename charT, typename traits>
   friend ::std::basic_ostream<charT, traits>& operator<<(
@@ -673,7 +673,7 @@ private:
     os << v.get<U>();
   }
 
-  typedef void (*deleter_type)(void*);
+  using deleter_type = void (*)(void*);
   deleter_type deleter_;
 
   copier_type copier_;
