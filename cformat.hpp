@@ -30,31 +30,34 @@ inline ::std::string cformat(char const* format, ...)
 
   va_start(ap, format);
 
-  auto const len(::std::vsnprintf(0, 0, format, ap) + 1);
+  int len;
 
-#ifdef _MSC_VER
-  #include <malloc.h>
-  char* const s(static_cast<char*>(_malloca(len)));
-#else
+  {
+    char tmp[64];
+
+    len = ::std::vsnprintf(tmp, sizeof(tmp), format, ap);
+
+    va_end(ap);
+
+    if (len < 0)
+    {
+      throw cformat_error();
+    }
+    else if (len <= decltype(len)(sizeof(tmp)))
+    {
+      return {tmp, ::std::string::size_type(len)};
+    }
+  }
+
   char s[len];
-#endif
-
-  va_end(ap);
 
   va_start(ap, format);
 
-  if (::std::vsnprintf(s, len, format, ap) < 0)
-  {
-    va_end(ap);
+  ::std::vsnprintf(s, len, format, ap);
 
-    throw cformat_error();
-  }
-  else
-  {
-    va_end(ap);
+  va_end(ap);
 
-    return {s, ::std::size_t(len - 1)};
-  }
+  return {s, ::std::string::size_type(len)};
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -65,31 +68,36 @@ inline void cformat(S& r, char const* format, ...)
 
   va_start(ap, format);
 
-  auto const len(::std::vsnprintf(0, 0, format, ap) + 1);
+  int len;
 
-#ifdef _MSC_VER
-  #include <malloc.h>
-  char* const s(static_cast<char*>(_malloca(len)));
-#else
+  {
+    char tmp[64];
+
+    len = ::std::vsnprintf(tmp, sizeof(tmp), format, ap);
+
+    va_end(ap);
+
+    if (len < 0)
+    {
+      throw cformat_error();
+    }
+    else if (len <= decltype(len)(sizeof(tmp)))
+    {
+      r.assign(tmp, len);
+
+      return;
+    }
+  }
+
   char s[len];
-#endif
-
-  va_end(ap);
 
   va_start(ap, format);
 
-  if (::std::vsnprintf(s, len, format, ap) < 0)
-  {
-    va_end(ap);
+  ::std::vsnprintf(s, len, format, ap);
 
-    throw cformat_error();
-  }
-  else
-  {
-    va_end(ap);
+  va_end(ap);
 
-    r.assign(s, ::std::size_t(len - 1));
-  }
+  r.assign(s, len);
 }
 
 //////////////////////////////////////////////////////////////////////////////
