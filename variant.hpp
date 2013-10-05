@@ -261,7 +261,7 @@ struct variant
     this = ::std::forward<U>(f);
   }
 
-  template <typename U>
+  template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if< ::detail::any_of<::std::is_same<
     typename ::std::remove_reference<U>::type, T>...>{}
     && !::std::is_rvalue_reference<U&&>{}
@@ -293,7 +293,7 @@ struct variant
 
       mover_ = get_mover<user_type>();
 
-      streamer_ = get_streamer<::std::ostream, user_type>();
+      streamer_ = get_streamer<S, user_type>();
 
       store_type_ = ::detail::index_of<user_type, T...>{};
     }
@@ -301,7 +301,7 @@ struct variant
     return *this;
   }
 
-  template <typename U>
+  template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
     ::detail::any_of<::std::is_same<
       typename ::std::remove_reference<U>::type, T>...>{}
@@ -334,7 +334,7 @@ struct variant
 
       mover_ = get_mover<user_type>();
 
-      streamer_ = get_streamer<::std::ostream, user_type>();
+      streamer_ = get_streamer<S, user_type>();
 
       store_type_ = ::detail::index_of<user_type, T...>{};
     }
@@ -342,7 +342,7 @@ struct variant
     return *this;
   }
 
-  template <typename U>
+  template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
     ::detail::any_of<::std::is_same<
       typename ::std::remove_reference<U>::type, T>...>{}
@@ -371,7 +371,7 @@ struct variant
 
     mover_ = get_mover<user_type>();
 
-    streamer_ = get_streamer<::std::ostream, user_type>();
+    streamer_ = get_streamer<S, user_type>();
 
     store_type_ = ::detail::index_of<user_type, T...>{};
 
@@ -379,6 +379,12 @@ struct variant
   }
 
   explicit operator bool() const noexcept { return -1 != store_type_; }
+
+  template <typename S = ::std::ostream, typename U>
+  void assign(U&& f)
+  {
+    operator=<S>(::std::forward<U>(f));
+  }
 
   template <typename U>
   bool contains() const noexcept
@@ -469,13 +475,13 @@ struct variant
 private:
   using copier_type = void (*)(variant&, variant&);
   using mover_type = void (*)(variant&, variant&&);
-  using streamer_type = void (*)(::std::ostream&, variant const&);
+  using streamer_type = void (*)(void*, variant const&);
 
   template <typename charT, typename traits>
   friend ::std::basic_ostream<charT, traits>& operator<<(
     ::std::basic_ostream<charT, traits>& os, variant const& v)
   {
-    v.streamer_(os, v);
+    v.streamer_(&os, v);
 
     return os;
   }
@@ -668,9 +674,9 @@ private:
   static typename ::std::enable_if<
     ::detail::is_streamable<S, U>{}
   >::type
-  streamer_stub(S& os, variant const& v)
+  streamer_stub(void* const os, variant const& v)
   {
-    os << v.get<U>();
+    *static_cast<S*>(os) << v.get<U>();
   }
 
   using deleter_type = void (*)(void*);
