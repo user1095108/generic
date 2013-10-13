@@ -190,14 +190,14 @@ public:
   delegate(::std::nullptr_t const) noexcept : delegate() { }
 
   template <class C, typename =
-    typename ::std::enable_if<::std::is_class<C>{}>::type>
+    typename ::std::enable_if< ::std::is_class<C>{}>::type>
   explicit delegate(C const* const o) noexcept :
     object_ptr_(const_cast<C*>(o))
   {
   }
 
   template <class C, typename =
-    typename ::std::enable_if<::std::is_class<C>{}>::type>
+    typename ::std::enable_if< ::std::is_class<C>{}>::type>
   explicit delegate(C const& o) noexcept :
     object_ptr_(const_cast<C*>(&o))
   {
@@ -436,7 +436,7 @@ private:
   struct is_member_pair : std::false_type { };
 
   template <class C>
-  struct is_member_pair<::std::pair<C* const,
+  struct is_member_pair< ::std::pair<C* const,
     R (C::* const)(A...)> > : std::true_type
   {
   };
@@ -445,7 +445,7 @@ private:
   struct is_const_member_pair : std::false_type { };
 
   template <class C>
-  struct is_const_member_pair<::std::pair<C const* const,
+  struct is_const_member_pair< ::std::pair<C const* const,
     R (C::* const)(A...) const> > : std::true_type
   {
   };
