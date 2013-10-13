@@ -39,24 +39,24 @@ struct max_align_type<A>
 };
 
 template <typename A, typename ...B>
-struct max_type
+struct max_size_type
 {
   using type = typename ::std::conditional<
-    (sizeof(A) > sizeof(typename max_type<B...>::type)),
+    (sizeof(A) > sizeof(typename max_size_type<B...>::type)),
     A,
-    typename max_type<B...>::type
+    typename max_size_type<B...>::type
   >::type;
 };
 
 template <typename A, typename B>
-struct max_type<A, B>
+struct max_size_type<A, B>
 {
   using type = typename ::std::conditional<
     (sizeof(A) > sizeof(B)), A, B>::type;
 };
 
 template <typename A>
-struct max_type<A>
+struct max_size_type<A>
 {
   using type = A;
 };
@@ -131,7 +131,7 @@ struct is_streamable<S, C,
     << ::std::declval<C const&>()))))
 > : ::std::true_type { };
 
-template <::std::size_t I, typename A, typename ...B>
+template < ::std::size_t I, typename A, typename ...B>
 struct type_at : type_at<I - 1, B...>
 {
 };
@@ -143,24 +143,23 @@ struct type_at<0, A, B...>
 };
 
 template <bool B>
-using bool_ = ::std::integral_constant<bool, B>;
+using bool_constant = ::std::integral_constant<bool, B>;
 
 template <class A, class ...B>
-struct all_of : bool_<A::value && all_of<B...>::value> { };
+struct all_of : bool_constant<A::value && all_of<B...>::value> { };
 
 template <class A>
-struct all_of<A> : bool_<A::value> { };
+struct all_of<A> : bool_constant<A::value> { };
 
 template <class A, class ...B>
-struct any_of : bool_<A::value || any_of<B...>::value> { };
+struct any_of : bool_constant<A::value || any_of<B...>::value> { };
 
 template <class A>
-struct any_of<A> : bool_<A::value> { };
+struct any_of<A> : bool_constant<A::value> { };
 
 template <class A>
 struct is_move_or_copy_constructible :
-  ::std::integral_constant<bool,
-    ::std::is_copy_constructible<A>{} ||
+  bool_constant< ::std::is_copy_constructible<A>{} ||
     ::std::is_move_constructible<A>{}>
 {
 };
@@ -170,9 +169,9 @@ struct is_move_or_copy_constructible :
 template <typename... T>
 struct variant
 {
-  static_assert(!::detail::any_of<::std::is_reference<T>...>{},
+  static_assert(!::detail::any_of< ::std::is_reference<T>...>{},
     "reference types are unsupported");
-  static_assert(!::detail::any_of<::std::is_void<T>...>{},
+  static_assert(!::detail::any_of< ::std::is_void<T>...>{},
     "void type is unsupported");
   static_assert(::detail::all_of<
     ::detail::is_move_or_copy_constructible<T>...>{},
@@ -182,7 +181,7 @@ struct variant
 
   using max_align_type = typename ::detail::max_align_type<T...>::type;
 
-  using max_type = typename ::detail::max_type<T...>::type;
+  using max_size_type = typename ::detail::max_size_type<T...>::type;
 
   static constexpr auto const max_align = alignof(max_align_type);
 
@@ -215,7 +214,7 @@ struct variant
     }
     else if (rhs.copier_)
     {
-      rhs.copier_(*this, const_cast<variant&>(rhs));
+      rhs.copier_(*this, rhs);
     }
     else
     {
@@ -251,7 +250,7 @@ struct variant
 
   template <
     typename U,
-    typename = typename ::std::enable_if< ::detail::any_of<::std::is_same<
+    typename = typename ::std::enable_if< ::detail::any_of< ::std::is_same<
       typename ::std::remove_reference<U>::type, T>...>{}
       && !::std::is_same<typename ::std::decay<U>::type, variant>{}
     >::type
@@ -262,7 +261,7 @@ struct variant
   }
 
   template <typename S = ::std::ostream, typename U>
-  typename ::std::enable_if< ::detail::any_of<::std::is_same<
+  typename ::std::enable_if< ::detail::any_of< ::std::is_same<
     typename ::std::remove_reference<U>::type, T>...>{}
     && !::std::is_rvalue_reference<U&&>{}
     && ::std::is_copy_assignable<typename ::std::remove_reference<U>::type>{}
@@ -303,7 +302,7 @@ struct variant
 
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
-    ::detail::any_of<::std::is_same<
+    ::detail::any_of< ::std::is_same<
       typename ::std::remove_reference<U>::type, T>...>{}
     && ::std::is_rvalue_reference<U&&>{}
     && ::std::is_move_assignable<typename ::std::remove_reference<U>::type>{}
@@ -344,7 +343,7 @@ struct variant
 
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
-    ::detail::any_of<::std::is_same<
+    ::detail::any_of< ::std::is_same<
       typename ::std::remove_reference<U>::type, T>...>{}
     && !::std::is_copy_assignable<
       typename ::std::remove_reference<U>::type>{}
@@ -389,7 +388,7 @@ struct variant
   template <typename U>
   bool contains() const noexcept
   {
-    return *this && (::detail::index_of<U, T...>{} == store_type_);
+    return ::detail::index_of<U, T...>{} == store_type_;
   }
 
   template <typename U>
@@ -473,7 +472,7 @@ struct variant
   int store_type_index() const noexcept { return store_type_; }
 
 private:
-  using copier_type = void (*)(variant&, variant&);
+  using copier_type = void (*)(variant&, variant const&);
   using mover_type = void (*)(variant&, variant&&);
   using streamer_type = void (*)(void*, variant const&);
 
@@ -553,12 +552,12 @@ private:
     ::std::is_copy_constructible<U>{}
     && ::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(variant& dst, variant& src)
+  copier_stub(variant& dst, variant const& src)
   {
     if (src.store_type_ == dst.store_type_)
     {
       *static_cast<U*>(static_cast<void*>(dst.store_)) =
-        *static_cast<U*>(static_cast<void*>(src.store_));
+        *static_cast<U const*>(static_cast<void const*>(src.store_));
     }
     else
     {
@@ -568,7 +567,8 @@ private:
       }
       // else do nothing
 
-      new (dst.store_) U(*static_cast<U*>(static_cast<void*>(src.store_)));
+      new (dst.store_) U(*static_cast<U const*>(
+        static_cast<void const*>(src.store_)));
 
       dst.deleter_ = src.deleter_;
 
@@ -587,7 +587,7 @@ private:
     ::std::is_copy_constructible<U>{}
     && !::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(variant& dst, variant& src)
+  copier_stub(variant& dst, variant const& src)
   {
     if (dst)
     {
@@ -595,7 +595,8 @@ private:
     }
     // else do nothing
 
-    new (dst.store_) U(*static_cast<U*>(static_cast<void*>(src.store_)));
+    new (dst.store_) U(*static_cast<U const*>(
+      static_cast<void const*>(src.store_)));
 
     dst.deleter_ = src.deleter_;
 
@@ -628,8 +629,8 @@ private:
       }
       // else do nothing
 
-      new (dst.store_) U(::std::move(*static_cast<U*>(static_cast<void*>(
-        src.store_))));
+      new (dst.store_) U(::std::move(*static_cast<U*>(
+        static_cast<void*>(src.store_))));
 
       dst.deleter_ = src.deleter_;
 
@@ -689,7 +690,7 @@ private:
 
   int store_type_{-1};
 
-  alignas(max_align_type) char store_[sizeof(max_type)];
+  alignas(max_align_type) char store_[sizeof(max_size_type)];
 };
 
 #endif // VARIANT_HPP
