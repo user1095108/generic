@@ -251,8 +251,8 @@ struct variant
   template <
     typename U,
     typename = typename ::std::enable_if< ::detail::any_of< ::std::is_same<
-      typename ::std::remove_reference<U>::type, T>...>{}
-      && !::std::is_same<typename ::std::decay<U>::type, variant>{}
+      typename ::std::remove_reference<U>::type, T>...>{} &&
+      !::std::is_same<typename ::std::decay<U>::type, variant>{}
     >::type
   >
   variant(U&& f)
@@ -262,10 +262,10 @@ struct variant
 
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if< ::detail::any_of< ::std::is_same<
-    typename ::std::remove_reference<U>::type, T>...>{}
-    && !::std::is_rvalue_reference<U&&>{}
-    && ::std::is_copy_assignable<typename ::std::remove_reference<U>::type>{}
-    && !::std::is_same<typename ::std::decay<U>::type, variant>{},
+    typename ::std::remove_reference<U>::type, T>...>{} &&
+    !::std::is_rvalue_reference<U&&>{} &&
+    ::std::is_copy_assignable<typename ::std::remove_reference<U>::type>{} &&
+    !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
   operator=(U&& f)
@@ -303,10 +303,10 @@ struct variant
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
     ::detail::any_of< ::std::is_same<
-      typename ::std::remove_reference<U>::type, T>...>{}
-    && ::std::is_rvalue_reference<U&&>{}
-    && ::std::is_move_assignable<typename ::std::remove_reference<U>::type>{}
-    && !::std::is_same<typename ::std::decay<U>::type, variant>{},
+      typename ::std::remove_reference<U>::type, T>...>{} &&
+    ::std::is_rvalue_reference<U&&>{} &&
+    ::std::is_move_assignable<typename ::std::remove_reference<U>::type>{} &&
+    !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
   operator=(U&& f)
@@ -344,12 +344,12 @@ struct variant
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
     ::detail::any_of< ::std::is_same<
-      typename ::std::remove_reference<U>::type, T>...>{}
-    && !::std::is_copy_assignable<
-      typename ::std::remove_reference<U>::type>{}
-    && !::std::is_move_assignable<
-      typename ::std::remove_reference<U>::type>{}
-    && !::std::is_same<typename ::std::decay<U>::type, variant>{},
+      typename ::std::remove_reference<U>::type, T>...>{} &&
+    !::std::is_copy_assignable<
+      typename ::std::remove_reference<U>::type>{} &&
+    !::std::is_move_assignable<
+      typename ::std::remove_reference<U>::type>{} &&
+    !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
   operator=(U&& f)
@@ -393,9 +393,27 @@ struct variant
 
   template <typename U>
   typename ::std::enable_if<
-    (-1 != ::detail::index_of<U, T...>{})
-    && (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    (-1 != ::detail::index_of<U, T...>{}) &&
+    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U
+  >::type
+  cget() const
+  {
+    if (::detail::index_of<U, T...>{} == store_type_)
+    {
+      return *static_cast<U const*>(static_cast<void const*>(store_));
+    }
+    else
+    {
+      throw ::std::bad_typeid();
+    }
+  }
+
+  template <typename U>
+  typename ::std::enable_if<
+    (-1 != ::detail::index_of<U, T...>{}) &&
+    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U const&
   >::type
   cget() const
   {
@@ -445,9 +463,9 @@ struct variant
 
   template <typename U>
   typename ::std::enable_if<
-    (-1 == ::detail::index_of<U, T...>{})
-    && (-1 != ::detail::compatible_index_of<U, T...>{})
-    && (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    (-1 == ::detail::index_of<U, T...>{}) &&
+    (-1 != ::detail::compatible_index_of<U, T...>{}) &&
+    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U
   >::type
   get() const
@@ -549,8 +567,8 @@ private:
 
   template <typename U>
   static typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{}
-    && ::std::is_copy_assignable<U>{}
+    ::std::is_copy_constructible<U>{} &&
+    ::std::is_copy_assignable<U>{}
   >::type
   copier_stub(variant& dst, variant const& src)
   {
@@ -584,8 +602,8 @@ private:
 
   template <typename U>
   static typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{}
-    && !::std::is_copy_assignable<U>{}
+    ::std::is_copy_constructible<U>{} &&
+    !::std::is_copy_assignable<U>{}
   >::type
   copier_stub(variant& dst, variant const& src)
   {
@@ -611,8 +629,8 @@ private:
 
   template <typename U>
   static typename ::std::enable_if<
-    ::std::is_move_constructible<U>{}
-    && ::std::is_move_assignable<U>{}
+    ::std::is_move_constructible<U>{} &&
+    ::std::is_move_assignable<U>{}
   >::type
   mover_stub(variant& dst, variant&& src)
   {
@@ -646,8 +664,8 @@ private:
 
   template <typename U>
   static typename ::std::enable_if<
-    ::std::is_move_constructible<U>{}
-    && !::std::is_move_assignable<U>{}
+    ::std::is_move_constructible<U>{} &&
+    !::std::is_move_assignable<U>{}
   >::type
   mover_stub(variant& dst, variant&& src)
   {
@@ -677,7 +695,7 @@ private:
   >::type
   streamer_stub(void* const os, variant const& v)
   {
-    *static_cast<S*>(os) << v.get<U>();
+    *static_cast<S*>(os) << v.cget<U>();
   }
 
   using deleter_type = void (*)(void*);
