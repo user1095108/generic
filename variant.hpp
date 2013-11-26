@@ -391,6 +391,8 @@ struct variant
     return ::detail::index_of<U, T...>{} == store_type_;
   }
 
+  bool empty() const noexcept { return !*this; }
+
   template <typename U>
   typename ::std::enable_if<
     (-1 != ::detail::index_of<U, T...>{}) &&
