@@ -166,6 +166,11 @@ struct is_move_or_copy_constructible :
 
 }
 
+#ifdef __GNUC__
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif // __GNUC__
+
 template <typename... T>
 struct variant
 {
@@ -712,5 +717,9 @@ private:
 
   alignas(max_align_type) char store_[sizeof(max_size_type)];
 };
+
+#ifdef __GNUC__
+# pragma GCC diagnostic pop
+#endif // __GNUC__
 
 #endif // VARIANT_HPP
