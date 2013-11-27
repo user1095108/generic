@@ -262,7 +262,7 @@ public:
   }
 
 private:
-  friend class ::std::hash<delegate>;
+  friend struct ::std::hash<delegate>;
 
   using deleter_type = void (*)(void*);
 
