@@ -397,7 +397,7 @@ public:
   }
 
 private:
-  friend class ::std::hash<delegate>;
+  friend struct ::std::hash<delegate>;
 
   void* object_ptr_;
   stub_ptr_type stub_ptr_{};
