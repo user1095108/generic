@@ -262,7 +262,7 @@ struct variant
   >
   variant(U&& f)
   {
-    this = ::std::forward<U>(f);
+    *this = ::std::forward<U>(f);
   }
 
   template <typename S = ::std::ostream, typename U>
@@ -494,7 +494,7 @@ struct variant
     }
   }
 
-  int store_type_index() const noexcept { return store_type_; }
+  int type_index() const noexcept { return store_type_; }
 
 private:
   using copier_type = void (*)(variant&, variant const&);
