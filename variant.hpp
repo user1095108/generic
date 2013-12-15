@@ -494,6 +494,12 @@ struct variant
     }
   }
 
+  template <typename U>
+  constexpr int type_index() const noexcept
+  {
+    return ::detail::index_of<U, T...>{};
+  }
+
   int type_index() const noexcept { return store_type_; }
 
 private:
