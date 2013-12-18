@@ -45,12 +45,12 @@ template <typename T>
 class scope_exit
 {
 public:
-  explicit scope_exit(T&& f) : f_(std::move(f))
+  explicit scope_exit(T&& f) : f_(::std::move(f))
   {
     static_assert(noexcept(f_()), "throwing functors are unsupported");
   }
 
-  scope_exit(scope_exit&& other) : f_(std::move(other.f_)) { }
+  scope_exit(scope_exit&& other) : f_(::std::move(other.f_)) { }
 
   ~scope_exit() { f_(); }
 
@@ -63,13 +63,13 @@ class scope_exit_helper { };
 template<typename T>
 inline scope_exit<T> make_scope_exit(T&& f)
 {
-  return scope_exit<T>(std::forward<T>(f));
+  return scope_exit<T>(::std::forward<T>(f));
 }
 
 template<typename T>
 inline scope_exit<T> operator+(scope_exit_helper&&, T&& f)
 {
-  return scope_exit<T>(std::forward<T>(f));
+  return scope_exit<T>(::std::forward<T>(f));
 }
 
 }
