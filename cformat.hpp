@@ -176,7 +176,7 @@ template <::std::size_t buffer_size = 128>
 inline ::std::wstring wcstrftime(wchar_t const* format,
   struct ::std::tm const* time)
 {
-//static_assert(buffer_size > 0, "buffer_size must be greater than 0");
+  static_assert(buffer_size > 0, "buffer_size must be greater than 0");
 
   wchar_t s[buffer_size];
 
