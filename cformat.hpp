@@ -14,8 +14,6 @@
 # include <malloc.h>
 #endif
 
-#include "stackallocator.hpp"
-
 //////////////////////////////////////////////////////////////////////////////
 struct cformat_error : ::std::runtime_error
 {
@@ -41,7 +39,7 @@ inline ::std::string cformat(char const* format, ...)
     char tmp[64];
     len = ::std::vsnprintf(tmp, sizeof(tmp), format, ap);
 #else
-    len = ::std::vsnprintf(static_cast<char*>(_alloca(64)), sizeof(tmp),
+    len = ::std::vsnprintf(static_cast<char*>(_malloca(64)), sizeof(tmp),
       format, ap);
 #endif
 
