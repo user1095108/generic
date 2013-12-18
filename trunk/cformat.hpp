@@ -35,13 +35,8 @@ inline ::std::string cformat(char const* format, ...)
   {
     va_start(ap, format);
 
-#if !defined(_MSC_VER)
     char tmp[64];
     len = ::std::vsnprintf(tmp, sizeof(tmp), format, ap);
-#else
-    len = ::std::vsnprintf(static_cast<char*>(_alloca(64)), sizeof(tmp),
-      format, ap);
-#endif
 
     va_end(ap);
 
@@ -59,10 +54,11 @@ inline ::std::string cformat(char const* format, ...)
 
 #if !defined(_MSC_VER)
   char s[len];
-  ::std::vsnprintf(s, len, format, ap);
 #else
-  ::std::vsnprintf(static_cast<char*>(_alloca(len)), len, format, ap);
-#endif
+  auto const s(static_cast<char*>(_alloca(len)));
+#endif // _MSC_VER
+
+  ::std::vsnprintf(s, len, format, ap);
 
   va_end(ap);
 
@@ -80,13 +76,8 @@ inline void cformat(S& r, char const* format, ...)
   {
     va_start(ap, format);
 
-#if !defined(_MSC_VER)
     char tmp[64];
     len = ::std::vsnprintf(tmp, sizeof(tmp), format, ap);
-#else
-    len = ::std::vsnprintf(static_cast<char*>(_alloca(64)), sizeof(tmp),
-      format, ap);
-#endif
 
     va_end(ap);
 
@@ -106,10 +97,11 @@ inline void cformat(S& r, char const* format, ...)
 
 #if !defined(_MSC_VER)
   char s[len];
-  ::std::vsnprintf(s, len, format, ap);
 #else
-  ::std::vsnprintf(static_cast<char*>(_alloca(len)), len, format, ap);
-#endif
+  auto const s(static_cast<char*>(_alloca(len)));
+#endif // _MSC_VER
+
+  ::std::vsnprintf(s, len, format, ap);
 
   va_end(ap);
 
