@@ -14,6 +14,30 @@ namespace generic
 //////////////////////////////////////////////////////////////////////////////
 template <typename C>
 inline typename C::value_type join(C const& container,
+  typename C::value_type const sep)
+{
+  if (container.size())
+  {
+    typename C::value_type r(container.front());
+
+    auto const end(container.cend());
+
+    for (typename C::const_iterator i(container.cbegin() + 1); i != end; ++i)
+    {
+      r += sep + *i;
+    }
+
+    return r;
+  }
+  else
+  {
+    return typename C::value_type();
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+template <typename C>
+inline typename C::value_type join(C const& container,
   typename C::value_type::value_type const sep)
 {
   if (container.size())
