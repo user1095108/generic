@@ -52,7 +52,7 @@ public:
 
   scope_exit(scope_exit&& other) : f_(::std::move(other.f_)) { }
 
-  ~scope_exit() { f_(); }
+  ~scope_exit() noexcept { f_(); }
 
 private:
   T f_;
@@ -77,9 +77,9 @@ inline scope_exit<T> operator+(scope_exit_helper&&, T&& f)
 #define SCOPE_EXIT(...) auto const CAT(scope_exit_, __LINE__)          \
   (::detail::make_scope_exit([POP_LAST(__VA_ARGS__)]() mutable noexcept\
     { LAST(__VA_ARGS__); }))
-#define SCOPE_EXIT_ auto const CAT(scope_exit_, __LINE__)\
-  =::detail::scope_exit_helper()+[&]() mutable noexcept
-#define SCOPE_EXIT__(...) auto const CAT(scope_exit_, __LINE__)\
-  =::detail::scope_exit_helper()+[__VA_ARGS__]() mutable noexcept
+#define SCOPE_EXIT_ auto const CAT(scope_exit_, __LINE__) =            \
+  ::detail::scope_exit_helper()+[&]() mutable noexcept
+#define SCOPE_EXIT__(...) auto const CAT(scope_exit_, __LINE__) =      \
+  ::detail::scope_exit_helper()+[__VA_ARGS__]() mutable noexcept
 
 #endif // SCOPEEXIT_HPP

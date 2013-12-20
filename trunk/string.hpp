@@ -59,7 +59,7 @@ inline typename C::value_type join(C const& container,
   }
 }
 
-// trimming
+// trim
 //////////////////////////////////////////////////////////////////////////////
 inline ::std::string& ltrim(::std::string& s)
 {
