@@ -384,7 +384,7 @@ struct variant
 
   explicit operator bool() const noexcept { return -1 != store_type_; }
 
-  template <typename S = ::std::ostream, typename U>
+  template <typename U, typename S = ::std::ostream>
   void assign(U&& f)
   {
     operator=<S>(::std::forward<U>(f));
