@@ -66,7 +66,8 @@ struct index_of :
   ::std::integral_constant<int,
     ::std::is_same<A, B>{} ?
     0 :
-    (-1 == index_of<A, C...>{}) ? -1 : 1 + index_of<A, C...>{}>
+    (-1 == index_of<A, C...>{}) ? -1 : 1 + index_of<A, C...>{}
+  >
 {
 };
 
@@ -93,11 +94,12 @@ struct has_duplicates<A> :
 template <typename A, typename B, typename... C>
 struct compatible_index_of :
   ::std::integral_constant<int,
-    ::std::is_constructible<A, B>{}
-      ? 0
-      : (-1 == compatible_index_of<A, C...>{})
-        ? -1
-        : 1 + compatible_index_of<A, C...>{}>
+    ::std::is_constructible<A, B>{} ?
+      0 :
+      (-1 == compatible_index_of<A, C...>{}) ?
+        -1 :
+        1 + compatible_index_of<A, C...>{}
+  >
 {
 };
 
@@ -111,8 +113,11 @@ template <typename A, typename B, typename... C>
 struct compatible_type
 {
   using type = typename ::std::conditional<
-    ::std::is_constructible<A, B>{}, B,
-      typename compatible_type<A, C...>::type>::type;
+      ::std::is_constructible<A, B>{},
+      B,
+      typename compatible_type<A, C...
+    >::type
+  >::type;
 };
 
 template <typename A, typename B>
@@ -126,10 +131,13 @@ template <class S, class C, typename = void>
 struct is_streamable : ::std::false_type { };
 
 template <class S, class C>
-struct is_streamable<S, C,
+struct is_streamable<S,
+  C,
   decltype(void(sizeof(decltype(::std::declval<S&>()
     << ::std::declval<C const&>()))))
-> : ::std::true_type { };
+> : ::std::true_type
+{
+};
 
 template < ::std::size_t I, typename A, typename ...B>
 struct type_at : type_at<I - 1, B...>
@@ -146,16 +154,24 @@ template <bool B>
 using bool_constant = ::std::integral_constant<bool, B>;
 
 template <class A, class ...B>
-struct all_of : bool_constant<A::value && all_of<B...>::value> { };
+struct all_of : bool_constant<A::value && all_of<B...>::value>
+{
+};
 
 template <class A>
-struct all_of<A> : bool_constant<A::value> { };
+struct all_of<A> : bool_constant<A::value>
+{
+};
 
 template <class A, class ...B>
-struct any_of : bool_constant<A::value || any_of<B...>::value> { };
+struct any_of : bool_constant<A::value || any_of<B...>::value>
+{
+};
 
 template <class A>
-struct any_of<A> : bool_constant<A::value> { };
+struct any_of<A> : bool_constant<A::value>
+{
+};
 
 template <class A>
 struct is_move_or_copy_constructible :
