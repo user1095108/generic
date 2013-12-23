@@ -511,7 +511,7 @@ struct variant
   }
 
   template <typename U>
-  constexpr int type_index() const noexcept
+  static constexpr int type_index() const noexcept
   {
     return ::detail::index_of<U, T...>{};
   }
