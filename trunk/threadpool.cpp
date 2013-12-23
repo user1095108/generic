@@ -38,17 +38,21 @@ void thread_pool::run()
     {
       ::std::unique_lock<decltype(cm_)> l(cm_);
 
-      while (!qf_.load(::std::memory_order_relaxed) && delegates_.empty())
+      bool qf;
+
+      while (!(qf = qf_.load(::std::memory_order_relaxed)) &&
+        delegates_.empty())
       {
         cv_.wait(l);
       }
 
-      if (qf_.load(::std::memory_order_relaxed))
+      if (qf)
       {
         break;
       }
       else
       {
+        assert(delegates_.size() > 0);
         c = ::std::move(delegates_.back());
 
         delegates_.pop_back();
