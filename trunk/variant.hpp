@@ -289,13 +289,13 @@ struct variant
     !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
-  operator=(U&& f)
+  operator=(U&& u)
   {
     using user_type = typename ::std::remove_reference<U>::type;
 
     if (::detail::index_of<user_type, T...>{} == store_type_)
     {
-      *static_cast<user_type*>(static_cast<void*>(store_)) = f;
+      *static_cast<user_type*>(static_cast<void*>(store_)) = u;
     }
     else
     {
@@ -305,7 +305,7 @@ struct variant
       }
       // else do nothing
 
-      new (store_) user_type(::std::forward<U>(f));
+      new (store_) user_type(::std::forward<U>(u));
 
       deleter_ = destructor_stub<user_type>;
 
@@ -330,13 +330,13 @@ struct variant
     !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
-  operator=(U&& f)
+  operator=(U&& u)
   {
     using user_type = typename ::std::remove_reference<U>::type;
 
     if (::detail::index_of<user_type, T...>{} == store_type_)
     {
-      *static_cast<user_type*>(static_cast<void*>(store_)) = ::std::move(f);
+      *static_cast<user_type*>(static_cast<void*>(store_)) = ::std::move(u);
     }
     else
     {
@@ -346,7 +346,7 @@ struct variant
       }
       // else do nothing
 
-      new (store_) user_type(::std::forward<U>(f));
+      new (store_) user_type(::std::forward<U>(u));
 
       deleter_ = destructor_stub<user_type>;
 
@@ -373,7 +373,7 @@ struct variant
     !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
-  operator=(U&& f)
+  operator=(U&& u)
   {
     using user_type = typename ::std::remove_reference<U>::type;
 
@@ -383,7 +383,7 @@ struct variant
     }
     // else do nothing
 
-    new (store_) user_type(::std::forward<U>(f));
+    new (store_) user_type(::std::forward<U>(u));
 
     deleter_ = destructor_stub<user_type>;
 
@@ -401,9 +401,9 @@ struct variant
   explicit operator bool() const noexcept { return -1 != store_type_; }
 
   template <typename S = ::std::ostream, typename U>
-  variant& assign(U&& f)
+  variant& assign(U&& u)
   {
-    return operator=<S>(::std::forward<U>(f));
+    return operator=<S>(::std::forward<U>(u));
   }
 
   template <typename U>
