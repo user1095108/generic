@@ -250,11 +250,11 @@ inline light_ptr<T> make_light(Args&& ...args)
 namespace std
 {
   template <typename T>
-  struct hash<light_ptr<T> >
+  struct hash<::light_ptr<T> >
   {
-    size_t operator()(light_ptr<T> const& l) const noexcept
+    size_t operator()(::light_ptr<T> const& l) const noexcept
     {
-      return hash<typename light_ptr<T>::element_type*>(l.get());
+      return hash<typename ::light_ptr<T>::element_type*>()(l.get());
     }
   };
 }
