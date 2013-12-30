@@ -19,13 +19,13 @@ namespace detail
   {
   };
 
-  template <>
-  struct is_incomplete<void> : ::std::false_type
+  template <typename T>
+  struct is_incomplete<T, decltype(sizeof(T))> : ::std::false_type
   {
   };
 
-  template <typename T>
-  struct is_incomplete<T, decltype(sizeof(T))> : ::std::false_type
+  template <>
+  struct is_incomplete<void> : ::std::false_type
   {
   };
 
