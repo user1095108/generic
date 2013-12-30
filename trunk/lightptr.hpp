@@ -49,6 +49,21 @@ namespace detail
     // else do nothing
   }
 
+  template <>
+  inline void dec_ref(atomic_type* const counter_ptr,
+    void* const ptr, deleter_type<void> const deleter)
+  {
+    if (counter_ptr && (counter_type(1) ==
+      counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed)))
+    {
+      delete counter_ptr;
+
+      deleter(ptr);
+    }
+    // else do nothing
+  }
+
+
   inline void inc_ref(atomic_type* const counter_ptr)
   {
     //assert(counter_ptr);
