@@ -14,13 +14,13 @@
 
 namespace detail
 {
-  template <typename T, typename = void*>
+  template <typename T, typename = void>
   struct is_incomplete : ::std::true_type
   {
   };
 
-  template <typename T, void>
-  struct is_incomplete : ::std::false_type
+  template <>
+  struct is_incomplete<void> : ::std::false_type
   {
   };
 
