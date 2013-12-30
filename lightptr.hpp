@@ -40,6 +40,9 @@ namespace detail
     if (counter_ptr && (counter_type(1) ==
       counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed)))
     {
+      typedef char type_must_be_complete[sizeof(T) ? 1 : -1];
+      (void)sizeof(type_must_be_complete);
+
       delete counter_ptr;
 
       deleter(ptr);
