@@ -14,21 +14,6 @@
 
 namespace detail
 {
-  template <typename T, typename = void>
-  struct is_incomplete : ::std::true_type
-  {
-  };
-
-  template <typename T>
-  struct is_incomplete<T, decltype(sizeof(T))> : ::std::false_type
-  {
-  };
-
-  template <>
-  struct is_incomplete<void> : ::std::false_type
-  {
-  };
-
   using counter_type = unsigned;
 
   using atomic_type = ::std::atomic<counter_type>;
@@ -55,10 +40,10 @@ namespace detail
     if (counter_ptr && (counter_type(1) ==
       counter_ptr->fetch_sub(counter_type(1), ::std::memory_order_relaxed)))
     {
-      static_assert(!is_incomplete<T>{}, "T must be a complete type");
-
       delete counter_ptr;
 
+      typedef char type_must_be_complete[sizeof(T) ? 1 : -1];
+      (void)sizeof(type_must_be_complete);
       deleter(ptr);
     }
     // else do nothing
