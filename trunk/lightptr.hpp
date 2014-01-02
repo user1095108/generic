@@ -162,7 +162,7 @@ struct light_ptr
     return *this;
   }
 
-  light_ptr& operator=(::std::nullptr_t) noexcept { reset(); }
+  light_ptr& operator=(::std::nullptr_t const) noexcept { reset(); }
 
   bool operator<(light_ptr const& rhs) const noexcept
   {
