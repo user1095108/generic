@@ -63,7 +63,6 @@ namespace detail
     // else do nothing
   }
 
-
   inline void inc_ref(atomic_type* const counter_ptr)
   {
     //assert(counter_ptr);
