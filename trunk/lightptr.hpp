@@ -12,6 +12,9 @@
 
 #include <type_traits>
 
+namespace generic
+{
+
 namespace detail
 {
   using counter_type = unsigned;
@@ -111,7 +114,7 @@ struct light_ptr
 
   using element_type = typename remove_array<T>::type;
 
-  using deleter_type = ::detail::deleter_type<element_type>;
+  using deleter_type = detail::deleter_type<element_type>;
 
   light_ptr() = default;
 
@@ -121,7 +124,7 @@ struct light_ptr
     reset(p, d);
   }
 
-  ~light_ptr() { ::detail::dec_ref(counter_ptr_, ptr_, deleter_); }
+  ~light_ptr() { detail::dec_ref(counter_ptr_, ptr_, deleter_); }
 
   light_ptr(light_ptr const& other) { *this = other; }
 
@@ -131,14 +134,14 @@ struct light_ptr
   {
     if (*this != rhs)
     {
-      ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
+      detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
       counter_ptr_ = rhs.counter_ptr_;
       ptr_ = rhs.ptr_;
 
       deleter_ = rhs.deleter_;
 
-      ::detail::inc_ref(counter_ptr_);
+      detail::inc_ref(counter_ptr_);
     }
     // else do nothing
 
@@ -191,7 +194,7 @@ struct light_ptr
 
   explicit operator bool() const noexcept { return ptr_; }
 
-  typename ::detail::ref_type<T>::type
+  typename detail::ref_type<T>::type
   operator*() const noexcept
   {
     return *static_cast<T*>(static_cast<void*>(ptr_));
@@ -208,7 +211,7 @@ struct light_ptr
 
   void reset(::std::nullptr_t const)
   {
-    ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
+    detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
     counter_ptr_ = nullptr;
     ptr_ = nullptr;
@@ -217,9 +220,9 @@ struct light_ptr
   template <typename U>
   void reset(U* const p, deleter_type const d = default_deleter<U>)
   {
-    ::detail::dec_ref(counter_ptr_, ptr_, deleter_);
+    detail::dec_ref(counter_ptr_, ptr_, deleter_);
 
-    counter_ptr_ = new ::detail::atomic_type(::detail::counter_type(1));
+    counter_ptr_ = new detail::atomic_type(detail::counter_type(1));
     ptr_ = p;
 
     deleter_ = d;
@@ -234,14 +237,14 @@ struct light_ptr
 
   bool unique() const noexcept
   {
-    return ::detail::counter_type(1) == use_count();
+    return detail::counter_type(1) == use_count();
   }
 
-  ::detail::counter_type use_count() const noexcept
+  detail::counter_type use_count() const noexcept
   {
     return counter_ptr_ ?
       counter_ptr_->load(::std::memory_order_relaxed) :
-      ::detail::counter_type{};
+      detail::counter_type{};
   }
 
   template <typename U>
@@ -252,7 +255,7 @@ struct light_ptr
   }
 
 private:
-  ::detail::atomic_type* counter_ptr_{};
+  detail::atomic_type* counter_ptr_{};
 
   element_type* ptr_{};
 
@@ -265,14 +268,16 @@ inline light_ptr<T> make_light(Args&& ...args)
   return light_ptr<T>(new T(::std::forward<Args>(args)...));
 }
 
+}
+
 namespace std
 {
   template <typename T>
-  struct hash<::light_ptr<T> >
+  struct hash<::generic::light_ptr<T> >
   {
-    size_t operator()(::light_ptr<T> const& l) const noexcept
+    size_t operator()(::generic::light_ptr<T> const& l) const noexcept
     {
-      return hash<typename ::light_ptr<T>::element_type*>()(l.get());
+      return hash<typename ::generic::light_ptr<T>::element_type*>()(l.get());
     }
   };
 }
