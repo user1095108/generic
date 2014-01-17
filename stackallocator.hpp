@@ -12,6 +12,9 @@
 
 #include <utility>
 
+namespace generic
+{
+
 template <std::size_t N>
 class stack_store
 {
@@ -163,8 +166,13 @@ private:
   store_type* store_{};
 };
 
+}
+
 namespace std
 {
+  // map
+  template<class Key, class T, class Compare, class Allocator> class map;
+
   // string
   template<class CharT> class char_traits;
 
@@ -178,15 +186,19 @@ namespace std
   template <class T, class Alloc> class vector;
 }
 
+template <class Key, class T, class Compare = ::std::less<Key> >
+using stack_map = ::std::map<Key, T, Compare,
+  ::generic::stack_allocator<::std::pair<Key const, T>, 256> >;
+
 using stack_string = ::std::basic_string<char, ::std::char_traits<char>,
-  stack_allocator<char, 128> >;
+  ::generic::stack_allocator<char, 128> >;
 
 template <class Key, class T, class Hash = ::std::hash<Key>,
   class Pred = ::std::equal_to<Key> >
 using stack_unordered_map = ::std::unordered_map<Key, T, Hash, Pred,
-  stack_allocator<::std::pair<Key const, T>, 256> >;
+  ::generic::stack_allocator<::std::pair<Key const, T>, 256> >;
 
 template <typename T>
-using stack_vector = ::std::vector<T, stack_allocator<T, 256> >;
+using ::generic::stack_vector = ::std::vector<T, stack_allocator<T, 256> >;
 
 #endif // STACKALLOCATOR_HPP
