@@ -24,7 +24,8 @@ struct catenate_indices<indices<Is...>, indices<Js...> >
   using indices_type = indices<Is..., Js...>;
 };
 
-template <::std::size_t, ::std::size_t, typename = void> struct expand_indices;
+template <::std::size_t, ::std::size_t, typename = void>
+struct expand_indices;
 
 template <::std::size_t A, ::std::size_t B>
 struct expand_indices<A, B, typename ::std::enable_if<A == B>::type>
