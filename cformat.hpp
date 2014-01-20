@@ -14,6 +14,9 @@
 # include <malloc.h>
 #endif // _MSC_VER
 
+namespace generic
+{
+
 //////////////////////////////////////////////////////////////////////////////
 struct cformat_error : ::std::runtime_error
 {
@@ -179,4 +182,6 @@ inline ::std::wstring wcstrftime(wchar_t const* format,
   // else do nothing
 
   return s;
+}
+
 }
