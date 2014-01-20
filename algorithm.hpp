@@ -8,13 +8,10 @@
 
 #include <utility>
 
+#include "utility.hpp"
+
 namespace generic
 {
-
-namespace detail
-{
-
-}
 
 // contains
 template <class Container, class Key>
@@ -32,7 +29,7 @@ inline constexpr T max(T a, T b)
 
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  detail::all_of<::std::is_same<A, T>...>{}, T>::type
+  all_of<::std::is_same<A, T>...>{}, T>::type
 max(T a, T b, A ...args)
 {
   return a > b ? max(a, args...) : max(b, args...);
@@ -46,7 +43,7 @@ inline constexpr T min(T a, T b)
 
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  detail::all_of<::std::is_same<A, T>...>{}, T>::type
+  all_of<::std::is_same<A, T>...>{}, T>::type
 min(T a, T b, A ...args)
 {
   return a < b ? min(a, args...) : min(b, args...);
@@ -54,10 +51,9 @@ min(T a, T b, A ...args)
 
 template <typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  detail::all_of<::std::is_same<
-    typename detail::front<A...>::type, A>...>{},
+  all_of<::std::is_same<typename front<A...>::type, A>...>{},
   std::pair<typename detail::front<A...>::type,
-    typename detail::front<A...>::type> >::type
+    typename front<A...>::type> >::type
 minmax(A ...args)
 {
   return {min(args...), max(args...)};
