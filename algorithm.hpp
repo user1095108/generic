@@ -52,7 +52,7 @@ min(T a, T b, A ...args)
 template <typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
   all_of<::std::is_same<typename front<A...>::type, A>...>{},
-  std::pair<typename detail::front<A...>::type,
+  ::std::pair<typename front<A...>::type,
     typename front<A...>::type> >::type
 minmax(A ...args)
 {
