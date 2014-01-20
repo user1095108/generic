@@ -14,43 +14,6 @@ namespace generic
 namespace detail
 {
 
-template <::std::size_t I, typename A, typename ...B>
-struct type_at : type_at<I - 1, B...>
-{
-};
-
-template <typename A, typename ...B>
-struct type_at<0, A, B...>
-{
-  using type = A;
-};
-
-template <typename A, typename ...B>
-struct front
-{
-  using type = A;
-};
-
-template <typename A, typename ...B>
-struct back : back<B...>
-{
-};
-
-template <typename A>
-struct back<A>
-{
-  using type = A;
-};
-
-template <bool B>
-using bool_ = ::std::integral_constant<bool, B>;
-
-template <class A, class ...B>
-struct all_of : bool_<A::value && all_of<B...>::value> { };
-
-template <class A>
-struct all_of<A> : bool_<A::value> { };
-
 }
 
 // contains
