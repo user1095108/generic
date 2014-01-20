@@ -33,6 +33,7 @@ struct expand_indices<A, B, typename ::std::enable_if<A == B>::type>
 template <::std::size_t A, ::std::size_t B>
 struct expand_indices<A, B, typename ::std::enable_if<A != B>::type>
 {
+  static_assert(A < B, "A >= B");
   using indices_type = typename catenate_indices<
     typename expand_indices<A, (A + B) / 2>::indices_type,
     typename expand_indices<(A + B) / 2 + 1, B>::indices_type
@@ -47,7 +48,7 @@ struct make_indices : detail::expand_indices<0, A>::indices_type
 };
 
 template <::std::size_t A, ::std::size_t B>
-struct make_range : detail::expand_indices<A, B>::indices_type
+struct make_indices_range : detail::expand_indices<A, B>::indices_type
 {
 };
 
