@@ -42,6 +42,8 @@ struct expand_indices<A, B, typename ::std::enable_if<A != B>::type>
 
 }
 
+template<typename T> constexpr inline T const& as_const(T& t) { return t; }
+
 template <::std::size_t A>
 struct make_indices : detail::expand_indices<0, A>::indices_type
 {
