@@ -16,7 +16,7 @@ namespace detail
 {
 
 // indices
-template<class A, class B> struct catenate_indices;
+template<class, class> struct catenate_indices;
 
 template <::std::size_t ...Is, ::std::size_t ...Js>
 struct catenate_indices<indices<Is...>, indices<Js...> >
@@ -46,12 +46,20 @@ struct expand_indices<A, B, typename ::std::enable_if<A != B>::type>
 }
 
 template <::std::size_t A>
-struct make_indices : detail::expand_indices<0, A>::indices_type
+struct make_indices : detail::expand_indices<0, A - 1>::indices_type;
+
+template <>
+struct make_indices<0> : indices<>
 {
 };
 
 template <::std::size_t A, ::std::size_t B>
-struct make_indices_range : detail::expand_indices<A, B>::indices_type
+struct make_indices_range : detail::expand_indices<A, B - 1>::indices_type
+{
+};
+
+template <::std::size_t A>
+struct make_indices_range<A, A> : indices<>
 {
 };
 
