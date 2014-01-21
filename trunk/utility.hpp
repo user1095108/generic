@@ -46,7 +46,9 @@ struct expand_indices<A, B, typename ::std::enable_if<A != B>::type>
 }
 
 template <::std::size_t A>
-struct make_indices : detail::expand_indices<0, A - 1>::indices_type;
+struct make_indices : detail::expand_indices<0, A - 1>::indices_type
+{
+};
 
 template <>
 struct make_indices<0> : indices<>
