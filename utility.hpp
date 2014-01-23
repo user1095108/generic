@@ -8,14 +8,22 @@
 namespace generic
 {
 
+// as_const
 template<typename T> constexpr inline T const& as_const(T& t) { return t; }
 
+// contains
+template <class Container, class Key>
+inline bool contains(Container const& c, Key const& key)
+{
+  return c.end() != c.find(key);
+}
+
+// indices
 template <::std::size_t...> struct indices { };
 
 namespace detail
 {
 
-// indices
 template<class, class> struct catenate_indices;
 
 template <::std::size_t ...Is, ::std::size_t ...Js>
@@ -45,14 +53,6 @@ struct expand_indices<A, B, typename ::std::enable_if<A != B>::type>
 
 }
 
-// contains
-template <class Container, class Key>
-inline bool contains(Container const& c, Key const& key)
-{
-  return c.end() != c.find(key);
-}
-
-// indices
 template <::std::size_t A>
 struct make_indices : detail::expand_indices<0, A - 1>::indices_type
 {
