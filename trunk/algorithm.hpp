@@ -13,13 +13,6 @@
 namespace generic
 {
 
-// contains
-template <class Container, class Key>
-inline bool contains(Container const& c, Key const& key)
-{
-  return c.cend() != c.find(key);
-}
-
 // min, max
 template <typename T>
 inline constexpr T max(T a, T b)
