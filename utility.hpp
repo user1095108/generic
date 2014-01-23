@@ -45,6 +45,14 @@ struct expand_indices<A, B, typename ::std::enable_if<A != B>::type>
 
 }
 
+// contains
+template <class Container, class Key>
+inline bool contains(Container const& c, Key const& key)
+{
+  return c.end() != c.find(key);
+}
+
+// indices
 template <::std::size_t A>
 struct make_indices : detail::expand_indices<0, A - 1>::indices_type
 {
