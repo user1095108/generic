@@ -20,8 +20,8 @@ namespace generic
 //////////////////////////////////////////////////////////////////////////////
 struct cformat_error : ::std::runtime_error
 {
-  cformat_error() : ::std::runtime_error(::std::string("formatting error: ") +
-    ::std::strerror(errno))
+  cformat_error() : ::std::runtime_error(
+    ::std::string("formatting error: ") + ::std::strerror(errno))
   {
   }
 };
