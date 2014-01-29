@@ -29,7 +29,7 @@ struct cformat_error : ::std::runtime_error
 typedef cformat_error wcformat_error;
 
 //////////////////////////////////////////////////////////////////////////////
-inline ::std::string cformat(char const* format, ...)
+inline ::std::string cformat(char const* const format, ...)
 {
   va_list ap;
 
@@ -70,7 +70,7 @@ inline ::std::string cformat(char const* format, ...)
 
 //////////////////////////////////////////////////////////////////////////////
 template <typename S>
-inline void cformat(S& r, char const* format, ...)
+inline void cformat(S& r, char const* const format, ...)
 {
   va_list ap;
 
@@ -113,7 +113,7 @@ inline void cformat(S& r, char const* format, ...)
 
 //////////////////////////////////////////////////////////////////////////////
 template <::std::size_t buffer_size = 128>
-inline ::std::wstring wcformat(wchar_t const* format, ...)
+inline ::std::wstring wcformat(wchar_t const* const format, ...)
 {
   static_assert(buffer_size > 0, "buffer_size must be greater than 0");
 
@@ -150,7 +150,7 @@ typedef strftime_array_undefined wcsftime_array_undefined;
 
 //////////////////////////////////////////////////////////////////////////////
 template <::std::size_t buffer_size = 128>
-inline ::std::string cstrftime(char const* format,
+inline ::std::string cstrftime(char const* const format,
   struct ::std::tm const* time)
 {
   static_assert(buffer_size > 0, "buffer_size must be greater than 0");
@@ -168,7 +168,7 @@ inline ::std::string cstrftime(char const* format,
 
 //////////////////////////////////////////////////////////////////////////////
 template <::std::size_t buffer_size = 128>
-inline ::std::wstring wcstrftime(wchar_t const* format,
+inline ::std::wstring wcstrftime(wchar_t const* const format,
   struct ::std::tm const* time)
 {
   static_assert(buffer_size > 0, "buffer_size must be greater than 0");
