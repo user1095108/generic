@@ -102,14 +102,15 @@ struct back<A>
   using type = A;
 };
 
-template <bool B>
-using bool_ = ::std::integral_constant<bool, B>;
-
 template <class A, class ...B>
-struct all_of : bool_<A::value && all_of<B...>::value> { };
+struct all_of : ::std::integral_constant<bool, A{} && all_of<B...>{}>
+{
+};
 
 template <class A>
-struct all_of<A> : bool_<A::value> { };
+struct all_of<A> : ::std::integral_constant<bool, A{}>
+{
+};
 
 }
 
