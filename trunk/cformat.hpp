@@ -155,7 +155,11 @@ inline ::std::string cstrftime(char const* const format,
 {
   static_assert(buffer_size > 0, "buffer_size must be greater than 0");
 
+#if !defined(_MSC_VER)
   char s[buffer_size];
+#else
+  auto const s(static_cast<char*>(_alloca(buffer_size)));
+#endif // _MSC_VER
 
   if (!::std::strftime(s, buffer_size, format, time))
   {
@@ -173,7 +177,11 @@ inline ::std::wstring wcstrftime(wchar_t const* const format,
 {
   static_assert(buffer_size > 0, "buffer_size must be greater than 0");
 
+#if !defined(_MSC_VER)
   wchar_t s[buffer_size];
+#else
+  auto const s(static_cast<char*>(_alloca(buffer_size)));
+#endif // _MSC_VER
 
   if (!::std::wcsftime(s, buffer_size, format, time))
   {
