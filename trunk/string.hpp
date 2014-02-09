@@ -71,8 +71,8 @@ inline ::std::string& ltrim(::std::string& s)
 
 inline ::std::string& rtrim(::std::string& s)
 {
-  s.erase(s.begin(), ::std::find_if(s.begin(), s.end(),
-    [](char const c){ return !::std::isspace(c); }));
+  s.erase(::std::find_if(s.rbegin(), s.rend(),
+    [](char const c){ return !::std::isspace(c); }).base(), s.end());
 
   return s;
 }
