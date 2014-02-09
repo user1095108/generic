@@ -31,11 +31,11 @@ class delegate<R (A...)>
   }
 
 public:
-  delegate() = default;
+  delegate() noexcept = default;
 
   delegate(delegate const&) = default;
 
-  delegate(delegate&&) = default;
+  delegate(delegate&&) noexcept = default;
 
   delegate(::std::nullptr_t const) noexcept : delegate() { }
 
