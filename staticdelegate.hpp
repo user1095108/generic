@@ -184,11 +184,11 @@ class staticdelegate<R (A...)>
   }
 
 public:
-  staticdelegate() = default;
+  staticdelegate() noexcept = default;
 
   staticdelegate(staticdelegate const&) = default;
 
-  staticdelegate(staticdelegate&&) = default;
+  staticdelegate(staticdelegate&&) noexcept = default;
 
   staticdelegate(::std::nullptr_t const) noexcept : staticdelegate() { }
 

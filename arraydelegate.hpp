@@ -31,11 +31,11 @@ class arraydelegate<R (A...)>
   }
 
 public:
-  arraydelegate() = default;
+  arraydelegate() noexcept = default;
 
-  arraydelegate(delegate const& other) { *this = other; }
+  arraydelegate(arraydelegate const& other) noexcept { *this = other; }
 
-  arraydelegate(delegate&& other) noexcept { *this = ::std::move(other); }
+  arraydelegate(arraydelegate&& other) noexcept { *this = ::std::move(other); }
 
   arraydelegate(::std::nullptr_t const) noexcept : arraydelegate() { }
 
@@ -48,31 +48,35 @@ public:
 
   template <class C, typename =
     typename ::std::enable_if< ::std::is_class<C>{}>::type>
-  explicit delegate(C const& o) noexcept :
+  explicit arraydelegate(C const& o) noexcept :
     object_ptr_(const_cast<C*>(&o))
   {
   }
 
   template <class C>
-  arraydelegate(C* const object_ptr, R (C::* const method_ptr)(A...))
+  arraydelegate(C* const object_ptr,
+    R (C::* const method_ptr)(A...)) noexcept
   {
     *this = from(object_ptr, method_ptr);
   }
 
   template <class C>
-  arraydelegate(C* const object_ptr, R (C::* const method_ptr)(A...) const)
+  arraydelegate(C* const object_ptr,
+    R (C::* const method_ptr)(A...) const) noexcept
   {
     *this = from(object_ptr, method_ptr);
   }
 
   template <class C>
-  arraydelegate(C& object, R (C::* const method_ptr)(A...))
+  arraydelegate(C& object,
+    R (C::* const method_ptr)(A...)) noexcept
   {
     *this = from(object, method_ptr);
   }
 
   template <class C>
-  arraydelegate(C const& object, R (C::* const method_ptr)(A...) const)
+  arraydelegate(C const& object,
+    R (C::* const method_ptr)(A...) const) noexcept
   {
     *this = from(object, method_ptr);
   }
