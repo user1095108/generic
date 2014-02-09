@@ -487,9 +487,8 @@ namespace std
     {
       auto const seed(hash<void*>()(d.object_ptr_));
 
-      return hash<
-        typename ::generic::staticdelegate<R (A...)>::stub_ptr_type>()(
-          d.stub_ptr_) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      return hash<decltype(d.stub_ptr_)>()(d.stub_ptr_) +
+        0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
   };
 }
