@@ -33,9 +33,9 @@ class arraydelegate<R (A...)>
 public:
   arraydelegate() noexcept = default;
 
-  arraydelegate(arraydelegate const& other) noexcept { *this = other; }
+  arraydelegate(arraydelegate const& other) { *this = other; }
 
-  arraydelegate(arraydelegate&& other) noexcept { *this = ::std::move(other); }
+  arraydelegate(arraydelegate&& other) { *this = ::std::move(other); }
 
   arraydelegate(::std::nullptr_t const) noexcept : arraydelegate() { }
 
@@ -54,29 +54,25 @@ public:
   }
 
   template <class C>
-  arraydelegate(C* const object_ptr,
-    R (C::* const method_ptr)(A...)) noexcept
+  arraydelegate(C* const object_ptr, R (C::* const method_ptr)(A...))
   {
     *this = from(object_ptr, method_ptr);
   }
 
   template <class C>
-  arraydelegate(C* const object_ptr,
-    R (C::* const method_ptr)(A...) const) noexcept
+  arraydelegate(C* const object_ptr, R (C::* const method_ptr)(A...) const)
   {
     *this = from(object_ptr, method_ptr);
   }
 
   template <class C>
-  arraydelegate(C& object,
-    R (C::* const method_ptr)(A...)) noexcept
+  arraydelegate(C& object, R (C::* const method_ptr)(A...))
   {
     *this = from(object, method_ptr);
   }
 
   template <class C>
-  arraydelegate(C const& object,
-    R (C::* const method_ptr)(A...) const) noexcept
+  arraydelegate(C const& object, R (C::* const method_ptr)(A...) const)
   {
     *this = from(object, method_ptr);
   }
@@ -210,27 +206,28 @@ public:
 
   template <class C>
   static arraydelegate from(C* const object_ptr,
-    R (C::* const method_ptr)(A...))
+    R (C::* const method_ptr)(A...)) noexcept
   {
     return member_pair<C>(object_ptr, method_ptr);
   }
 
   template <class C>
   static arraydelegate from(C const* const object_ptr,
-    R (C::* const method_ptr)(A...) const)
+    R (C::* const method_ptr)(A...) const) noexcept
   {
     return const_member_pair<C>(object_ptr, method_ptr);
   }
 
   template <class C>
-  static arraydelegate from(C& object, R (C::* const method_ptr)(A...))
+  static arraydelegate from(C& object,
+    R (C::* const method_ptr)(A...)) noexcept
   {
     return member_pair<C>(&object, method_ptr);
   }
 
   template <class C>
   static arraydelegate from(C const& object,
-    R (C::* const method_ptr)(A...) const)
+    R (C::* const method_ptr)(A...) const) noexcept
   {
     return const_member_pair<C>(&object, method_ptr);
   }
@@ -284,7 +281,8 @@ private:
     static_cast<T*>(p)->~T();
   }
 
-  static void default_copier_stub(arraydelegate& dst, arraydelegate& src)
+  static void default_copier_stub(arraydelegate& dst,
+    arraydelegate& src) noexcept
   {
     dst.object_ptr_ = src.object_ptr_;
     dst.stub_ptr_ = src.stub_ptr_;
@@ -296,7 +294,8 @@ private:
   }
 
   template <typename T>
-  static void copier_stub(arraydelegate& dst, arraydelegate& src)
+  static void copier_stub(arraydelegate& dst,
+    arraydelegate& src)
   {
     new (dst.store_) T(*static_cast<T const*>(
       static_cast<void const*>(src.store_)));
@@ -311,7 +310,8 @@ private:
   }
 
   template <typename T>
-  static void mover_stub(arraydelegate& dst, arraydelegate& src)
+  static void mover_stub(arraydelegate& dst,
+    arraydelegate& src)
   {
     new (dst.store_) T(::std::move(*static_cast<T*>(
       static_cast<void*>(src.store_))));
