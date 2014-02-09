@@ -31,7 +31,7 @@ class arraydelegate<R (A...)>
   }
 
 public:
-  arraydelegate() noexcept = default;
+  arraydelegate() = default;
 
   arraydelegate(arraydelegate const& other) { *this = other; }
 

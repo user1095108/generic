@@ -31,7 +31,7 @@ class delegate<R (A...)>
   }
 
 public:
-  delegate() noexcept = default;
+  delegate() = default;
 
   delegate(delegate const&) = default;
 
