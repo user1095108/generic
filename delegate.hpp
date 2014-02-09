@@ -35,7 +35,7 @@ public:
 
   delegate(delegate const&) = default;
 
-  delegate(delegate&&) noexcept = default;
+  delegate(delegate&&) = default;
 
   delegate(::std::nullptr_t const) noexcept : delegate() { }
 

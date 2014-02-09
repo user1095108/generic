@@ -188,7 +188,7 @@ public:
 
   staticdelegate(staticdelegate const&) = default;
 
-  staticdelegate(staticdelegate&&) noexcept = default;
+  staticdelegate(staticdelegate&&) = default;
 
   staticdelegate(::std::nullptr_t const) noexcept : staticdelegate() { }
 
@@ -480,14 +480,16 @@ private:
 namespace std
 {
   template <typename R, typename ...A>
-  struct hash<staticdelegate<R (A...)> >
+  struct hash<::generic::staticdelegate<R (A...)> >
   {
-    size_t operator()(staticdelegate<R (A...)> const& d) const noexcept
+    size_t operator()(
+      ::generic::staticdelegate<R (A...)> const& d) const noexcept
     {
       auto const seed(hash<void*>()(d.object_ptr_));
 
-      return hash<typename staticdelegate<R (A...)>::stub_ptr_type>()(
-        d.stub_ptr_) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      return hash<
+        typename ::generic::staticdelegate<R (A...)>::stub_ptr_type>()(
+          d.stub_ptr_) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
   };
 }
