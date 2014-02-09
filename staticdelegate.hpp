@@ -184,7 +184,7 @@ class staticdelegate<R (A...)>
   }
 
 public:
-  staticdelegate() noexcept = default;
+  staticdelegate() = default;
 
   staticdelegate(staticdelegate const&) = default;
 
