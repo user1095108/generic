@@ -70,7 +70,8 @@ inline ::std::string cformat(char const* const format, ...)
 
 //////////////////////////////////////////////////////////////////////////////
 template <typename S>
-inline void cformat(S& r, char const* const format, ...)
+inline typename ::std::enable_if<!::std::is_const<S>{}>::type
+cformat(S& r, char const* const format, ...)
 {
   va_list ap;
 
