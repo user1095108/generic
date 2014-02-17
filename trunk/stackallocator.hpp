@@ -199,6 +199,6 @@ using stack_unordered_map = ::std::unordered_map<Key, T, Hash, Pred,
   ::generic::stack_allocator<::std::pair<Key const, T>, 256> >;
 
 template <typename T>
-using ::generic::stack_vector = ::std::vector<T, stack_allocator<T, 256> >;
+using stack_vector = ::std::vector<T, ::generic::stack_allocator<T, 256> >;
 
 #endif // STACKALLOCATOR_HPP
