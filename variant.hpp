@@ -64,12 +64,12 @@ struct max_size_type<A>
   using type = A;
 };
 
-template <typename A, typename B, typename... C>
+template <typename A, typename B, typename ...C>
 struct index_of :
   ::std::integral_constant<int,
     ::std::is_same<A, B>{} ?
     0 :
-    (-1 == index_of<A, C...>{}) ? -1 : 1 + index_of<A, C...>{}
+    -1 == index_of<A, C...>{} ? -1 : 1 + index_of<A, C...>{}
   >
 {
 };
@@ -80,10 +80,10 @@ struct index_of<A, B> :
 {
 };
 
-template <typename A, typename... B>
+template <typename A, typename ...B>
 struct has_duplicates :
   ::std::integral_constant<bool,
-    (-1 == index_of<A, B...>{} ? has_duplicates<B...>{} : true)
+    -1 == index_of<A, B...>{} ? has_duplicates<B...>{} : true
   >
 {
 };
@@ -94,12 +94,12 @@ struct has_duplicates<A> :
 {
 };
 
-template <typename A, typename B, typename... C>
+template <typename A, typename B, typename ...C>
 struct compatible_index_of :
   ::std::integral_constant<int,
     ::std::is_constructible<A, B>{} ?
       0 :
-      (-1 == compatible_index_of<A, C...>{}) ?
+      -1 == compatible_index_of<A, C...>{} ?
         -1 :
         1 + compatible_index_of<A, C...>{}
   >
@@ -112,14 +112,13 @@ struct compatible_index_of<A, B> :
 {
 };
 
-template <typename A, typename B, typename... C>
+template <typename A, typename B, typename ...C>
 struct compatible_type
 {
   using type = typename ::std::conditional<
       ::std::is_constructible<A, B>{},
       B,
-      typename compatible_type<A, C...
-    >::type
+      typename compatible_type<A, C...>::type
   >::type;
 };
 
@@ -136,8 +135,8 @@ struct is_streamable : ::std::false_type { };
 template <class S, class C>
 struct is_streamable<S,
   C,
-  decltype(void(sizeof(decltype(::std::declval<S&>()
-    << ::std::declval<C const&>()))))
+  decltype(void(sizeof(decltype(::std::declval<S&>() <<
+    ::std::declval<C const&>()))))
 > : ::std::true_type
 {
 };
