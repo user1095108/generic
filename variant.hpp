@@ -275,7 +275,7 @@ struct variant
   template <
     typename U,
     typename = typename ::std::enable_if< detail::any_of< ::std::is_same<
-      typename ::std::remove_reference<U>::type, T>...>{} &&
+      typename ::std::decay<U>::type, T>...>{} &&
       !::std::is_same<typename ::std::decay<U>::type, variant>{}
     >::type
   >
@@ -286,15 +286,15 @@ struct variant
 
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if< detail::any_of< ::std::is_same<
-    typename ::std::remove_reference<U>::type, T>...>{} &&
+    typename ::std::decay<U>::type, T>...>{} &&
     !::std::is_rvalue_reference<U&&>{} &&
-    ::std::is_copy_assignable<typename ::std::remove_reference<U>::type>{} &&
+    ::std::is_copy_assignable<typename ::std::decay<U>::type>{} &&
     !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
   operator=(U&& u)
   {
-    using user_type = typename ::std::remove_reference<U>::type;
+    using user_type = typename ::std::decay<U>::type;
 
     if (detail::index_of<user_type, T...>{} == store_type_)
     {
@@ -327,15 +327,15 @@ struct variant
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
     detail::any_of< ::std::is_same<
-      typename ::std::remove_reference<U>::type, T>...>{} &&
+      typename ::std::decay<U>::type, T>...>{} &&
     ::std::is_rvalue_reference<U&&>{} &&
-    ::std::is_move_assignable<typename ::std::remove_reference<U>::type>{} &&
+    ::std::is_move_assignable<typename ::std::decay<U>::type>{} &&
     !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
   operator=(U&& u)
   {
-    using user_type = typename ::std::remove_reference<U>::type;
+    using user_type = typename ::std::decay<U>::type;
 
     if (detail::index_of<user_type, T...>{} == store_type_)
     {
@@ -368,17 +368,17 @@ struct variant
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
     detail::any_of< ::std::is_same<
-      typename ::std::remove_reference<U>::type, T>...>{} &&
+      typename ::std::decay<U>::type, T>...>{} &&
     !::std::is_copy_assignable<
-      typename ::std::remove_reference<U>::type>{} &&
+      typename ::std::decay<U>::type>{} &&
     !::std::is_move_assignable<
-      typename ::std::remove_reference<U>::type>{} &&
+      typename ::std::decay<U>::type>{} &&
     !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
   >::type
   operator=(U&& u)
   {
-    using user_type = typename ::std::remove_reference<U>::type;
+    using user_type = typename ::std::decay<U>::type;
 
     if (*this)
     {
