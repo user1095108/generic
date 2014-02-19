@@ -229,9 +229,9 @@ struct variant
     {
       if (*this)
       {
-        store_type_ = -1;
-
         deleter_(store_);
+
+        store_type_ = -1;
       }
       // else do nothing
     }
@@ -253,9 +253,9 @@ struct variant
     {
       if (*this)
       {
-        store_type_ = -1;
-
         deleter_(store_);
+
+        store_type_ = -1;
       }
       // else do nothing
     }
