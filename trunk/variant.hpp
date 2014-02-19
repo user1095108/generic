@@ -261,7 +261,7 @@ struct variant
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(*this, ::std::move(rhs));
+      rhs.mover_(*this, rhs);
     }
     else
     {
@@ -523,7 +523,7 @@ struct variant
 
 private:
   using copier_type = void (*)(variant&, variant const&);
-  using mover_type = void (*)(variant&, variant&&);
+  using mover_type = void (*)(variant&, variant&);
   using streamer_type = void (*)(void*, variant const&);
 
   template <typename charT, typename traits>
@@ -664,7 +664,7 @@ private:
     ::std::is_move_constructible<U>{} &&
     ::std::is_move_assignable<U>{}
   >::type
-  mover_stub(variant& dst, variant&& src)
+  mover_stub(variant& dst, variant& src)
   {
     if (src.store_type_ == dst.store_type_)
     {
@@ -699,7 +699,7 @@ private:
     ::std::is_move_constructible<U>{} &&
     !::std::is_move_assignable<U>{}
   >::type
-  mover_stub(variant& dst, variant&& src)
+  mover_stub(variant& dst, variant& src)
   {
     if (dst)
     {
