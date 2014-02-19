@@ -278,15 +278,15 @@ struct variant
       !::std::is_same<typename ::std::decay<U>::type, variant>{}
     >::type
   >
-  variant(U&& f)
+  explicit variant(U&& f)
   {
     *this = ::std::forward<U>(f);
   }
 
   template <typename S = ::std::ostream, typename U>
-  typename ::std::enable_if< detail::any_of< ::std::is_same<
-    typename ::std::decay<U>::type, T>...>{} &&
-    !::std::is_rvalue_reference<U&&>{} &&
+  typename ::std::enable_if<
+    detail::any_of< ::std::is_same<
+      typename ::std::decay<U>::type, T>...>{} &&
     ::std::is_copy_assignable<typename ::std::decay<U>::type>{} &&
     !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
@@ -328,6 +328,7 @@ struct variant
     detail::any_of< ::std::is_same<
       typename ::std::decay<U>::type, T>...>{} &&
     ::std::is_rvalue_reference<U&&>{} &&
+    !::std::is_copy_assignable<typename ::std::decay<U>::type>{} &&
     ::std::is_move_assignable<typename ::std::decay<U>::type>{} &&
     !::std::is_same<typename ::std::decay<U>::type, variant>{},
     variant&
