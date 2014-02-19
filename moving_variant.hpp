@@ -232,6 +232,8 @@ struct moving_variant
       if (*this)
       {
         deleter_(store_);
+
+        store_type = -1;
       }
       // else do nothing
     }
