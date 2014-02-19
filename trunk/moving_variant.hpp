@@ -233,7 +233,7 @@ struct moving_variant
       {
         deleter_(store_);
 
-        store_type = -1;
+        store_type_ = -1;
       }
       // else do nothing
     }
