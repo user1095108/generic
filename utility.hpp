@@ -29,7 +29,7 @@ template<class, class> struct catenate_indices;
 template <::std::size_t ...Is, ::std::size_t ...Js>
 struct catenate_indices<indices<Is...>, indices<Js...> >
 {
-  using indices_type = indices<Is..., Js...>;
+  using type = indices<Is..., Js...>;
 };
 
 template <::std::size_t, ::std::size_t, typename = void>
@@ -38,23 +38,23 @@ struct expand_indices;
 template <::std::size_t A, ::std::size_t B>
 struct expand_indices<A, B, typename ::std::enable_if<A == B>::type>
 {
-  using indices_type = indices<A>;
+  using type = indices<A>;
 };
 
 template <::std::size_t A, ::std::size_t B>
 struct expand_indices<A, B, typename ::std::enable_if<A != B>::type>
 {
   static_assert(A < B, "A > B");
-  using indices_type = typename catenate_indices<
-    typename expand_indices<A, (A + B) / 2>::indices_type,
-    typename expand_indices<(A + B) / 2 + 1, B>::indices_type
-  >::indices_type;
+  using type = typename catenate_indices<
+    typename expand_indices<A, (A + B) / 2>::type,
+    typename expand_indices<(A + B) / 2 + 1, B>::type
+  >::type;
 };
 
 }
 
 template <::std::size_t A>
-struct make_indices : detail::expand_indices<0, A - 1>::indices_type
+struct make_indices : detail::expand_indices<0, A - 1>::type
 {
 };
 
@@ -64,7 +64,7 @@ struct make_indices<0> : indices<>
 };
 
 template <::std::size_t A, ::std::size_t B>
-struct make_indices_range : detail::expand_indices<A, B - 1>::indices_type
+struct make_indices_range : detail::expand_indices<A, B - 1>::type
 {
 };
 
