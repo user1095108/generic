@@ -168,7 +168,7 @@ inline ValueType any_cast(any& operand)
   typedef typename std::remove_reference<ValueType>::type nonref;
 
 #ifndef NDEBUG
-  nonref* const result(any_cast<nonref>(&operand));
+  auto const result(any_cast<nonref>(&operand));
 
   if (!result)
   {
