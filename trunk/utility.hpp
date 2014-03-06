@@ -18,6 +18,13 @@ inline bool contains(Container const& c, Key const& key) noexcept
   return c.end() != c.find(key);
 }
 
+// cstrlen
+inline constexpr ::std::size_t cstrlen(char const* const p,
+  ::std::size_t const s = {}) noexcept
+{
+  return *p ? cstrlen(p + 1, s + 1) : s;
+}
+
 // indices
 template <::std::size_t...> struct indices { };
 
