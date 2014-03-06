@@ -273,7 +273,7 @@ struct variant
 
   template <
     typename U,
-    typename = typename ::std::enable_if< detail::any_of< ::std::is_same<
+    typename = typename ::std::enable_if<detail::any_of< ::std::is_same<
       typename ::std::decay<U>::type, T>...>{} &&
       !::std::is_same<typename ::std::decay<U>::type, variant>{}
     >::type
@@ -284,8 +284,7 @@ struct variant
   }
 
   template <typename S = ::std::ostream, typename U>
-  typename ::std::enable_if<
-    detail::any_of< ::std::is_same<
+  typename ::std::enable_if<detail::any_of< ::std::is_same<
       typename ::std::decay<U>::type, T>...>{} &&
     ::std::is_copy_assignable<typename ::std::decay<U>::type>{} &&
     !::std::is_same<typename ::std::decay<U>::type, variant>{},
