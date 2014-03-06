@@ -112,6 +112,13 @@ struct all_of<A> : ::std::integral_constant<bool, A{}>
 {
 };
 
+// size
+template <typename T, ::std::size_t N>
+constexpr inline decltype(N) size(T const (&)[N])
+{
+  return N;
+}
+
 }
 
 #endif // UTILITY_HPP
