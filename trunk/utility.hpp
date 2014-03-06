@@ -9,11 +9,11 @@ namespace generic
 {
 
 // as_const
-template<typename T> constexpr inline T const& as_const(T& t) { return t; }
+template<typename T> inline constexpr T const& as_const(T& t) { return t; }
 
 // contains
 template <class Container, class Key>
-inline bool contains(Container const& c, Key const& key)
+inline bool contains(Container const& c, Key const& key) noexcept
 {
   return c.end() != c.find(key);
 }
@@ -114,7 +114,7 @@ struct all_of<A> : ::std::integral_constant<bool, A{}>
 
 // size
 template <typename T, ::std::size_t N>
-constexpr inline decltype(N) size(T const (&)[N])
+inline constexpr decltype(N) size(T const (&)[N]) noexcept
 {
   return N;
 }
