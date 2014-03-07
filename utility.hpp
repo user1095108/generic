@@ -9,7 +9,11 @@ namespace generic
 {
 
 // as_const
-template<typename T> inline constexpr T const& as_const(T& t) { return t; }
+template<typename T>
+inline constexpr T const& as_const(T& t) noexcept
+{
+  return t;
+}
 
 // contains
 template <class Container, class Key>
