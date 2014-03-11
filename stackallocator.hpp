@@ -85,11 +85,19 @@ private:
   }
 
 private:
-  static constexpr auto const alignment = alignof(::max_align_t);
+#if defined(__clang__)
+  using max_align_type = long double;
+#elif defined(__GNUC__)
+  using max_align_type = ::max_align_t;
+#else
+  using max_align_type = ::std::max_align_t;
+#endif
+
+  static constexpr auto const alignment = alignof(max_align_type);
 
   char* ptr_{buf_};
 
-  alignas(::max_align_t) char buf_[N];
+  alignas(max_align_type) char buf_[N];
 };
 
 template <class T, std::size_t N>
