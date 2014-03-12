@@ -214,7 +214,7 @@ struct variant
   {
     if (*this)
     {
-      deleter_(store_);
+      deleter_(*this);
     }
     // else do nothing
   }
@@ -229,7 +229,7 @@ struct variant
     {
       if (*this)
       {
-        deleter_(store_);
+        deleter_(*this);
 
         store_type_ = -1;
         copier_ = nullptr;
@@ -256,12 +256,7 @@ struct variant
     {
       if (*this)
       {
-        deleter_(store_);
-
-        store_type_ = -1;
-        copier_ = nullptr;
-        mover_ = nullptr;
-        streamer_ = nullptr;
+        deleter_(*this);
       }
       // else do nothing
     }
@@ -308,12 +303,7 @@ struct variant
     {
       if (*this)
       {
-        deleter_(store_);
-
-        store_type_ = -1;
-        copier_ = nullptr;
-        mover_ = nullptr;
-        streamer_ = nullptr;
+        deleter_(*this);
       }
       // else do nothing
 
@@ -355,12 +345,7 @@ struct variant
     {
       if (*this)
       {
-        deleter_(store_);
-
-        store_type_ = -1;
-        copier_ = nullptr;
-        mover_ = nullptr;
-        streamer_ = nullptr;
+        deleter_(*this);
       }
       // else do nothing
 
@@ -397,12 +382,7 @@ struct variant
 
     if (*this)
     {
-      deleter_(store_);
-
-      store_type_ = -1;
-      copier_ = nullptr;
-      mover_ = nullptr;
-      streamer_ = nullptr;
+      deleter_(*this);
     }
     // else do nothing
 
@@ -692,9 +672,15 @@ private:
   }
 
   template <typename U>
-  static void destructor_stub(void* const p)
+  static void destructor_stub(variant& v)
   {
-    static_cast<U*>(p)->~U();
+    v.store_type_ = -1;
+
+    v.copier_ = nullptr;
+    v.mover_ = nullptr;
+    v.streamer_ = nullptr;
+
+    static_cast<U*>(static_cast<void*>(v.store_))->~U();
   }
 
   template <typename U>
@@ -713,7 +699,7 @@ private:
     {
       if (dst)
       {
-        dst.deleter_(dst.store_);
+        dst.deleter_(dst);
       }
       // else do nothing
 
@@ -741,7 +727,7 @@ private:
   {
     if (dst)
     {
-      dst.deleter_(dst.store_);
+      dst.deleter_(dst);
     }
     // else do nothing
 
@@ -775,7 +761,7 @@ private:
     {
       if (dst)
       {
-        dst.deleter_(dst.store_);
+        dst.deleter_(dst);
       }
       // else do nothing
 
@@ -803,7 +789,7 @@ private:
   {
     if (dst)
     {
-      dst.deleter_(dst.store_);
+      dst.deleter_(dst);
     }
     // else do nothing
 
@@ -830,7 +816,7 @@ private:
     *static_cast<S*>(os) << v.cget<U>();
   }
 
-  using deleter_type = void (*)(void*);
+  using deleter_type = void (*)(variant&);
   deleter_type deleter_{};
 
   copier_type copier_{};
