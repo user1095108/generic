@@ -445,7 +445,43 @@ struct variant
 
   void swap(variant& other)
   {
-    if (mover_ && other.mover_)
+    if (-1 == other.store_type_)
+    {
+      if (-1 == store_type_)
+      {
+      }
+      else if (mover_)
+      {
+        other = ::std::move(*this);
+      }
+      else if (copier_)
+      {
+        other = *this;
+      }
+      else
+      {
+        throw ::std::bad_typeid();
+      }
+    }
+    else if (-1 == store_type_)
+    {
+      if (-1 == other.store_type_)
+      {
+      }
+      else if (other.mover_)
+      {
+        *this = ::std::move(other);
+      }
+      else if (copier_)
+      {
+        *this = other;
+      }
+      else
+      {
+        throw ::std::bad_typeid();
+      }
+    }
+    else if (mover_ && other.mover_)
     {
       variant tmp(::std::move(other));
 
@@ -795,12 +831,12 @@ private:
   }
 
   using deleter_type = void (*)(void*);
-  deleter_type deleter_;
+  deleter_type deleter_{};
 
-  copier_type copier_;
-  mover_type mover_;
+  copier_type copier_{};
+  mover_type mover_{};
 
-  streamer_type streamer_;
+  streamer_type streamer_{};
 
   int store_type_{-1};
 
