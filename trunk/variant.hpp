@@ -676,6 +676,7 @@ private:
   {
     v.store_type_ = -1;
 
+    v.deleter_ = nullptr;
     v.copier_ = nullptr;
     v.mover_ = nullptr;
     v.streamer_ = nullptr;
