@@ -414,6 +414,12 @@ struct variant
     return detail::index_of<U, T...>{} == store_type_;
   }
 
+  void clear()
+  {
+    *this = variant();
+    assert(empty());
+  }
+
   bool empty() const noexcept { return !*this; }
 
   template <typename U>
