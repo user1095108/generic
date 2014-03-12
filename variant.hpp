@@ -232,6 +232,8 @@ struct variant
         deleter_(store_);
 
         store_type_ = -1;
+        copier_ = nullptr;
+        mover_ = nullptr;
       }
       // else do nothing
     }
@@ -256,6 +258,8 @@ struct variant
         deleter_(store_);
 
         store_type_ = -1;
+        copier_ = nullptr;
+        mover_ = nullptr;
       }
       // else do nothing
     }
@@ -303,6 +307,10 @@ struct variant
       if (*this)
       {
         deleter_(store_);
+
+        store_type_ = -1;
+        copier_ = nullptr;
+        mover_ = nullptr;
       }
       // else do nothing
 
@@ -345,6 +353,10 @@ struct variant
       if (*this)
       {
         deleter_(store_);
+
+        store_type_ = -1;
+        copier_ = nullptr;
+        mover_ = nullptr;
       }
       // else do nothing
 
@@ -382,6 +394,10 @@ struct variant
     if (*this)
     {
       deleter_(store_);
+
+      store_type_ = -1;
+      copier_ = nullptr;
+      mover_ = nullptr;
     }
     // else do nothing
 
@@ -421,6 +437,44 @@ struct variant
   }
 
   bool empty() const noexcept { return !*this; }
+
+  void swap(variant& other)
+  {
+    if (mover_ && other.mover_)
+    {
+      variant tmp(::std::move(other));
+
+      other = ::std::move(*this);
+      *this = ::std::move(tmp);
+    }
+    else if (mover_ && other.copier_)
+    {
+      variant tmp(other);
+
+      other = ::std::move(*this);
+      assert(other.mover_);
+      *this = tmp;
+    }
+    else if (copier_ && other.mover_)
+    {
+      variant tmp(::std::move(other));
+      assert(tmp.mover_);
+
+      other = *this;
+      *this = ::std::move(tmp);
+    }
+    else if (copier_ && other.copier_)
+    {
+      variant tmp(other);
+
+      other = *this;
+      *this = tmp;
+    }
+    else
+    {
+      throw ::std::bad_typeid();
+    }
+  }
 
   template <typename U>
   typename ::std::enable_if<
