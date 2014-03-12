@@ -232,7 +232,9 @@ struct variant
         deleter_(store_);
 
         store_type_ = -1;
-        copier_ = mover_ = streamer_ = nullptr;
+        copier_ = nullptr;
+        mover_ = nullptr;
+        streamer_ = nullptr;
       }
       // else do nothing
     }
@@ -257,7 +259,9 @@ struct variant
         deleter_(store_);
 
         store_type_ = -1;
-        copier_ = mover_ = streamer_ = nullptr;
+        copier_ = nullptr;
+        mover_ = nullptr;
+        streamer_ = nullptr;
       }
       // else do nothing
     }
@@ -307,7 +311,9 @@ struct variant
         deleter_(store_);
 
         store_type_ = -1;
-        copier_ = mover_ = streamer_ = nullptr;
+        copier_ = nullptr;
+        mover_ = nullptr;
+        streamer_ = nullptr;
       }
       // else do nothing
 
@@ -352,7 +358,9 @@ struct variant
         deleter_(store_);
 
         store_type_ = -1;
-        copier_ = mover_ = streamer_ = nullptr;
+        copier_ = nullptr;
+        mover_ = nullptr;
+        streamer_ = nullptr;
       }
       // else do nothing
 
@@ -392,7 +400,9 @@ struct variant
       deleter_(store_);
 
       store_type_ = -1;
-      copier_ = mover_ = streamer_ = nullptr;
+      copier_ = nullptr;
+      mover_ = nullptr;
+      streamer_ = nullptr;
     }
     // else do nothing
 
