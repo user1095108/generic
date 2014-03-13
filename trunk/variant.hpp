@@ -408,8 +408,11 @@ struct variant
 
   void clear()
   {
-    *this = variant();
-    assert(empty());
+    if (*this)
+    {
+      deleter_();
+    }
+    // else do nothing
   }
 
   bool empty() const noexcept { return !*this; }
@@ -428,6 +431,7 @@ struct variant
       else if (copier_)
       {
         other = *this;
+        clear();
       }
       else
       {
@@ -446,6 +450,7 @@ struct variant
       else if (copier_)
       {
         *this = other;
+        other.clear();
       }
       else
       {
