@@ -310,11 +310,8 @@ struct variant
       new (store_) user_type(::std::forward<U>(u));
 
       deleter_ = destructor_stub<user_type>;
-
       copier_ = get_copier<user_type>();
-
       mover_ = get_mover<user_type>();
-
       streamer_ = get_streamer<S, user_type>();
 
       store_type_ = detail::index_of<user_type, T...>{};
@@ -352,11 +349,8 @@ struct variant
       new (store_) user_type(::std::forward<U>(u));
 
       deleter_ = destructor_stub<user_type>;
-
       copier_ = get_copier<user_type>();
-
       mover_ = get_mover<user_type>();
-
       streamer_ = get_streamer<S, user_type>();
 
       store_type_ = detail::index_of<user_type, T...>{};
@@ -389,11 +383,8 @@ struct variant
     new (store_) user_type(::std::forward<U>(u));
 
     deleter_ = destructor_stub<user_type>;
-
     copier_ = get_copier<user_type>();
-
     mover_ = get_mover<user_type>();
-
     streamer_ = get_streamer<S, user_type>();
 
     store_type_ = detail::index_of<user_type, T...>{};
@@ -674,12 +665,12 @@ private:
   template <typename U>
   static void destructor_stub(variant& v)
   {
-    v.store_type_ = -1;
-
     v.deleter_ = nullptr;
     v.copier_ = nullptr;
     v.mover_ = nullptr;
     v.streamer_ = nullptr;
+
+    v.store_type_ = -1;
 
     static_cast<U*>(static_cast<void*>(v.store_))->~U();
   }
@@ -708,11 +699,8 @@ private:
         static_cast<void const*>(src.store_)));
 
       dst.deleter_ = src.deleter_;
-
       dst.copier_ = src.copier_;
-
       dst.mover_ = src.mover_;
-
       dst.streamer_ = src.streamer_;
 
       dst.store_type_ = src.store_type_;
@@ -736,11 +724,8 @@ private:
       static_cast<void const*>(src.store_)));
 
     dst.deleter_ = src.deleter_;
-
     dst.copier_ = src.copier_;
-
     dst.mover_ = src.mover_;
-
     dst.streamer_ = src.streamer_;
 
     dst.store_type_ = src.store_type_;
@@ -770,11 +755,8 @@ private:
         static_cast<void*>(src.store_))));
 
       dst.deleter_ = src.deleter_;
-
       dst.copier_ = src.copier_;
-
       dst.mover_ = src.mover_;
-
       dst.streamer_ = src.streamer_;
 
       dst.store_type_ = src.store_type_;
