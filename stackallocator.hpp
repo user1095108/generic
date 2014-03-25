@@ -182,7 +182,7 @@ namespace std
   template<class Key, class T, class Compare, class Allocator> class map;
 
   // string
-  template<class CharT> class char_traits;
+  template<class CharT> struct char_traits;
 
   template<class CharT, class Traits, class Allocator> class basic_string;
 
