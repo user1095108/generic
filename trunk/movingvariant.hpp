@@ -232,8 +232,6 @@ struct moving_variant
       if (*this)
       {
         deleter_(store_);
-
-        store_type_ = -1;
       }
       // else do nothing
     }
@@ -347,7 +345,59 @@ struct moving_variant
     return detail::index_of<U, T...>{} == store_type_;
   }
 
+  void clear()
+  {
+    if (*this)
+    {
+      deleter_();
+    }
+    // else do nothing
+  }
+
   bool empty() const noexcept { return !*this; }
+
+  void swap(variant& other)
+  {
+    if (-1 == other.store_type_)
+    {
+      if (-1 == store_type_)
+      {
+      }
+      else if (mover_)
+      {
+        other = ::std::move(*this);
+      }
+      else
+      {
+        throw ::std::bad_typeid();
+      }
+    }
+    else if (-1 == store_type_)
+    {
+      if (-1 == other.store_type_)
+      {
+      }
+      else if (other.mover_)
+      {
+        *this = ::std::move(other);
+      }
+      else
+      {
+        throw ::std::bad_typeid();
+      }
+    }
+    else if (mover_ && other.mover_)
+    {
+      variant tmp(::std::move(other));
+
+      other = ::std::move(*this);
+      *this = ::std::move(tmp);
+    }
+    else
+    {
+      throw ::std::bad_typeid();
+    }
+  }
 
   template <typename U>
   typename ::std::enable_if<
@@ -505,8 +555,14 @@ private:
   }
 
   template <typename U>
-  static void destructor_stub(void* const p)
+  static void destructor_stub(variant& v)
   {
+    v.deleter_ = nullptr;
+    v.mover_ = nullptr;
+    v.streamer_ = nullptr;
+
+    v.store_type_ = -1;
+
     static_cast<U*>(p)->~U();
   }
 
