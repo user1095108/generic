@@ -51,6 +51,7 @@ inline ::std::string cformat(char const* const format, ...)
     {
       return {tmp, ::std::string::size_type(len)};
     }
+    // else do nothing
   }
 
   va_start(ap, format);
@@ -95,6 +96,7 @@ cformat(S& r, char const* const format, ...)
 
       return;
     }
+    // else do nothing
   }
 
   va_start(ap, format);
