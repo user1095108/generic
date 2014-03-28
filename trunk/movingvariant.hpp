@@ -214,7 +214,7 @@ struct moving_variant
   {
     if (*this)
     {
-      deleter_(store_);
+      deleter_(*this);
     }
     // else do nothing
   }
@@ -231,7 +231,7 @@ struct moving_variant
     {
       if (*this)
       {
-        deleter_(store_);
+        deleter_(*this);
       }
       // else do nothing
     }
@@ -280,7 +280,7 @@ struct moving_variant
     {
       if (*this)
       {
-        deleter_(store_);
+        deleter_(*this);
       }
       // else do nothing
 
@@ -314,7 +314,7 @@ struct moving_variant
 
     if (*this)
     {
-      deleter_(store_);
+      deleter_(*this);
     }
     // else do nothing
 
@@ -349,14 +349,14 @@ struct moving_variant
   {
     if (*this)
     {
-      deleter_();
+      deleter_(*this);
     }
     // else do nothing
   }
 
   bool empty() const noexcept { return !*this; }
 
-  void swap(variant& other)
+  void swap(moving_variant& other)
   {
     if (-1 == other.store_type_)
     {
@@ -388,7 +388,7 @@ struct moving_variant
     }
     else if (mover_ && other.mover_)
     {
-      variant tmp(::std::move(other));
+      moving_variant tmp(::std::move(other));
 
       other = ::std::move(*this);
       *this = ::std::move(tmp);
@@ -555,7 +555,7 @@ private:
   }
 
   template <typename U>
-  static void destructor_stub(variant& v)
+  static void destructor_stub(moving_variant& v)
   {
     v.deleter_ = nullptr;
     v.mover_ = nullptr;
@@ -563,7 +563,7 @@ private:
 
     v.store_type_ = -1;
 
-    static_cast<U*>(p)->~U();
+    static_cast<U*>(static_cast<void*>(v.store_))->~U();
   }
 
   template <typename U>
@@ -582,7 +582,7 @@ private:
     {
       if (dst)
       {
-        dst.deleter_(dst.store_);
+        dst.deleter_(dst);
       }
       // else do nothing
 
@@ -608,7 +608,7 @@ private:
   {
     if (dst)
     {
-      dst.deleter_(dst.store_);
+      dst.deleter_(dst);
     }
     // else do nothing
 
@@ -633,7 +633,7 @@ private:
     *static_cast<S*>(os) << v.cget<U>();
   }
 
-  using deleter_type = void (*)(void*);
+  using deleter_type = void (*)(moving_variant&);
   deleter_type deleter_;
 
   mover_type mover_;
