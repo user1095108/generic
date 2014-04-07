@@ -63,6 +63,7 @@ private:
 #endif
 
 	alignas(max_align_type) uintptr_t store_;
+
 	R (*stub_)(void*, A...);
 };
 
