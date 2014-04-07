@@ -14,7 +14,7 @@ namespace generic
 template<typename F>
 class forwarder;
 
-template<typename R, typename ... A>
+template<typename R, typename ...A>
 class forwarder<R (A...)>
 {
 public:
