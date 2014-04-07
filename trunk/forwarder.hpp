@@ -4,6 +4,8 @@
 
 #include <type_traits>
 
+#include <utility>
+
 #include <new>
 
 namespace generic
@@ -17,17 +19,19 @@ class forwarder<R (A...)>
 {
 public:
 	template<typename T>
-	function(T const& functor) :
+	forwarder(T&& functor) noexcept :
 		stub_(&handler<T>::invoke)
   {
 		static_assert(sizeof(T) <= sizeof(store_), "functor too large");
-		static_assert(std::is_trivially_destructible<T>::value,
+		static_assert(::std::is_trivially_destructible<T>::value,
 				"functor not trivially destructible");
-		static_assert(std::is_trivially_copy_constructible<T>::value,
+/*
+		static_assert(::std::is_trivially_copy_constructible<T>::value,
 				"functor not trivially copy constructible");
-		static_assert(std::is_trivially_copy_assignable<T>::value,
+		static_assert(::std::is_trivially_copy_assignable<T>::value,
 				"functor not trivially copy assignable");
-		new (&store_) handler<T>(functor);
+*/
+		new (&store_) handler<T>(::std::forward<T>(functor));
 	}
 
 	R operator() (A... args)
@@ -40,10 +44,10 @@ private:
 	struct handler
   {
 		T functor_;
-		
-		handler(const T &functor) : functor_(functor) { }
 
-		static R invoke(void *ptr, A... args)
+		handler(const T &functor) noexcept : functor_(functor) { }
+
+		static R invoke(void* ptr, A... args)
     {
 			return static_cast<handler<T>*>(ptr)->functor_(args...);
 		}
@@ -57,7 +61,7 @@ private:
   using max_align_type = ::std::max_align_t;
 #endif
 
-	alignof(max_align_type) uintptr_t store_;
+	alignas(max_align_type) uintptr_t store_;
 	R (*stub_)(void*, A...);
 };
 
