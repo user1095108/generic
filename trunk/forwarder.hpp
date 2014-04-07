@@ -24,12 +24,11 @@ public:
 
   template<typename T>
   forwarder(T&& f) noexcept :
-    stub_(&handler<T>::invoke)
+    stub_(new (&store_) handler<T>(::std::forward<T>(f)), handler<T>::invoke)
   {
     static_assert(sizeof(T) <= sizeof(store_), "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
-    new (&store_) handler<T>(::std::forward<T>(f));
   }
 
   forwarder& operator=(forwarder const&) = delete;
@@ -45,8 +44,9 @@ public:
     static_assert(sizeof(T) <= sizeof(store_), "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
-    stub_ = &handler<T>::invoke;
     new (&store_) handler<T>(::std::forward<T>(f));
+
+    stub_ = handler<T>::invoke;
 
     return *this;
   }
@@ -61,14 +61,14 @@ private:
   template<typename T>
   struct handler
   {
-    T functor_;
-
     handler(T&& f) noexcept : functor_(::std::forward<T>(f)) { }
 
     static R invoke(void* ptr, A&&... args)
     {
       return static_cast<handler<T>*>(ptr)->functor_(::std::forward<A>(args)...);
     }
+
+    T functor_;
   };
 
 #if defined(__clang__)
