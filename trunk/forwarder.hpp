@@ -41,10 +41,11 @@ public:
 
 private:
 	template<typename T>
-	struct handler
+	class handler
   {
 		T functor_;
 
+  public:
 		handler(const T &functor) noexcept : functor_(functor) { }
 
 		static R invoke(void* ptr, A... args)
