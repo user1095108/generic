@@ -62,7 +62,7 @@ private:
     T functor_;
 
   public:
-    handler(const T &functor) noexcept : functor_(functor) { }
+    handler(T&& f) noexcept : functor_(::std::forward<T>(f)) { }
 
     static R invoke(void* ptr, A... args)
     {
