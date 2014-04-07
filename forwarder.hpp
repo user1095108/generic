@@ -23,12 +23,12 @@ public:
   forwarder() = default;
 
   template<typename T>
-  forwarder(T&& f) noexcept :
-    stub_(new (&store_) handler<T>(::std::forward<T>(f)), handler<T>::invoke)
+  forwarder(T&& f) noexcept : stub_(handler<T>::invoke)
   {
     static_assert(sizeof(T) <= sizeof(store_), "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
+    new (&store_) handler<T>(::std::forward<T>(f));
   }
 
   forwarder& operator=(forwarder const&) = default;
