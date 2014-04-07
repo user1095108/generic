@@ -47,6 +47,8 @@ public:
       "functor not trivially destructible");
     stub_ = &handler<T>::invoke;
     new (&store_) handler<T>(::std::forward<T>(f));
+
+    return *this;
   }
 
   R operator() (A... args)
