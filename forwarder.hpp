@@ -22,6 +22,8 @@ class forwarder<R (A...)>
 public:
   forwarder() = default;
 
+  forwarder(forwarder const&) = default;
+
   template<typename T>
   forwarder(T&& f) noexcept :
     stub_(handler<T>::stub)
