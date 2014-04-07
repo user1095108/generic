@@ -31,7 +31,7 @@ public:
       "functor not trivially destructible");
   }
 
-  forwarder& operator=(forwarder const&) = delete;
+  forwarder& operator=(forwarder const&) = default;
 
   template <
     typename T,
@@ -61,8 +61,7 @@ private:
   template<typename T>
   struct handler
   {
-    handler(T&& f) noexcept :
-      f_(::std::forward<T>(f))
+    handler(T&& f) noexcept : f_(::std::forward<T>(f))
     {
     }
 
