@@ -1,6 +1,6 @@
-#include <cstdint>
-
 #include <cstddef>
+
+#include <cstdint>
 
 #include <type_traits>
 
@@ -56,7 +56,7 @@ private:
   using max_align_type = ::std::max_align_t;
 #endif
 
-	alignas(max_align_type) uintptr_t store_;
+	alignas(max_align_type) ::std::uintptr_t store_;
 
 	R (*stub_)(void*, A...);
 };
