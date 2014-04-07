@@ -25,12 +25,6 @@ public:
 		static_assert(sizeof(T) <= sizeof(store_), "functor too large");
 		static_assert(::std::is_trivially_destructible<T>::value,
 				"functor not trivially destructible");
-/*
-		static_assert(::std::is_trivially_copy_constructible<T>::value,
-				"functor not trivially copy constructible");
-		static_assert(::std::is_trivially_copy_assignable<T>::value,
-				"functor not trivially copy assignable");
-*/
 		new (&store_) handler<T>(::std::forward<T>(functor));
 	}
 
