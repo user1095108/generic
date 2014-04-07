@@ -61,14 +61,17 @@ private:
   template<typename T>
   struct handler
   {
-    handler(T&& f) noexcept : functor_(::std::forward<T>(f)) { }
+    handler(T&& f) noexcept :
+      f_(::std::forward<T>(f))
+    {
+    }
 
     static R invoke(void* ptr, A&&... args)
     {
-      return static_cast<handler<T>*>(ptr)->functor_(::std::forward<A>(args)...);
+      return static_cast<handler<T>*>(ptr)->f_(::std::forward<A>(args)...);
     }
 
-    T functor_;
+    T f_;
   };
 
 #if defined(__clang__)
