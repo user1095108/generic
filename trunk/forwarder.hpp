@@ -23,7 +23,7 @@ public:
   forwarder() = default;
 
   template<typename T>
-  forwarder(T&& f) noexcept : stub_(handler<T>::invoke)
+  forwarder(T&& f) noexcept : stub_(handler<T>::stub)
   {
     static_assert(sizeof(T) <= sizeof(store_), "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
@@ -46,7 +46,7 @@ public:
       "functor not trivially destructible");
     new (&store_) handler<T>(::std::forward<T>(f));
 
-    stub_ = handler<T>::invoke;
+    stub_ = handler<T>::stub;
 
     return *this;
   }
@@ -65,7 +65,7 @@ private:
     {
     }
 
-    static R invoke(void* ptr, A&&... args)
+    static R stub(void* ptr, A&&... args)
     {
       return static_cast<handler<T>*>(ptr)->f_(::std::forward<A>(args)...);
     }
