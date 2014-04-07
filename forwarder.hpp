@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <cstddef>
 
 #include <cstdint>
@@ -49,6 +51,7 @@ public:
 
   R operator() (A... args)
   {
+    //assert(stub_);
     return stub_(&store_, args...);
   }
 
@@ -77,7 +80,7 @@ private:
 
   alignas(max_align_type) ::std::uintptr_t store_;
 
-  R (*stub_)(void*, A...);
+  R (*stub_)(void*, A...){};
 };
 
 }
