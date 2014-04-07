@@ -52,21 +52,20 @@ public:
   R operator() (A... args)
   {
     //assert(stub_);
-    return stub_(&store_, args...);
+    return stub_(&store_, ::std::forward<A>(args)...);
   }
 
 private:
   template<typename T>
-  class handler
+  struct handler
   {
     T functor_;
 
-  public:
     handler(T&& f) noexcept : functor_(::std::forward<T>(f)) { }
 
-    static R invoke(void* ptr, A... args)
+    static R invoke(void* ptr, A&&... args)
     {
-      return static_cast<handler<T>*>(ptr)->functor_(args...);
+      return static_cast<handler<T>*>(ptr)->functor_(::std::forward<A>(args)...);
     }
   };
 
@@ -80,7 +79,7 @@ private:
 
   alignas(max_align_type) ::std::uintptr_t store_;
 
-  R (*stub_)(void*, A...){};
+  R (*stub_)(void*, A&&...){};
 };
 
 }
