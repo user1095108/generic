@@ -25,7 +25,7 @@ public:
   forwarder(forwarder const&) = default;
 
   template<typename T>
-  forwarder(T&& f) noexcept : stub_(handler<T>::stub)
+  forwarder(T&& f) : stub_(handler<T>::stub)
   {
     static_assert(sizeof(T) <= sizeof(store_), "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
@@ -41,7 +41,7 @@ public:
       !::std::is_same<forwarder, typename ::std::decay<T>::type>{}
     >::type
   >
-  forwarder& operator=(T&& f) noexcept
+  forwarder& operator=(T&& f)
   {
     static_assert(sizeof(T) <= sizeof(store_), "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
