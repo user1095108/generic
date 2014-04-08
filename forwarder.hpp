@@ -27,7 +27,8 @@ public:
   template<typename T>
   forwarder(T&& f) : stub_(handler<T>::stub)
   {
-    static_assert(sizeof(T) <= sizeof(store_), "functor too large");
+    static_assert(sizeof(T) <= sizeof(store_),
+      "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
     new (&store_) handler<T>(::std::forward<T>(f));
