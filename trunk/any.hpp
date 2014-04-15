@@ -17,34 +17,34 @@ namespace generic
 class any
 {
 public:
-  any() noexcept : content(nullptr) { }
+  any() = default;
 
-  any(any const& other)
-    : content(other.content ? other.content->clone() : nullptr)
+  any(any const& other) :
+    content(other.content ? other.content->clone() : nullptr)
   {
   }
 
-  any(any&& other) noexcept { *this = std::move(other); }
+  any(any&& other) noexcept { *this = ::std::move(other); }
 
   template<typename ValueType,
-    typename = typename std::enable_if<
-      !std::is_same<any, typename std::decay<ValueType>::type>::value
+    typename = typename ::std::enable_if<
+      !::std::is_same<any, typename ::std::decay<ValueType>::type>::value
     >::type
   >
-  any(ValueType&& value)
-    : content(new holder<typename std::remove_reference<ValueType>::type>(
-        std::forward<ValueType>(value)))
+  any(ValueType&& value) :
+    content(new holder<typename ::std::remove_reference<ValueType>::type>(
+      ::std::forward<ValueType>(value)))
   {
   }
 
   ~any() { delete content; }
 
 public: // modifiers
-  void clear noexcept { swap(any()); }
+  void clear() noexcept { swap(any()); }
 
-  void swap(any& other) noexcept { std::swap(content, other.content); }
+  void swap(any& other) noexcept { ::std::swap(content, other.content); }
 
-  void swap(any&& other) noexcept { std::swap(content, other.content); }
+  void swap(any&& other) noexcept { ::std::swap(content, other.content); }
 
   any& operator=(any const& rhs) { return *this = any(rhs); }
 
@@ -57,21 +57,21 @@ public: // modifiers
   }
 
   template<typename ValueType,
-    typename = typename std::enable_if<
-      !std::is_same<any, typename std::remove_const<
-        typename std::remove_reference<ValueType>::type>::type>::value
+    typename = typename ::std::enable_if<
+      !::std::is_same<any, typename ::std::remove_const<
+        typename ::std::remove_reference<ValueType>::type>::type>::value
     >::type
   >
   any& operator=(ValueType&& rhs)
   {
-    return *this = any(std::forward<ValueType>(rhs));
+    return *this = any(::std::forward<ValueType>(rhs));
   }
 
 public: // queries
 
   explicit operator bool() const noexcept { return content; }
 
-  std::type_info const& type() const noexcept
+  ::std::type_info const& type() const noexcept
   {
     return content ? content->type() : typeid(void);
   }
@@ -86,7 +86,7 @@ private: // types
 
     virtual placeholder* clone() const = 0;
 
-    virtual std::type_info const& type() const = 0;
+    virtual ::std::type_info const& type() const = 0;
   };
 
   template<typename ValueType, typename = void>
@@ -94,14 +94,14 @@ private: // types
   {
   public: // constructor
     template <class T>
-    holder(T&& value) : held(std::forward<T>(value)) { }
+    holder(T&& value) : held(::std::forward<T>(value)) { }
 
     holder& operator=(holder const&) = delete;
 
-    placeholder* clone() const final { throw std::invalid_argument(""); }
+    placeholder* clone() const final { throw ::std::logic_error(""); }
 
   public: // queries
-    std::type_info const& type() const noexcept { return typeid(ValueType); }
+    ::std::type_info const& type() const noexcept { return typeid(ValueType); }
 
   public:
     ValueType held;
@@ -110,19 +110,19 @@ private: // types
   template<typename ValueType>
   struct holder<
     ValueType,
-    typename std::enable_if<
-      std::is_copy_constructible<ValueType>::value
+    typename ::std::enable_if<
+      ::std::is_copy_constructible<ValueType>::value
     >::type
   > : public placeholder
   {
   public: // constructor
     template <class T>
-    holder(T&& value) : held(std::forward<T>(value)) { }
+    holder(T&& value) : held(::std::forward<T>(value)) { }
 
     placeholder* clone() const final { return new holder<ValueType>(held); }
 
   public: // queries
-    std::type_info const& type() const noexcept { return typeid(ValueType); }
+    ::std::type_info const& type() const noexcept { return typeid(ValueType); }
 
   public:
     ValueType held;
@@ -136,7 +136,7 @@ private: // representation
   template<typename ValueType>
   friend ValueType* unsafe_any_cast(any*) noexcept;
 
-  placeholder* content;
+  placeholder* content{};
 };
 
 template<typename ValueType>
@@ -168,14 +168,14 @@ inline ValueType const* any_cast(any const* const operand) noexcept
 template<typename ValueType>
 inline ValueType any_cast(any& operand)
 {
-  typedef typename std::remove_reference<ValueType>::type nonref;
+  using nonref = typename ::std::remove_reference<ValueType>::type;
 
 #ifndef NDEBUG
   auto const result(any_cast<nonref>(&operand));
 
   if (!result)
   {
-    throw std::bad_cast();
+    throw ::std::bad_cast();
   }
   // else do nothing
 
@@ -188,7 +188,7 @@ inline ValueType any_cast(any& operand)
 template<typename ValueType>
 inline ValueType any_cast(any const& operand)
 {
-  typedef typename std::remove_reference<ValueType>::type nonref;
+  using nonref = typename ::std::remove_reference<ValueType>::type;
 
   return any_cast<nonref const&>(const_cast<any&>(operand));
 }
