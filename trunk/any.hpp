@@ -40,8 +40,11 @@ public:
   ~any() { delete content; }
 
 public: // modifiers
+  void clear noexcept { swap(any()); }
 
   void swap(any& other) noexcept { std::swap(content, other.content); }
+
+  void swap(any&& other) noexcept { std::swap(content, other.content); }
 
   any& operator=(any const& rhs) { return *this = any(rhs); }
 
@@ -151,9 +154,9 @@ inline ValueType const* unsafe_any_cast(any const* const operand) noexcept
 template<typename ValueType>
 inline ValueType* any_cast(any* const operand) noexcept
 {
-  return operand && (operand->type() == typeid(ValueType))
-    ? &static_cast<any::holder<ValueType>*>(operand->content)->held
-    : nullptr;
+  return operand && (operand->type() == typeid(ValueType)) ?
+    &static_cast<any::holder<ValueType>*>(operand->content)->held :
+    nullptr;
 }
 
 template<typename ValueType>
