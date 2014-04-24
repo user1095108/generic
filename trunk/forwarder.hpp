@@ -1,3 +1,7 @@
+#pragma once
+#ifndef FORWARDER_HPP
+# define FORWARDER_HPP
+
 #include <cassert>
 
 #include <cstddef>
@@ -54,7 +58,7 @@ public:
     return *this;
   }
 
-  R operator() (A... args)
+  R operator() (A... args) const
   {
     //assert(stub_);
     return stub_(&store_, ::std::forward<A>(args)...);
@@ -68,9 +72,10 @@ private:
     {
     }
 
-    static R stub(void* ptr, A&&... args)
+    static R stub(void const* ptr, A&&... args)
     {
-      return static_cast<handler<T>*>(ptr)->f_(::std::forward<A>(args)...);
+      return static_cast<handler<T> const*>(ptr)->
+        f_(::std::forward<A>(args)...);
     }
 
     T f_;
@@ -86,7 +91,9 @@ private:
 
   alignas(max_align_type) ::std::uintptr_t store_;
 
-  R (*stub_)(void*, A&&...){};
+  R (*stub_)(void const*, A&&...){};
 };
 
 }
+
+#endif // FORWARDER_HPP
