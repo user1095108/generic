@@ -81,6 +81,8 @@ private:
     T f_;
   };
 
+  R (*stub_)(void const*, A&&...){};
+
 #if defined(__clang__)
   using max_align_type = long double;
 #elif defined(__GNUC__)
@@ -90,8 +92,6 @@ private:
 #endif
 
   alignas(max_align_type) ::std::uintptr_t store_;
-
-  R (*stub_)(void const*, A&&...){};
 };
 
 }
