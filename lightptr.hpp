@@ -175,15 +175,11 @@ struct light_ptr
 
   light_ptr& operator=(light_ptr&& rhs) noexcept
   {
-    if (*this != rhs)
-    {
-      counter_ = rhs.counter_;
-      ptr_ = rhs.ptr_;
+    counter_ = rhs.counter_;
+    ptr_ = rhs.ptr_;
 
-      rhs.counter_ = nullptr;
-      rhs.ptr_ = nullptr;
-    }
-    // else do nothing
+    rhs.counter_ = nullptr;
+    rhs.ptr_ = nullptr;
 
     return *this;
   }
