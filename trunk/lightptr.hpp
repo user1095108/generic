@@ -140,10 +140,7 @@ struct light_ptr
     reset(p, d);
   }
 
-  ~light_ptr()
-  {
-    counter_ && (counter_->dec_ref(ptr_), true);
-  }
+  ~light_ptr() { counter_ && (counter_->dec_ref(ptr_), true); }
 
   light_ptr(light_ptr const& other) { *this = other; }
 
