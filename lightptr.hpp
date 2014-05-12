@@ -142,11 +142,7 @@ struct light_ptr
 
   ~light_ptr()
   {
-    if (counter_)
-    {
-      counter_->dec_ref(ptr_);
-    }
-    // else do nothing
+    counter_ && (counter_->dec_ref(ptr_), true);
   }
 
   light_ptr(light_ptr const& other) { *this = other; }
