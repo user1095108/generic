@@ -421,10 +421,7 @@ struct variant
   {
     if (-1 == other.store_type_)
     {
-      if (-1 == store_type_)
-      {
-      }
-      else if (mover_)
+      if (mover_)
       {
         other = ::std::move(*this);
       }
@@ -433,29 +430,28 @@ struct variant
         other = *this;
         clear();
       }
-      else
+      else if (-1 != store_type_)
       {
         throw ::std::bad_typeid();
       }
+      // else do nothing
     }
     else if (-1 == store_type_)
     {
-      if (-1 == other.store_type_)
-      {
-      }
-      else if (other.mover_)
+      if (other.mover_)
       {
         *this = ::std::move(other);
       }
-      else if (copier_)
+      else if (other.copier_)
       {
         *this = other;
         other.clear();
       }
-      else
+      else if (-1 != other.store_type_)
       {
         throw ::std::bad_typeid();
       }
+      // else do nothing
     }
     else if (mover_ && other.mover_)
     {
@@ -467,9 +463,9 @@ struct variant
     else if (mover_ && other.copier_)
     {
       variant tmp(other);
+      assert(tmp.copier_);
 
       other = ::std::move(*this);
-      assert(other.mover_);
       *this = tmp;
     }
     else if (copier_ && other.mover_)
