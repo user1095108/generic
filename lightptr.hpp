@@ -96,11 +96,13 @@ struct light_ptr
         counter_.fetch_sub(detail::counter_type(1),
           ::std::memory_order_relaxed))
       {
-        typedef char type_must_be_complete[sizeof(U) ? 1 : -1];
-        (void)sizeof(type_must_be_complete);
-        deleter_(ptr);
+        auto const d(deleter_);
 
         delete this;
+
+        typedef char type_must_be_complete[sizeof(U) ? 1 : -1];
+        (void)sizeof(type_must_be_complete);
+        d(ptr);
       }
       // else do nothing
     }
@@ -113,9 +115,11 @@ struct light_ptr
         counter_.fetch_sub(detail::counter_type(1),
           ::std::memory_order_relaxed))
       {
-        deleter_(ptr);
+        auto const d(deleter_);
 
         delete this;
+
+        d(ptr);
       }
       // else do nothing
     }
@@ -140,7 +144,14 @@ struct light_ptr
     reset(p, d);
   }
 
-  ~light_ptr() { counter_ && (counter_->dec_ref(ptr_), true); }
+  ~light_ptr()
+  {
+    if (counter_)
+    {
+      counter_->dec_ref(ptr_);
+    }
+    // else do nothing
+  }
 
   light_ptr(light_ptr const& other) { *this = other; }
 
