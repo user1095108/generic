@@ -304,7 +304,7 @@ struct light_ptr
   detail::counter_type use_count() const noexcept
   {
     return counter_ ?
-      counter_->counter_ptr_->load(::std::memory_order_relaxed) :
+      counter_->counter_.load(::std::memory_order_relaxed) :
       detail::counter_type{};
   }
 
