@@ -82,7 +82,7 @@ private: // types
   {
     placeholder() = default;
 
-    virtual ~placeholder() noexcept { }
+    virtual ~placeholder() = default;
 
     virtual placeholder* clone() const = 0;
 
