@@ -24,6 +24,9 @@ namespace detail
   template <typename T>
   using deleter_type = void (*)(T*);
 
+  template <typename T>
+  using invoker_type = void (*)(void*, T*);
+
   template <typename U>
   struct ref_type
   {
@@ -80,12 +83,16 @@ struct light_ptr
 
   using deleter_type = detail::deleter_type<element_type>;
 
-  struct counter
+  using invoker_type = detail::invoker_type<element_type>;
+
+  struct counter_base
   {
-    counter(detail::counter_type const c, deleter_type const d) noexcept :
-      deleter_(d)
+    explicit counter_base(detail::counter_type const c, void* const func_ptr,
+      invoker_type const invoker) noexcept :
+      counter_(c),
+      counter_ptr_(func_ptr),
+      invoker_(invoker)
     {
-      counter_.store(c, ::std::memory_order_relaxed);
     }
 
     template <typename U>
@@ -96,13 +103,9 @@ struct light_ptr
         counter_.fetch_sub(detail::counter_type(1),
           ::std::memory_order_relaxed))
       {
-        auto const d(deleter_);
-
-        delete this;
-
         typedef char type_must_be_complete[sizeof(U) ? 1 : -1];
         (void)sizeof(type_must_be_complete);
-        d(ptr);
+        invoker_(counter_ptr_, ptr);
       }
       // else do nothing
     }
@@ -115,11 +118,7 @@ struct light_ptr
         counter_.fetch_sub(detail::counter_type(1),
           ::std::memory_order_relaxed))
       {
-        auto const d(deleter_);
-
-        delete this;
-
-        d(ptr);
+        invoker_(counter_ptr_, ptr);
       }
       // else do nothing
     }
@@ -133,7 +132,32 @@ struct light_ptr
 
     detail::atomic_type counter_{};
 
-    deleter_type deleter_;
+    void* counter_ptr_;
+
+    invoker_type invoker_;
+  };
+
+  template <typename U>
+  struct counter : counter_base
+  {
+    explicit counter(detail::counter_type const c, U&& d) noexcept :
+      counter_base(c, this, invoker),
+      d_(::std::forward<U>(d))
+    {
+    }
+
+  private:
+    static void invoker(void* const ptr, element_type* const e)
+    {
+      U const d(::std::move(static_cast<counter<U>*>(ptr)->d_));
+
+      delete static_cast<counter<U>*>(ptr);
+
+      d(e);
+    }
+
+  private:
+    U d_;
   };
 
   light_ptr() = default;
@@ -250,7 +274,14 @@ struct light_ptr
   }
 
   template <typename U>
-  void reset(U* const p, deleter_type const d = default_deleter<U>)
+  static void default_deleter(element_type* const p)
+  {
+    ::std::default_delete<typename deletion_type<T, U>::type>()(
+      static_cast<U*>(p));
+  }
+
+  template <typename U, typename D = decltype(&default_deleter<U>)>
+  void reset(U* const p, D&& d)
   {
     if (counter_)
     {
@@ -258,7 +289,7 @@ struct light_ptr
     }
     // else do nothing
 
-    counter_ = new counter(detail::counter_type(1), d);
+    counter_ = new counter<D>(detail::counter_type(1), ::std::forward<D>(d));
 
     ptr_ = p;
   }
@@ -281,15 +312,8 @@ struct light_ptr
       detail::counter_type{};
   }
 
-  template <typename U>
-  static void default_deleter(element_type* const p)
-  {
-    ::std::default_delete<typename deletion_type<T, U>::type>()(
-      static_cast<U*>(p));
-  }
-
 private:
-  counter* counter_{};
+  counter_base* counter_{};
 
   element_type* ptr_{};
 };
