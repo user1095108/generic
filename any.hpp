@@ -89,25 +89,30 @@ private: // types
     virtual ::std::type_info const& type() const = 0;
   };
 
-  template<typename ValueType, typename = void>
+  template <typename ValueType, typename = void>
   struct holder : public placeholder
   {
   public: // constructor
-    template <class T>
-    holder(T&& value) : held(::std::forward<T>(value)) { }
+    template <class T> holder(T&& value) :
+      held(::std::forward<T>(value))
+    {
+    }
 
     holder& operator=(holder const&) = delete;
 
     placeholder* clone() const final { throw ::std::logic_error(""); }
 
   public: // queries
-    ::std::type_info const& type() const noexcept { return typeid(ValueType); }
+    ::std::type_info const& type() const noexcept final
+    {
+      return typeid(ValueType);
+    }
 
   public:
     ValueType held;
   };
 
-  template<typename ValueType>
+  template <typename ValueType>
   struct holder<
     ValueType,
     typename ::std::enable_if<
@@ -117,12 +122,18 @@ private: // types
   {
   public: // constructor
     template <class T>
-    holder(T&& value) : held(::std::forward<T>(value)) { }
+    holder(T&& value) :
+      held(::std::forward<T>(value))
+    {
+    }
 
     placeholder* clone() const final { return new holder<ValueType>(held); }
 
   public: // queries
-    ::std::type_info const& type() const noexcept { return typeid(ValueType); }
+    ::std::type_info const& type() const noexcept final
+    {
+      return typeid(ValueType);
+    }
 
   public:
     ValueType held;
