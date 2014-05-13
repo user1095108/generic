@@ -87,10 +87,9 @@ struct light_ptr
 
   struct counter_base
   {
-    explicit counter_base(detail::counter_type c, void* counter_ptr,
+    explicit counter_base(detail::counter_type c,
       invoker_type invoker) noexcept :
       counter_(c),
-      counter_ptr_(counter_ptr),
       invoker_(invoker)
     {
     }
@@ -105,7 +104,7 @@ struct light_ptr
       {
         typedef char type_must_be_complete[sizeof(U) ? 1 : -1];
         (void)sizeof(type_must_be_complete);
-        invoker_(counter_ptr_, ptr);
+        invoker_(this, ptr);
       }
       // else do nothing
     }
@@ -118,7 +117,7 @@ struct light_ptr
         counter_.fetch_sub(detail::counter_type(1),
           ::std::memory_order_relaxed))
       {
-        invoker_(counter_ptr_, ptr);
+        invoker_(this, ptr);
       }
       // else do nothing
     }
@@ -132,16 +131,14 @@ struct light_ptr
 
     detail::atomic_type counter_{};
 
-    void* counter_ptr_;
-
     invoker_type invoker_;
   };
 
   template <typename U>
   struct counter : counter_base
   {
-    explicit counter(detail::counter_type c, U&& d) noexcept :
-      counter_base(c, this, invoker),
+    explicit counter(detail::counter_type const c, U&& d) noexcept :
+      counter_base(c, invoker),
       d_(::std::forward<U>(d))
     {
     }
@@ -149,9 +146,12 @@ struct light_ptr
   private:
     static void invoker(void* const ptr, element_type* const e)
     {
-      U const d(::std::move(static_cast<counter<U>*>(ptr)->d_));
+      counter* const c(static_cast<counter<U>*>(
+        static_cast<counter_base*>(ptr)));
 
-      delete static_cast<counter<U>*>(ptr);
+      U const d(::std::move(c->d_));
+
+      delete c;
 
       d(e);
     }
