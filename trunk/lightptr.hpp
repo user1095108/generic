@@ -158,8 +158,15 @@ struct light_ptr
 
   light_ptr() = default;
 
-  template <typename U, typename D>
-  explicit light_ptr(U* const p, D&& d = default_deleter<U>)
+  template <typename U>
+  static void default_deleter(element_type* const p)
+  {
+    ::std::default_delete<typename deletion_type<T, U>::type>()(
+      static_cast<U*>(p));
+  }
+
+  template <typename U, typename D = decltype(&default_deleter<U>)>
+  explicit light_ptr(U* p, D&& d = default_deleter<U>)
   {
     reset(p, ::std::forward<D>(d));
   }
@@ -269,14 +276,7 @@ struct light_ptr
     ptr_ = {};
   }
 
-  template <typename U>
-  static void default_deleter(element_type* const p)
-  {
-    ::std::default_delete<typename deletion_type<T, U>::type>()(
-      static_cast<U*>(p));
-  }
-
-  template <typename U, typename D>
+  template <typename U, typename D = decltype(&default_deleter<U>)>
   void reset(U* const p, D&& d = default_deleter<U>)
   {
     if (counter_)
