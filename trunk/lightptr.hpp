@@ -170,6 +170,10 @@ struct light_ptr
     reset(p, ::std::forward<D>(d));
   }
 
+  light_ptr(light_ptr const& other) { *this = other; }
+
+  light_ptr(light_ptr&& other) noexcept { *this = ::std::move(other); }
+
   ~light_ptr()
   {
     if (counter_)
@@ -178,10 +182,6 @@ struct light_ptr
     }
     // else do nothing
   }
-
-  light_ptr(light_ptr const& other) { *this = other; }
-
-  light_ptr(light_ptr&& other) noexcept { *this = ::std::move(other); }
 
   light_ptr& operator=(light_ptr const& rhs)
   {
@@ -221,7 +221,7 @@ struct light_ptr
 
   bool operator<(light_ptr const& rhs) const noexcept
   {
-    return get() < rhs.get();
+    return counter_ < rhs.counter_;
   }
 
   bool operator==(light_ptr const& rhs) const noexcept
