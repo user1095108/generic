@@ -24,9 +24,6 @@ namespace detail
   template <typename T>
   using deleter_type = void (*)(T*);
 
-  template <typename T>
-  using invoker_type = void (*)(void*, T*);
-
   template <typename U>
   struct ref_type
   {
@@ -83,10 +80,10 @@ struct light_ptr
 
   using deleter_type = detail::deleter_type<element_type>;
 
-  using invoker_type = detail::invoker_type<element_type>;
-
   struct counter_base
   {
+    using invoker_type = void (*)(counter_base*, element_type*);
+
     explicit counter_base(detail::counter_type c,
       invoker_type invoker) noexcept :
       counter_(c),
@@ -144,12 +141,11 @@ struct light_ptr
     }
 
   private:
-    static void invoker(void* const ptr, element_type* const e)
+    static void invoker(counter_base* const ptr, element_type* const e)
     {
-      counter* const c(static_cast<counter<U>*>(
-        static_cast<counter_base*>(ptr)));
+      auto const c(static_cast<counter<U>*>(ptr));
 
-      U const d(::std::move(c->d_));
+      typename ::std::decay<U>::type const d(::std::move(c->d_));
 
       delete c;
 
@@ -157,7 +153,7 @@ struct light_ptr
     }
 
   private:
-    U d_;
+    typename ::std::decay<U>::type d_;
   };
 
   light_ptr() = default;
