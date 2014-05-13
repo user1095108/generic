@@ -134,7 +134,7 @@ struct light_ptr
   template <typename U>
   struct counter : counter_base
   {
-    explicit counter(detail::counter_type const c, U&& d) noexcept :
+    explicit counter(detail::counter_type const c, U&& d) :
       counter_base(c, invoker),
       d_(::std::forward<U>(d))
     {
