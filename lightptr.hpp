@@ -193,7 +193,7 @@ struct light_ptr
       }
       // else do nothing
 
-      if (counter_ = rhs.counter_)
+      if ((counter_ = rhs.counter_))
       {
         counter_->inc_ref();
       }
