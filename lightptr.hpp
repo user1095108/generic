@@ -193,14 +193,13 @@ struct light_ptr
       }
       // else do nothing
 
-      counter_ = rhs.counter_;
-      ptr_ = rhs.ptr_;
-
-      if (counter_)
+      if (counter_ = rhs.counter_)
       {
         counter_->inc_ref();
       }
       // else do nothing
+
+      ptr_ = rhs.ptr_;
     }
     // else do nothing
 
@@ -210,9 +209,9 @@ struct light_ptr
   light_ptr& operator=(light_ptr&& rhs) noexcept
   {
     counter_ = rhs.counter_;
-    ptr_ = rhs.ptr_;
-
     rhs.counter_ = nullptr;
+
+    ptr_ = rhs.ptr_;
     rhs.ptr_ = nullptr;
 
     return *this;
