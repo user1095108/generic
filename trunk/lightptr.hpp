@@ -153,7 +153,7 @@ struct light_ptr
     }
 
   private:
-    typename ::std::decay<U>::type d_;
+    typename ::std::decay<U>::type const d_;
   };
 
   light_ptr() = default;
@@ -278,10 +278,9 @@ struct light_ptr
   template <typename U>
   void reset(U* const p)
   {
-    reset(detail::counter_type(1),
-      [](element_type* const p) {
-        ::std::default_delete<typename deletion_type<T, U>::type>()(
-          static_cast<U*>(p));
+    reset(p, [](element_type* const p) {
+      ::std::default_delete<typename deletion_type<T, U>::type>()(
+        static_cast<U*>(p));
       });
   }
 
