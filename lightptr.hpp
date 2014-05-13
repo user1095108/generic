@@ -141,7 +141,7 @@ struct light_ptr
     }
 
   private:
-    static void invoker(counter_base* const ptr, element_type* const e)
+    static void invoker(counter_base* const ptr, element_type* e)
     {
       auto const c(static_cast<counter<U>*>(ptr));
 
@@ -158,10 +158,10 @@ struct light_ptr
 
   light_ptr() = default;
 
-  template <typename U>
-  explicit light_ptr(U* const p, deleter_type const d = default_deleter<U>)
+  template <typename U, typename D>
+  explicit light_ptr(U* const p, D&& d = default_deleter<U>)
   {
-    reset(p, d);
+    reset(p, ::std::forward<D>(d));
   }
 
   ~light_ptr()
