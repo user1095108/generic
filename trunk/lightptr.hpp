@@ -316,6 +316,8 @@ struct light_ptr
   }
 
 private:
+  template <typename U> friend struct ::std::hash;
+
   counter_base* counter_{};
 
   element_type* ptr_{};
@@ -336,7 +338,8 @@ namespace std
   {
     size_t operator()(::generic::light_ptr<T> const& l) const noexcept
     {
-      return hash<typename ::generic::light_ptr<T>::element_type*>()(l.get());
+      return hash<typename ::generic::light_ptr<T>::element_type*>()(
+        l.counter_);
     }
   };
 }
