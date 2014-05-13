@@ -87,10 +87,10 @@ struct light_ptr
 
   struct counter_base
   {
-    explicit counter_base(detail::counter_type const c, void* const func_ptr,
-      invoker_type const invoker) noexcept :
+    explicit counter_base(detail::counter_type c, void* counter_ptr,
+      invoker_type invoker) noexcept :
       counter_(c),
-      counter_ptr_(func_ptr),
+      counter_ptr_(counter_ptr),
       invoker_(invoker)
     {
     }
@@ -140,7 +140,7 @@ struct light_ptr
   template <typename U>
   struct counter : counter_base
   {
-    explicit counter(detail::counter_type const c, U&& d) noexcept :
+    explicit counter(detail::counter_type c, U&& d) noexcept :
       counter_base(c, this, invoker),
       d_(::std::forward<U>(d))
     {
