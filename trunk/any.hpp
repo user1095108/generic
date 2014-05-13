@@ -32,7 +32,7 @@ public:
     >::type
   >
   any(ValueType&& value) :
-    content(new holder<typename ::std::remove_reference<ValueType>::type>(
+    content(new holder<typename ::std::decay<ValueType>::type>(
       ::std::forward<ValueType>(value)))
   {
   }
@@ -58,8 +58,7 @@ public: // modifiers
 
   template<typename ValueType,
     typename = typename ::std::enable_if<
-      !::std::is_same<any, typename ::std::remove_const<
-        typename ::std::remove_reference<ValueType>::type>::type>::value
+      !::std::is_same<any, typename ::std::decay<ValueType>::type>{}
     >::type
   >
   any& operator=(ValueType&& rhs)
