@@ -161,11 +161,7 @@ struct light_ptr
   template <typename U>
   explicit light_ptr(U* p)
   {
-    reset(p, [](element_type* const p)
-      {
-        ::std::default_delete<typename deletion_type<T, U>::type>()(
-          static_cast<U*>(p));
-      });
+    reset(p);
   }
 
   template <typename U, typename D>
