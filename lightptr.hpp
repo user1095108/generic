@@ -153,7 +153,7 @@ struct light_ptr
     }
 
   private:
-    typename ::std::decay<U>::type const d_;
+    typename ::std::decay<U>::type d_;
   };
 
   light_ptr() = default;
