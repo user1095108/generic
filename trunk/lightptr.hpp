@@ -280,8 +280,8 @@ struct light_ptr
       static_cast<U*>(p));
   }
 
-  template <typename U, typename D = decltype(&default_deleter<U>)>
-  void reset(U* const p, D&& d)
+  template <typename U, typename D>
+  void reset(U* const p, D&& d = default_deleter<U>)
   {
     if (counter_)
     {
