@@ -29,13 +29,14 @@ public:
   forwarder(forwarder const&) = default;
 
   template<typename T>
-  forwarder(T&& f) : stub_(handler<T>::stub)
+  forwarder(T&& f) : stub_(invoker_stub<T>)
   {
     static_assert(sizeof(T) <= sizeof(store_),
       "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
-    new (&store_) handler<T>(::std::forward<T>(f));
+    using functor_type = typename ::std::decay<T>::type;
+    new (&store_) functor_type(::std::forward<T>(f));
   }
 
   forwarder& operator=(forwarder const&) = default;
@@ -51,9 +52,10 @@ public:
     static_assert(sizeof(T) <= sizeof(store_), "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
-    new (&store_) handler<T>(::std::forward<T>(f));
+    using functor_type = typename ::std::decay<T>::type;
+    new (&store_) functor_type(::std::forward<T>(f));
 
-    stub_ = handler<T>::stub;
+    stub_ = invoker_stub<functor_type>;
 
     return *this;
   }
@@ -65,33 +67,15 @@ public:
   }
 
 private:
-  template<typename T>
-  struct handler
+  template <typename U>
+  static R invoker_stub(void const* ptr, A&&... args)
   {
-    handler(T&& f) noexcept : f_(::std::forward<T>(f))
-    {
-    }
-
-    static R stub(void const* ptr, A&&... args)
-    {
-      return static_cast<handler<T> const*>(ptr)->
-        f_(::std::forward<A>(args)...);
-    }
-
-    T f_;
-  };
+    return (*static_cast<U const*>(ptr))(::std::forward<A>(args)...);
+  }
 
   R (*stub_)(void const*, A&&...){};
 
-#if defined(__clang__)
-  using max_align_type = long double;
-#elif defined(__GNUC__)
-  using max_align_type = ::max_align_t;
-#else
-  using max_align_type = ::std::max_align_t;
-#endif
-
-  alignas(max_align_type) ::std::uintptr_t store_;
+  alignas(::std::max_align_t) ::std::uintptr_t store_;
 };
 
 }
