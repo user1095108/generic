@@ -17,28 +17,33 @@ template <class U, ::std::size_t N = 64>
 class implstore
 {
 public:
+  using value_type = U;
+
+  static constexpr ::std::size_t buffer_size = N;
+
   implstore()
   {
     static_assert(sizeof(U) <= sizeof(store_),
       "impl too large");
     static_assert(::std::is_default_constructible<U>{},
       "impl is not default constructible");
-    new (&store_) U;
+    static_cast<void*>(new (&store_) U);
 
     deleter_ = deleter_stub;
   }
 
-  template <typename ...A>
+  template <typename ...A, typename =
+    typename ::std::enable_if<::std::is_constructible<U, A...>::type> >
   explicit implstore(A&& ...args)
   {
     static_assert(sizeof(U) <= sizeof(store_),
       "impl too large");
-    new (&store_) U(::std::forward<A>(args)...);
+    static_cast<void*>(new (&store_) U(::std::forward<A>(args)...));
 
     deleter_ = deleter_stub;
   }
 
-  ~implstore() { *this && (deleter_(*this), true); }
+  ~implstore() { if (deleter_) deleter_(*this); }
 
   template <::std::size_t M>
   implstore(implstore<U, M> const& other)
@@ -56,7 +61,7 @@ public:
     static_assert(::std::is_move_constructible<U>{},
       "impl is not move constructible");
 
-    new (&store_) U(*other);
+    new (&store_) U(::std::move(*other));
 
     deleter_ = other.deleter_;
   }
