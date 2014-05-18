@@ -28,19 +28,15 @@ public:
     static_assert(sizeof(U) <= sizeof(store_),
       "impl too large");
     new (static_cast<void*>(&store_)) U(::std::forward<A>(args)...);
-
-    deleter_ = deleter_stub;
   }
 
-  ~implstore() { if (deleter_) deleter_(*this); }
+  ~implstore() { get()->~U(); }
 
   template <::std::size_t M, typename K = U, typename =
     typename ::std::enable_if<::std::is_copy_constructible<K>{}>::type>
   implstore(implstore<U, M> const& other)
   {
     new (static_cast<void*>(&store_)) U(*other);
-
-    deleter_ = other.deleter_;
   }
 
   template <::std::size_t M, typename K = U, typename =
@@ -48,8 +44,6 @@ public:
   implstore(implstore<U, M>&& other)
   {
     new (static_cast<void*>(&store_)) U(::std::move(*other));
-
-    deleter_ = other.deleter_;
   }
 
   template <::std::size_t M, typename K = U, typename =
@@ -100,15 +94,7 @@ public:
     return *reinterpret_cast<U*>(&store_);
   }
 
-  explicit operator bool() const noexcept { return deleter_; }
-
 private:
-  static void deleter_stub(implstore& is) { is->~U(); }
-
-private:
-  using deleter_type = void(*)(implstore&);
-  deleter_type deleter_;
-
   typename ::std::aligned_storage<N>::type store_;
 };
 
