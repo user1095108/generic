@@ -234,28 +234,19 @@ struct light_ptr
     return !operator==(rhs);
   }
 
-  bool operator==(::std::nullptr_t const) const noexcept
-  {
-    return !ptr_;
-  }
+  bool operator==(::std::nullptr_t const) const noexcept { return !ptr_; }
 
-  bool operator!=(::std::nullptr_t const) const noexcept
-  {
-    return ptr_;
-  }
+  bool operator!=(::std::nullptr_t const) const noexcept { return ptr_; }
 
   explicit operator bool() const noexcept { return ptr_; }
 
   typename detail::ref_type<T>::type
   operator*() const noexcept
   {
-    return *static_cast<T*>(static_cast<void*>(ptr_));
+    return *reinterpret_cast<T*>(ptr_);
   }
 
-  T* operator->() const noexcept
-  {
-    return static_cast<T*>(static_cast<void*>(ptr_));
-  }
+  T* operator->() const noexcept { return reinterpret_cast<T*>(ptr_); }
 
   element_type* get() const noexcept { return ptr_; }
 
