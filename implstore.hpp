@@ -17,7 +17,7 @@ template <class U, ::std::size_t N = 64>
 class implstore
 {
 public:
-  static constexpr ::std::size_t buffer_size = N;
+  static constexpr ::std::size_t const buffer_size = N;
 
   using value_type = U;
 
@@ -31,6 +31,11 @@ public:
   }
 
   ~implstore() { get()->~U(); }
+
+  implstore(implstore const& other)
+  {
+    new (static_cast<void*>(&store_)) U(*other);
+  }
 
   template <::std::size_t M, typename K = U, typename =
     typename ::std::enable_if<::std::is_copy_constructible<K>{}>::type>
@@ -46,27 +51,34 @@ public:
     new (static_cast<void*>(&store_)) U(::std::move(*other));
   }
 
+  implstore& operator=(implstore const& rhs)
+  {
+    **this = *rhs;
+
+    return *this;
+  }
+
   template <::std::size_t M, typename K = U, typename =
     typename ::std::enable_if<::std::is_copy_assignable<K>{}>::type>
-  implstore& operator=(implstore<U, M> const& other)
+  implstore& operator=(implstore<U, M> const& rhs)
   {
-    **this = *other;
+    **this = *rhs;
 
     return *this;
   }
 
   template <::std::size_t M, typename K = U, typename =
     typename ::std::enable_if<::std::is_move_assignable<K>{}>::type>
-  implstore& operator=(implstore<U, M>&& other)
+  implstore& operator=(implstore<U, M>&& rhs)
   {
-    **this = ::std::move(*other);
+    **this = ::std::move(*rhs);
 
     return *this;
   }
 
   U const* operator->() const noexcept
   {
-    return reinterpret_cast<U*>(&store_);
+    return reinterpret_cast<U const*>(&store_);
   }
 
   U* operator->() noexcept
@@ -76,7 +88,7 @@ public:
 
   U const* get() const noexcept
   {
-    return reinterpret_cast<U*>(&store_);
+    return reinterpret_cast<U const*>(&store_);
   }
 
   U* get() noexcept
@@ -86,7 +98,7 @@ public:
 
   U const& operator*() const noexcept
   {
-    return *reinterpret_cast<U*>(&store_);
+    return *reinterpret_cast<U const*>(&store_);
   }
 
   U& operator*() noexcept
