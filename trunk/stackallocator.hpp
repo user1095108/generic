@@ -13,7 +13,7 @@
 namespace generic
 {
 
-template <std::size_t N>
+template <::std::size_t N>
 class stack_store
 {
 public:
@@ -23,7 +23,7 @@ public:
 
   stack_store& operator=(stack_store const&) = delete;
 
-  char* allocate(std::size_t n)
+  char* allocate(::std::size_t n)
   {
     assert(pointer_in_buffer(ptr_) &&
       "stack_allocator has outlived stack_store");
@@ -44,16 +44,14 @@ public:
     }
   }
 
-  void deallocate(char* const p, std::size_t n) noexcept
+  void deallocate(char* const p, ::std::size_t n) noexcept
   {
     assert(pointer_in_buffer(ptr_) &&
       "stack_allocator has outlived stack_store");
 
     if (pointer_in_buffer(p))
     {
-      n = align(n);
-
-      if (p + n == ptr_)
+      if (p + align(n) == ptr_)
       {
         ptr_ = p;
       }
