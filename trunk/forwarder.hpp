@@ -12,8 +12,6 @@
 
 #include <utility>
 
-#include <new>
-
 namespace generic
 {
 
