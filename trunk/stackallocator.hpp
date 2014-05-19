@@ -6,6 +6,8 @@
 
 #include <cstddef>
 
+#include <new>
+
 #include <utility>
 
 #include <type_traits>
@@ -30,7 +32,7 @@ public:
 
     n = align(n);
 
-    if (buf_ + N >= ptr_ + n)
+    if (reinterpret_cast<char*>(&buf_) + N >= ptr_ + n)
     {
       auto r(ptr_);
 
@@ -82,12 +84,12 @@ private:
 
   bool pointer_in_buffer(char* const p) noexcept
   {
-    return (reinterpret_cast<char*>(buf_) <= p) &&
-      (p <= reinterpret_cast<char*>(buf_) + N);
+    return (reinterpret_cast<char*>(&buf_) <= p) &&
+      (p <= reinterpret_cast<char*>(&buf_) + N);
   }
 
 private:
-  char* ptr_{reinterpret_cast<char*>(buf_)};
+  char* ptr_{reinterpret_cast<char*>(&buf_)};
 
   ::std::aligned_storage<N> buf_;
 
