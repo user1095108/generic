@@ -1,5 +1,6 @@
 #ifndef UTILITY_HPP
 # define UTILITY_HPP
+# pragma once
 
 #include <cstddef>
 

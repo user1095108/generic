@@ -1,5 +1,6 @@
 #ifndef ANY_HPP
 # define ANY_HPP
+# pragma once
 
 #include <cassert>
 
