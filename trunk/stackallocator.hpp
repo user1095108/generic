@@ -10,8 +10,6 @@
 
 #include <utility>
 
-#include <type_traits>
-
 namespace generic
 {
 
@@ -32,7 +30,7 @@ public:
 
     n = align(n);
 
-    if (reinterpret_cast<char*>(&buf_) + N >= ptr_ + n)
+    if (buf_ + N >= ptr_ + n)
     {
       auto r(ptr_);
 
@@ -67,14 +65,11 @@ public:
     }
   }
 
-  void reset() noexcept { ptr_ = reinterpret_cast<char*>(&buf_); }
+  void reset() noexcept { ptr_ = buf_; }
 
   static constexpr ::std::size_t size() noexcept { return N; }
 
-  ::std::size_t used() const noexcept
-  {
-    return ::std::size_t(ptr_ - reinterpret_cast<char*>(&buf_));
-  }
+  ::std::size_t used() const noexcept { return ::std::size_t(ptr_ - buf_); }
 
 private:
   static constexpr ::std::size_t align(::std::size_t const n) noexcept
@@ -84,17 +79,15 @@ private:
 
   bool pointer_in_buffer(char* const p) noexcept
   {
-    return (reinterpret_cast<char*>(&buf_) <= p) &&
-      (p <= reinterpret_cast<char*>(&buf_) + N);
+    return (buf_ <= p) && (p <= buf_ + N);
   }
 
 private:
-  char* ptr_{reinterpret_cast<char*>(&buf_)};
+  static constexpr auto const alignment = alignof(::std::max_align_t);
 
-  ::std::aligned_storage<N> buf_;
+  char* ptr_{buf_};
 
-  constexpr static ::std::size_t const alignment{
-    alignof(typename decltype(buf_)::type)};
+  alignas(max_align_type) char buf_[N];
 };
 
 template <class T, std::size_t N>
