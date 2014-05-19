@@ -87,7 +87,7 @@ private:
 
   char* ptr_{buf_};
 
-  alignas(max_align_type) char buf_[N];
+  alignas(::std::max_align_t) char buf_[N];
 };
 
 template <class T, std::size_t N>
