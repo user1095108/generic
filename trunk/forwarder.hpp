@@ -28,16 +28,7 @@ public:
 
   forwarder(forwarder const&) = default;
 
-  template<typename T>
-  forwarder(T&& f) : stub_(invoker_stub<T>)
-  {
-    static_assert(sizeof(T) <= sizeof(store_),
-      "functor too large");
-    static_assert(::std::is_trivially_destructible<T>::value,
-      "functor not trivially destructible");
-    using functor_type = typename ::std::decay<T>::type;
-    new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
-  }
+  template<typename T> forwarder(T&& f) { *this = ::std::forward<T>(f); }
 
   forwarder& operator=(forwarder const&) = default;
 
