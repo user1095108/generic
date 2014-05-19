@@ -36,7 +36,7 @@ public:
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
     using functor_type = typename ::std::decay<T>::type;
-    new (&store_) functor_type(::std::forward<T>(f));
+    new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
   }
 
   forwarder& operator=(forwarder const&) = default;
@@ -49,7 +49,8 @@ public:
   >
   forwarder& operator=(T&& f)
   {
-    static_assert(sizeof(T) <= sizeof(store_), "functor too large");
+    static_assert(sizeof(T) <= sizeof(store_),
+      "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
     using functor_type = typename ::std::decay<T>::type;
@@ -68,14 +69,14 @@ public:
 
 private:
   template <typename U>
-  static R invoker_stub(void const* ptr, A&&... args)
+  static R invoker_stub(void const* const ptr, A&&... args)
   {
     return (*static_cast<U const*>(ptr))(::std::forward<A>(args)...);
   }
 
   R (*stub_)(void const*, A&&...){};
 
-  alignas(::std::max_align_t) ::std::uintptr_t store_;
+  typename ::std::aligned_storage<sizeof(::std::uintptr_t)>::type store_;
 };
 
 }

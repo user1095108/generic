@@ -1,6 +1,6 @@
-#pragma once
 #ifndef ALGORITHM_HPP
 # define ALGORUTHM_HPP
+# pragma once
 
 #include <cstddef>
 

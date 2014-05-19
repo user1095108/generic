@@ -1,6 +1,6 @@
-#pragma once
 #ifndef ARRAYDELEGATE_HPP
 # define ARRAYDELEGATE_HPP
+# pragma once
 
 #include <cassert>
 
