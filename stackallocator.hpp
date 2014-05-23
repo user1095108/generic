@@ -122,14 +122,12 @@ public:
 
   T* allocate(::std::size_t const n)
   {
-    return static_cast<T*>(static_cast<void*>(
-      store_->allocate(n * sizeof(T))));
+    return reinterpret_cast<T*>(store_->allocate(n * sizeof(T)));
   }
 
   void deallocate(T* const p, ::std::size_t const n) noexcept
   {
-    store_->deallocate(static_cast<char*>(static_cast<void*>(p)),
-      n * sizeof(T));
+    store_->deallocate(reinterpret_cast<char*>(p), n * sizeof(T));
   }
 
   template <class U, class ...A>
