@@ -1,6 +1,6 @@
-#pragma once
-#ifndef VARIANT_HPP
-# define VARIANT_HPP
+#ifndef MOVINGVARIANT_HPP
+# define MOVINGVARIANT_HPP
+# pragma once
 
 #include <cassert>
 
@@ -15,7 +15,7 @@
 namespace generic
 {
 
-namespace detail
+namespace mdetail
 {
 
 template <typename A, typename ...B>
@@ -192,19 +192,19 @@ struct is_move_or_copy_constructible :
 template <typename... T>
 struct moving_variant
 {
-  static_assert(!detail::any_of< ::std::is_reference<T>...>{},
+  static_assert(!mdetail::any_of< ::std::is_reference<T>...>{},
     "reference types are unsupported");
-  static_assert(!detail::any_of< ::std::is_void<T>...>{},
+  static_assert(!mdetail::any_of< ::std::is_void<T>...>{},
     "void type is unsupported");
-  static_assert(detail::all_of<
-    detail::is_move_or_copy_constructible<T>...>{},
+  static_assert(mdetail::all_of<
+    mdetail::is_move_or_copy_constructible<T>...>{},
     "unmovable and uncopyable types are unsupported");
-  static_assert(!detail::has_duplicates<T...>{},
+  static_assert(!mdetail::has_duplicates<T...>{},
     "duplicate types are unsupported");
 
-  using max_align_type = typename detail::max_align_type<T...>::type;
+  using max_align_type = typename mdetail::max_align_type<T...>::type;
 
-  using max_size_type = typename detail::max_size_type<T...>::type;
+  using max_size_type = typename mdetail::max_size_type<T...>::type;
 
   static constexpr auto const max_align = alignof(max_align_type);
 
@@ -249,7 +249,7 @@ struct moving_variant
 
   template <
     typename U,
-    typename = typename ::std::enable_if< detail::any_of< ::std::is_same<
+    typename = typename ::std::enable_if< mdetail::any_of< ::std::is_same<
       typename ::std::decay<U>::type, T>...>{} &&
       !::std::is_same<typename ::std::decay<U>::type, moving_variant>{}
     >::type
@@ -261,7 +261,7 @@ struct moving_variant
 
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
-    detail::any_of< ::std::is_same<
+    mdetail::any_of< ::std::is_same<
       typename ::std::decay<U>::type, T>...>{} &&
     ::std::is_rvalue_reference<U&&>{} &&
     ::std::is_move_assignable<typename ::std::decay<U>::type>{} &&
@@ -272,7 +272,7 @@ struct moving_variant
   {
     using user_type = typename ::std::decay<U>::type;
 
-    if (detail::index_of<user_type, T...>{} == store_type_)
+    if (mdetail::index_of<user_type, T...>{} == store_type_)
     {
       *static_cast<user_type*>(static_cast<void*>(store_)) = ::std::move(u);
     }
@@ -292,7 +292,7 @@ struct moving_variant
 
       streamer_ = get_streamer<S, user_type>();
 
-      store_type_ = detail::index_of<user_type, T...>{};
+      store_type_ = mdetail::index_of<user_type, T...>{};
     }
 
     return *this;
@@ -300,7 +300,7 @@ struct moving_variant
 
   template <typename S = ::std::ostream, typename U>
   typename ::std::enable_if<
-    detail::any_of< ::std::is_same<
+    mdetail::any_of< ::std::is_same<
       typename ::std::decay<U>::type, T>...>{} &&
     ::std::is_rvalue_reference<U&&>{} &&
     !::std::is_move_assignable<
@@ -326,7 +326,7 @@ struct moving_variant
 
     streamer_ = get_streamer<S, user_type>();
 
-    store_type_ = detail::index_of<user_type, T...>{};
+    store_type_ = mdetail::index_of<user_type, T...>{};
 
     return *this;
   }
@@ -342,7 +342,7 @@ struct moving_variant
   template <typename U>
   bool contains() const noexcept
   {
-    return detail::index_of<U, T...>{} == store_type_;
+    return mdetail::index_of<U, T...>{} == store_type_;
   }
 
   void clear()
@@ -401,13 +401,13 @@ struct moving_variant
 
   template <typename U>
   typename ::std::enable_if<
-    (-1 != detail::index_of<U, T...>{}) &&
+    (-1 != mdetail::index_of<U, T...>{}) &&
     (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U
   >::type
   cget() const
   {
-    if (detail::index_of<U, T...>{} == store_type_)
+    if (mdetail::index_of<U, T...>{} == store_type_)
     {
       return *static_cast<U const*>(static_cast<void const*>(store_));
     }
@@ -419,13 +419,13 @@ struct moving_variant
 
   template <typename U>
   typename ::std::enable_if<
-    (-1 != detail::index_of<U, T...>{}) &&
+    (-1 != mdetail::index_of<U, T...>{}) &&
     !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U const&
   >::type
   cget() const
   {
-    if (detail::index_of<U, T...>{} == store_type_)
+    if (mdetail::index_of<U, T...>{} == store_type_)
     {
       return *static_cast<U const*>(static_cast<void const*>(store_));
     }
@@ -437,12 +437,12 @@ struct moving_variant
 
   template <typename U>
   typename ::std::enable_if<
-    (-1 != detail::index_of<U, T...>{}),
+    (-1 != mdetail::index_of<U, T...>{}),
     U&
   >::type
   get()
   {
-    if (detail::index_of<U, T...>{} == store_type_)
+    if (mdetail::index_of<U, T...>{} == store_type_)
     {
       return *static_cast<U*>(static_cast<void*>(store_));
     }
@@ -454,12 +454,12 @@ struct moving_variant
 
   template <typename U>
   typename ::std::enable_if<
-    (-1 != detail::index_of<U, T...>{}),
+    (-1 != mdetail::index_of<U, T...>{}),
     U const&
   >::type
   get() const
   {
-    if (detail::index_of<U, T...>{} == store_type_)
+    if (mdetail::index_of<U, T...>{} == store_type_)
     {
       return *static_cast<U const*>(static_cast<void const*>(store_));
     }
@@ -471,22 +471,22 @@ struct moving_variant
 
   template <typename U>
   typename ::std::enable_if<
-    (-1 == detail::index_of<U, T...>{}) &&
-    (-1 != detail::compatible_index_of<U, T...>{}) &&
+    (-1 == mdetail::index_of<U, T...>{}) &&
+    (-1 != mdetail::compatible_index_of<U, T...>{}) &&
     (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U
   >::type
   get() const
   {
     static_assert(::std::is_same<
-      typename detail::type_at<
-        detail::compatible_index_of<U, T...>{}, T...>::type,
-      typename detail::compatible_type<U, T...>::type>{},
+      typename mdetail::type_at<
+        mdetail::compatible_index_of<U, T...>{}, T...>::type,
+      typename mdetail::compatible_type<U, T...>::type>{},
       "internal error");
-    if (detail::compatible_index_of<U, T...>{} == store_type_)
+    if (mdetail::compatible_index_of<U, T...>{} == store_type_)
     {
       return U(*static_cast<
-        typename detail::compatible_type<U, T...>::type const*>(
+        typename mdetail::compatible_type<U, T...>::type const*>(
           static_cast<void const*>(store_)));
     }
     else
@@ -498,7 +498,7 @@ struct moving_variant
   template <typename U>
   static constexpr int type_index() noexcept
   {
-    return detail::index_of<U, T...>{};
+    return mdetail::index_of<U, T...>{};
   }
 
   int type_index() const noexcept { return store_type_; }
@@ -536,7 +536,7 @@ private:
 
   template <class S, class U>
   typename ::std::enable_if<
-    detail::is_streamable<S, U>{},
+    mdetail::is_streamable<S, U>{},
     streamer_type
   >::type
   get_streamer() const
@@ -546,7 +546,7 @@ private:
 
   template <class S, class U>
   typename ::std::enable_if<
-    !detail::is_streamable<S, U>{},
+    !mdetail::is_streamable<S, U>{},
     streamer_type
   >::type
   get_streamer() const
@@ -626,7 +626,7 @@ private:
 
   template <class S, typename U>
   static typename ::std::enable_if<
-    detail::is_streamable<S, U>{}
+    mdetail::is_streamable<S, U>{}
   >::type
   streamer_stub(void* const os, moving_variant const& v)
   {
@@ -651,4 +651,4 @@ private:
 
 }
 
-#endif // VARIANT_HPP
+#endif // MOVINGVARIANT_HPP
