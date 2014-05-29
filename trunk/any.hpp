@@ -22,9 +22,9 @@ class any
   using typeid_t = ::std::uintptr_t;
 
   template <typename T>
-  static typeid_t type_id()
+  constexpr static typeid_t type_id()
   {
-    return typeid_t(&type_id<T>);
+    return typeid_t(type_id<T>);
   }
 
 public:
