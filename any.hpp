@@ -19,12 +19,18 @@ namespace generic
 
 class any
 {
-  using typeid_t = ::std::uintptr_t;
+  using typeid_t = void (*)();
 
   template <typename T>
-  constexpr static typeid_t type_id()
+  struct t
   {
-    return typeid_t(type_id<T>);
+    static void id() { }
+  };
+
+  template <typename T>
+  static typeid_t type_id()
+  {
+    return typeid_t(&t<T>::id);
   }
 
 public:
