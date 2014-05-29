@@ -17,6 +17,14 @@ namespace generic
 
 class any
 {
+  using typeid_t = ::std::uintptr_t;
+
+  template <typename T>
+  static typeid_t type_id()
+  {
+    return typeid_t(&type_id<T>);
+  }
+
 public:
   any() = default;
 
@@ -71,9 +79,9 @@ public: // queries
 
   explicit operator bool() const noexcept { return content; }
 
-  ::std::type_info const& type() const noexcept
+  typeid_t type() const noexcept
   {
-    return content ? content->type() : typeid(void);
+    return content ? content->type() : type_id<void>();
   }
 
 private: // types
@@ -86,7 +94,7 @@ private: // types
 
     virtual placeholder* clone() const = 0;
 
-    virtual ::std::type_info const& type() const = 0;
+    virtual typeid_t type() const = 0;
   };
 
   template <typename ValueType, typename = void>
@@ -103,9 +111,9 @@ private: // types
     placeholder* clone() const final { throw ::std::logic_error(""); }
 
   public: // queries
-    ::std::type_info const& type() const noexcept final
+    typeid_t type() const noexcept final
     {
-      return typeid(ValueType);
+      return type_id<ValueType>();
     }
 
   public:
@@ -130,9 +138,9 @@ private: // types
     placeholder* clone() const final { return new holder<ValueType>(held); }
 
   public: // queries
-    ::std::type_info const& type() const noexcept final
+    typeid_t type() const noexcept final
     {
-      return typeid(ValueType);
+      return type_id<ValueType>();
     }
 
   public:
@@ -165,7 +173,7 @@ inline ValueType const* unsafe_any_cast(any const* const operand) noexcept
 template<typename ValueType>
 inline ValueType* any_cast(any* const operand) noexcept
 {
-  return operand && (operand->type() == typeid(ValueType)) ?
+  return operand && (operand->type() == any::type_id<ValueType>()) ?
     &static_cast<any::holder<ValueType>*>(operand->content)->held :
     nullptr;
 }
