@@ -22,7 +22,7 @@ class any
   template <typename T>
   static typeid_t type_id()
   {
-    return typeid_t(type_id<T>);
+    return typeid_t(&type_id<T>);
   }
 
 public:
@@ -173,7 +173,8 @@ inline ValueType const* unsafe_any_cast(any const* const operand) noexcept
 template<typename ValueType>
 inline ValueType* any_cast(any* const operand) noexcept
 {
-  return operand && (operand->type() == any::type_id<ValueType>()) ?
+  return operand && (operand->type() ==
+    any::type_id<typename ::std::decay<ValueType>::type>()) ?
     &static_cast<any::holder<ValueType>*>(operand->content)->held :
     nullptr;
 }
