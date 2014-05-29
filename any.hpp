@@ -22,15 +22,9 @@ class any
   using typeid_t = void (*)();
 
   template <typename T>
-  struct t
-  {
-    static void id() { }
-  };
-
-  template <typename T>
   static typeid_t type_id()
   {
-    return typeid_t(&t<T>::id);
+    return typeid_t(type_id<T>);
   }
 
 public:
