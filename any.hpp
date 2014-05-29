@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#include <cstdint>
+
 #include <stdexcept>
 
 #include <typeinfo>
