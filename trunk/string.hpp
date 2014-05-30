@@ -86,7 +86,9 @@ split(::std::basic_string<CharT, Traits, Allocator> const& s,
 
 // trim
 //////////////////////////////////////////////////////////////////////////////
-inline ::std::string& ltrim(::std::string& s)
+template<class CharT, class Traits, class Allocator>
+inline ::std::basic_string<CharT, Traits, Allocator>&
+ltrim(::std::basic_string<CharT, Traits, Allocator>& s)
 {
   s.erase(s.begin(), ::std::find_if(s.begin(), s.end(),
     [](char const c){ return !::std::isspace(c); }));
@@ -94,7 +96,9 @@ inline ::std::string& ltrim(::std::string& s)
   return s;
 }
 
-inline ::std::string& rtrim(::std::string& s)
+template<class CharT, class Traits, class Allocator>
+inline ::std::basic_string<CharT, Traits, Allocator>&
+rtrim(::std::basic_string<CharT, Traits, Allocator>& s)
 {
   s.erase(::std::find_if(s.rbegin(), s.rend(),
     [](char const c){ return !::std::isspace(c); }).base(), s.end());
@@ -102,7 +106,9 @@ inline ::std::string& rtrim(::std::string& s)
   return s;
 }
 
-inline ::std::string& trim(::std::string& s)
+template<class CharT, class Traits, class Allocator>
+inline ::std::basic_string<CharT, Traits, Allocator>&
+trim(::std::basic_string<CharT, Traits, Allocator>& s)
 {
   return ltrim(rtrim(s));
 }
