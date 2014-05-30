@@ -66,8 +66,9 @@ inline typename C::value_type join(C const& container,
 // split
 //////////////////////////////////////////////////////////////////////////////
 template<class CharT, class Traits, class Allocator>
-inline ::std::vector<std::string> split(::std::basic_string<CharT, Traits,
-  Allocator> const& s, CharT const delim)
+inline ::std::vector<::std::basic_string<CharT, Traits, Allocator> >
+split(::std::basic_string<CharT, Traits, Allocator> const& s,
+  CharT const delim)
 {
   ::std::stringstream ss(s);
 
