@@ -65,13 +65,15 @@ inline typename C::value_type join(C const& container,
 
 // split
 //////////////////////////////////////////////////////////////////////////////
-::std::vector<std::string> split(::std::string const& s, char const delim)
+template<class CharT, class Traits, class Allocator>
+inline ::std::vector<std::string> split(::std::basic_string<CharT, Traits,
+  Allocator> const& s, CharT const delim)
 {
   ::std::stringstream ss(s);
 
   ::std::string item;
 
-  ::std::vector<std::string> r;
+  ::std::vector<typename ::std::decay<decltype(s)>::type> r;
 
   while (::std::getline(ss, item, delim))
   {
