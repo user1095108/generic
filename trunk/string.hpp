@@ -5,7 +5,11 @@
 
 #include <algorithm>
 
+#include <sstream>
+
 #include <string>
+
+#include <vector>
 
 namespace generic
 {
@@ -57,6 +61,22 @@ inline typename C::value_type join(C const& container,
   {
     return typename C::value_type();
   }
+}
+
+// split
+//////////////////////////////////////////////////////////////////////////////
+::std::vector<std::string> split(::std::string const& s, char const delim)
+{
+  ::std::stringstream ss(s);
+
+  ::std::string item;
+
+  while (::std::getline(ss, item, delim))
+  {
+    elems.push_back(item);
+  }
+
+  return elems;
 }
 
 // trim
