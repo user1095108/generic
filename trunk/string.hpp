@@ -71,12 +71,14 @@ inline typename C::value_type join(C const& container,
 
   ::std::string item;
 
+  ::std::vector<std::string> r;
+
   while (::std::getline(ss, item, delim))
   {
-    elems.push_back(item);
+    r.push_back(item);
   }
 
-  return elems;
+  return r;
 }
 
 // trim
