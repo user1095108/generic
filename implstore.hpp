@@ -36,14 +36,22 @@ public:
   }
 
   template <::std::size_t M, typename K = U, typename =
-    typename ::std::enable_if<::std::is_copy_constructible<K>{}>::type>
+    typename ::std::enable_if<
+      ::std::is_copy_constructible<K>{} &&
+      !::std::is_same<implstore, implstore<U, M> >{}
+    >::type
+  >
   implstore(implstore<U, M> const& other)
   {
     new (static_cast<void*>(&store_)) U(*other);
   }
 
   template <::std::size_t M, typename K = U, typename =
-    typename ::std::enable_if<::std::is_move_constructible<K>{}>::type>
+    typename ::std::enable_if<
+      ::std::is_move_constructible<K>{} &&
+      !::std::is_same<implstore, implstore<U, M> >{}
+    >::type
+  >
   implstore(implstore<U, M>&& other)
   {
     new (static_cast<void*>(&store_)) U(::std::move(*other));
@@ -57,7 +65,11 @@ public:
   }
 
   template <::std::size_t M, typename K = U, typename =
-    typename ::std::enable_if<::std::is_copy_assignable<K>{}>::type>
+    typename ::std::enable_if<
+      ::std::is_copy_assignable<K>{} &&
+      !::std::is_same<implstore, implstore<U, M> >{}
+    >::type
+  >
   implstore& operator=(implstore<U, M> const& rhs)
   {
     **this = *rhs;
@@ -66,7 +78,11 @@ public:
   }
 
   template <::std::size_t M, typename K = U, typename =
-    typename ::std::enable_if<::std::is_move_assignable<K>{}>::type>
+    typename ::std::enable_if<
+      ::std::is_move_assignable<K>{} &&
+      !::std::is_same<implstore, implstore<U, M> >{}
+    >::type
+  >
   implstore& operator=(implstore<U, M>&& rhs)
   {
     **this = ::std::move(*rhs);
