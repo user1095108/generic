@@ -410,7 +410,7 @@ struct variant
   {
     if (*this)
     {
-      deleter_();
+      deleter_(*this);
     }
     // else do nothing
   }
