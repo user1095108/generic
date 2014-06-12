@@ -227,16 +227,7 @@ struct variant
   {
     if (!rhs)
     {
-      if (*this)
-      {
-        deleter_(*this);
-
-        store_type_ = -1;
-        copier_ = nullptr;
-        mover_ = nullptr;
-        streamer_ = nullptr;
-      }
-      // else do nothing
+      clear();
     }
     else if (rhs.copier_)
     {
@@ -254,11 +245,7 @@ struct variant
   {
     if (!rhs)
     {
-      if (*this)
-      {
-        deleter_(*this);
-      }
-      // else do nothing
+      clear();
     }
     else if (rhs.mover_)
     {
@@ -297,17 +284,13 @@ struct variant
 
     if (detail::index_of<user_type, T...>{} == store_type_)
     {
-      *static_cast<user_type*>(static_cast<void*>(store_)) = u;
+      *reinterpret_cast<user_type*>(store_) = u;
     }
     else
     {
-      if (*this)
-      {
-        deleter_(*this);
-      }
-      // else do nothing
+      clear();
 
-      new (store_) user_type(::std::forward<U>(u));
+      new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
       deleter_ = destructor_stub<user_type>;
       copier_ = get_copier<user_type>();
@@ -340,13 +323,9 @@ struct variant
     }
     else
     {
-      if (*this)
-      {
-        deleter_(*this);
-      }
-      // else do nothing
+      clear();
 
-      new (store_) user_type(::std::forward<U>(u));
+      new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
       deleter_ = destructor_stub<user_type>;
       copier_ = get_copier<user_type>();
@@ -374,13 +353,9 @@ struct variant
   {
     using user_type = typename ::std::decay<U>::type;
 
-    if (*this)
-    {
-      deleter_(*this);
-    }
-    // else do nothing
+    clear();
 
-    new (store_) user_type(::std::forward<U>(u));
+    new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
     deleter_ = destructor_stub<user_type>;
     copier_ = get_copier<user_type>();
@@ -499,7 +474,7 @@ struct variant
   {
     if (detail::index_of<U, T...>{} == store_type_)
     {
-      return *static_cast<U const*>(static_cast<void const*>(store_));
+      return *reinterpret_cast<U const*>(store_);
     }
     else
     {
@@ -517,7 +492,7 @@ struct variant
   {
     if (detail::index_of<U, T...>{} == store_type_)
     {
-      return *static_cast<U const*>(static_cast<void const*>(store_));
+      return *reinterpret_cast<U const*>(store_);
     }
     else
     {
@@ -534,7 +509,7 @@ struct variant
   {
     if (detail::index_of<U, T...>{} == store_type_)
     {
-      return *static_cast<U*>(static_cast<void*>(store_));
+      return *reinterpret_cast<U*>(store_);
     }
     else
     {
@@ -551,7 +526,7 @@ struct variant
   {
     if (detail::index_of<U, T...>{} == store_type_)
     {
-      return *static_cast<U const*>(static_cast<void const*>(store_));
+      return *reinterpret_cast<U const*>(store_);
     }
     else
     {
@@ -575,9 +550,8 @@ struct variant
       "internal error");
     if (detail::compatible_index_of<U, T...>{} == store_type_)
     {
-      return U(*static_cast<
-        typename detail::compatible_type<U, T...>::type const*>(
-          static_cast<void const*>(store_)));
+      return U(*reinterpret_cast<
+        typename detail::compatible_type<U, T...>::type const*>(store_));
     }
     else
     {
@@ -673,7 +647,7 @@ private:
 
     v.store_type_ = -1;
 
-    static_cast<U*>(static_cast<void*>(v.store_))->~U();
+    reinterpret_cast<U*>(v.store_)->~U();
   }
 
   template <typename U>
@@ -685,15 +659,15 @@ private:
   {
     if (src.store_type_ == dst.store_type_)
     {
-      *static_cast<U*>(static_cast<void*>(dst.store_)) =
-        *static_cast<U const*>(static_cast<void const*>(src.store_));
+      *reinterpret_cast<U*>(dst.store_) =
+        *reinterpret_cast<U const*>(src.store_);
     }
     else
     {
       dst.clear();
 
-      new (dst.store_) U(*static_cast<U const*>(
-        static_cast<void const*>(src.store_)));
+      new (static_cast<void*>(dst.store_)) U(
+        *reinterpret_cast<U const*>(src.store_));
 
       dst.deleter_ = src.deleter_;
       dst.copier_ = src.copier_;
@@ -713,8 +687,8 @@ private:
   {
     dst.clear();
 
-    new (dst.store_) U(*static_cast<U const*>(
-      static_cast<void const*>(src.store_)));
+    new (static_cast<void*>(dst.store_)) U(
+      *reinterpret_cast<U const*>(src.store_));
 
     dst.deleter_ = src.deleter_;
     dst.copier_ = src.copier_;
@@ -733,15 +707,15 @@ private:
   {
     if (src.store_type_ == dst.store_type_)
     {
-      *static_cast<U*>(static_cast<void*>(dst.store_)) =
-        ::std::move(*static_cast<U*>(static_cast<void*>(src.store_)));
+      *reinterpret_cast<U*>(dst.store_) =
+        ::std::move(*reinterpret_cast<U*>(src.store_));
     }
     else
     {
       dst.clear();
 
-      new (dst.store_) U(::std::move(*static_cast<U*>(
-        static_cast<void*>(src.store_))));
+      new (static_cast<void*>(dst.store_)) U(
+        ::std::move(*reinterpret_cast<U*>(src.store_)));
 
       dst.deleter_ = src.deleter_;
       dst.copier_ = src.copier_;
@@ -761,8 +735,8 @@ private:
   {
     dst.clear();
 
-    new (dst.store_) U(::std::move(*static_cast<U*>(
-      static_cast<void*>(src.store_))));
+    new (static_cast<void*>(dst.store_)) U(
+      ::std::move(*reinterpret_cast<U*>(src.store_)));
 
     dst.deleter_ = src.deleter_;
 
