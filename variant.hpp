@@ -690,11 +690,7 @@ private:
     }
     else
     {
-      if (dst)
-      {
-        dst.deleter_(dst);
-      }
-      // else do nothing
+      dst.clear();
 
       new (dst.store_) U(*static_cast<U const*>(
         static_cast<void const*>(src.store_)));
@@ -715,11 +711,7 @@ private:
   >::type
   copier_stub(variant& dst, variant const& src)
   {
-    if (dst)
-    {
-      dst.deleter_(dst);
-    }
-    // else do nothing
+    dst.clear();
 
     new (dst.store_) U(*static_cast<U const*>(
       static_cast<void const*>(src.store_)));
@@ -746,11 +738,7 @@ private:
     }
     else
     {
-      if (dst)
-      {
-        dst.deleter_(dst);
-      }
-      // else do nothing
+      dst.clear();
 
       new (dst.store_) U(::std::move(*static_cast<U*>(
         static_cast<void*>(src.store_))));
@@ -771,11 +759,7 @@ private:
   >::type
   mover_stub(variant& dst, variant& src)
   {
-    if (dst)
-    {
-      dst.deleter_(dst);
-    }
-    // else do nothing
+    dst.clear();
 
     new (dst.store_) U(::std::move(*static_cast<U*>(
       static_cast<void*>(src.store_))));
