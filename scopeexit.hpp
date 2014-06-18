@@ -55,7 +55,7 @@ public:
   ~scope_exit() noexcept { f_(); }
 
 private:
-  T f_;
+  T const f_;
 };
 
 class scope_exit_helper { };
