@@ -89,12 +89,19 @@ struct light_ptr
 
   using deleter_type = detail::deleter_type<element_type>;
 
-  struct counter_base
+  class counter_base
   {
+    friend class light_ptr;
+
     using invoker_type = void (*)(counter_base*, element_type*);
 
-    explicit counter_base(detail::counter_type c,
-      invoker_type invoker) noexcept :
+    detail::atomic_type counter_{};
+
+    invoker_type invoker_;
+
+  public:
+    explicit counter_base(detail::counter_type const c,
+      invoker_type const invoker) noexcept :
       counter_(c),
       invoker_(invoker)
     {
@@ -134,15 +141,14 @@ struct light_ptr
       counter_.fetch_add(detail::counter_type(1),
         ::std::memory_order_relaxed);
     }
-
-    detail::atomic_type counter_{};
-
-    invoker_type invoker_;
   };
 
   template <typename U>
-  struct counter : counter_base
+  class counter : public counter_base
   {
+    typename ::std::decay<U>::type d_;
+
+  public:
     explicit counter(detail::counter_type const c, U&& d) :
       counter_base(c, invoker),
       d_(::std::forward<U>(d))
@@ -154,15 +160,12 @@ struct light_ptr
     {
       auto const c(static_cast<counter<U>*>(ptr));
 
-      typename ::std::decay<U>::type const d(::std::move(c->d_));
+      decltype(d_) const d(::std::move(c->d_));
 
       delete c;
 
       d(e);
     }
-
-  private:
-    typename ::std::decay<U>::type d_;
   };
 
 private:
