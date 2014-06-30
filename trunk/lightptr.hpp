@@ -150,7 +150,7 @@ struct light_ptr
     }
 
   private:
-    static void invoker(counter_base* const ptr, element_type* e)
+    static void invoker(counter_base* const ptr, element_type* const e)
     {
       auto const c(static_cast<counter<U>*>(ptr));
 
