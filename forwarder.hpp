@@ -30,6 +30,8 @@ public:
 
   forwarder& operator=(forwarder const&) = default;
 
+  forwarder& operator=(forwarder&&) = default;
+
   template <
     typename T,
     typename = typename ::std::enable_if<
@@ -43,7 +45,7 @@ public:
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
     using functor_type = typename ::std::decay<T>::type;
-    new (&store_) functor_type(::std::forward<T>(f));
+    new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
 
     stub_ = invoker_stub<functor_type>;
 

@@ -196,9 +196,8 @@ struct moving_variant
     "reference types are unsupported");
   static_assert(!mdetail::any_of< ::std::is_void<T>...>{},
     "void type is unsupported");
-  static_assert(mdetail::all_of<
-    mdetail::is_move_or_copy_constructible<T>...>{},
-    "unmovable and uncopyable types are unsupported");
+  static_assert(mdetail::all_of<::std::is_move_constructible<T>...>{},
+    "unmovable types are unsupported");
   static_assert(!mdetail::has_duplicates<T...>{},
     "duplicate types are unsupported");
 
@@ -210,14 +209,7 @@ struct moving_variant
 
   moving_variant() = default;
 
-  ~moving_variant()
-  {
-    if (*this)
-    {
-      deleter_(*this);
-    }
-    // else do nothing
-  }
+  ~moving_variant() { deleter_(*this); }
 
   moving_variant(moving_variant const& other) = delete;
 
@@ -229,11 +221,7 @@ struct moving_variant
   {
     if (!rhs)
     {
-      if (*this)
-      {
-        deleter_(*this);
-      }
-      // else do nothing
+      clear();
     }
     else if (rhs.mover_)
     {
@@ -278,15 +266,11 @@ struct moving_variant
     }
     else
     {
-      if (*this)
-      {
-        deleter_(*this);
-      }
-      // else do nothing
+      clear();
 
       new (store_) user_type(::std::forward<U>(u));
 
-      deleter_ = destructor_stub<user_type>;
+      deleter_ = deleter_stub<user_type>;
 
       mover_ = get_mover<user_type>();
 
@@ -312,15 +296,11 @@ struct moving_variant
   {
     using user_type = typename ::std::decay<U>::type;
 
-    if (*this)
-    {
-      deleter_(*this);
-    }
-    // else do nothing
+    clear();
 
     new (store_) user_type(::std::forward<U>(u));
 
-    deleter_ = destructor_stub<user_type>;
+    deleter_ = deleter_stub<user_type>;
 
     mover_ = get_mover<user_type>();
 
@@ -345,14 +325,7 @@ struct moving_variant
     return mdetail::index_of<U, T...>{} == store_type_;
   }
 
-  void clear()
-  {
-    if (*this)
-    {
-      deleter_(*this);
-    }
-    // else do nothing
-  }
+  void clear() { deleter_(*this); }
 
   bool empty() const noexcept { return !*this; }
 
@@ -360,31 +333,19 @@ struct moving_variant
   {
     if (-1 == other.store_type_)
     {
-      if (-1 == store_type_)
-      {
-      }
-      else if (mover_)
+      if (mover_)
       {
         other = ::std::move(*this);
       }
-      else
-      {
-        throw ::std::bad_typeid();
-      }
+      // else do nothing
     }
     else if (-1 == store_type_)
     {
-      if (-1 == other.store_type_)
-      {
-      }
-      else if (other.mover_)
+      if (other.mover_)
       {
         *this = ::std::move(other);
       }
-      else
-      {
-        throw ::std::bad_typeid();
-      }
+      // else do nothing
     }
     else if (mover_ && other.mover_)
     {
@@ -520,7 +481,7 @@ private:
   typename ::std::enable_if<
     ::std::is_move_constructible<U>{}, mover_type
   >::type
-  get_mover() const
+  get_mover() const noexcept
   {
     return mover_stub<U>;
   }
@@ -529,7 +490,7 @@ private:
   typename ::std::enable_if<
     !::std::is_move_constructible<U>{}, mover_type
   >::type
-  get_mover() const
+  get_mover() const noexcept
   {
     return nullptr;
   }
@@ -539,7 +500,7 @@ private:
     mdetail::is_streamable<S, U>{},
     streamer_type
   >::type
-  get_streamer() const
+  get_streamer() const noexcept
   {
     return streamer_stub<S, U>;
   }
@@ -549,15 +510,17 @@ private:
     !mdetail::is_streamable<S, U>{},
     streamer_type
   >::type
-  get_streamer() const
+  get_streamer() const noexcept
   {
     return nullptr;
   }
 
+  static void dummy_deleter_stub(moving_variant&) noexcept { }
+
   template <typename U>
-  static void destructor_stub(moving_variant& v)
+  static void deleter_stub(moving_variant& v)
   {
-    v.deleter_ = nullptr;
+    v.deleter_ = dummy_deleter_stub;
     v.mover_ = nullptr;
     v.streamer_ = nullptr;
 
@@ -580,11 +543,7 @@ private:
     }
     else
     {
-      if (dst)
-      {
-        dst.deleter_(dst);
-      }
-      // else do nothing
+      dst.clear();
 
       new (dst.store_) U(::std::move(*static_cast<U*>(
         static_cast<void*>(src.store_))));
@@ -606,11 +565,7 @@ private:
   >::type
   mover_stub(moving_variant& dst, moving_variant& src)
   {
-    if (dst)
-    {
-      dst.deleter_(dst);
-    }
-    // else do nothing
+    dst.clear();
 
     new (dst.store_) U(::std::move(*static_cast<U*>(
       static_cast<void*>(src.store_))));
@@ -634,7 +589,7 @@ private:
   }
 
   using deleter_type = void (*)(moving_variant&);
-  deleter_type deleter_;
+  deleter_type deleter_{dummy_deleter_stub};
 
   mover_type mover_;
 
