@@ -2,6 +2,8 @@
 # define IMPLSTORE_HPP
 # pragma once
 
+#include <cassert>
+
 #include <cstddef>
 
 #include <type_traits>
@@ -30,48 +32,41 @@ public:
 
   ~implstore() { get()->~U(); }
 
-  implstore(implstore const& other)
+  implstore(implstore const& other) :
+    implstore(other, nullptr)
+  {
+  }
+
+  implstore(implstore&& other) :
+    implstore(::std::move(other), nullptr)
+  {
+  }
+
+  template <::std::size_t M, typename K = U>
+  implstore(implstore<U, M> const& other,
+    typename ::std::enable_if<
+      ::std::is_copy_constructible<K>{}
+    >::type* = nullptr)
   {
     new (static_cast<void*>(&store_)) U(*other);
   }
 
-  template <::std::size_t M, typename K = U, typename =
-    typename ::std::enable_if<
-      ::std::is_copy_constructible<K>{} &&
-      !::std::is_same<implstore, implstore<U, M> >{}
-    >::type
-  >
-  implstore(implstore<U, M> const& other)
-  {
-    new (static_cast<void*>(&store_)) U(*other);
-  }
-
-  template <::std::size_t M, typename K = U, typename =
-    typename ::std::enable_if<
-      ::std::is_move_constructible<K>{} &&
-      !::std::is_same<implstore, implstore<U, M> >{}
-    >::type
-  >
-  implstore(implstore<U, M>&& other)
+  template <::std::size_t M, typename K = U>
+  implstore(implstore<U, M>&& other, typename ::std::enable_if<
+      ::std::is_move_constructible<K>{}
+    >::type* = nullptr)
   {
     new (static_cast<void*>(&store_)) U(::std::move(*other));
   }
 
-  implstore& operator=(implstore const& rhs)
-  {
-    **this = *rhs;
-
-    return *this;
-  }
-
   template <::std::size_t M, typename K = U, typename =
     typename ::std::enable_if<
-      ::std::is_copy_assignable<K>{} &&
-      !::std::is_same<implstore, implstore<U, M> >{}
+      ::std::is_copy_assignable<K>{}
     >::type
   >
   implstore& operator=(implstore<U, M> const& rhs)
   {
+    assert(this != &rhs);
     **this = *rhs;
 
     return *this;
@@ -79,12 +74,12 @@ public:
 
   template <::std::size_t M, typename K = U, typename =
     typename ::std::enable_if<
-      ::std::is_move_assignable<K>{} &&
-      !::std::is_same<implstore, implstore<U, M> >{}
+      ::std::is_move_assignable<K>{}
     >::type
   >
   implstore& operator=(implstore<U, M>&& rhs)
   {
+    assert(this != &rhs);
     **this = ::std::move(*rhs);
 
     return *this;

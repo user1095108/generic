@@ -59,6 +59,15 @@ struct light_ptr
   };
 
   template <typename U>
+  struct is_array_type : ::std::false_type { };
+
+  template <typename U>
+  struct is_array_type<U[]> : ::std::true_type { };
+
+  template <typename U, ::std::size_t N>
+  struct is_array_type<U[N]> : ::std::true_type { };
+
+  template <typename U>
   struct remove_array
   {
     using type = U;
@@ -156,6 +165,14 @@ struct light_ptr
     typename ::std::decay<U>::type d_;
   };
 
+private:
+  template <typename U> friend struct ::std::hash;
+
+  counter_base* counter_{};
+
+  element_type* ptr_{};
+
+public:
   light_ptr() = default;
 
   template <typename U>
@@ -248,6 +265,14 @@ struct light_ptr
 
   T* operator->() const noexcept { return reinterpret_cast<T*>(ptr_); }
 
+  template <typename U = T, typename =
+    typename ::std::enable_if<is_array_type<U>{}>::type>
+  typename detail::ref_type<element_type>::type operator[](
+    ::std::size_t const i) const noexcept
+  {
+    return ptr_[i];
+  }
+
   element_type* get() const noexcept { return ptr_; }
 
   void reset() { reset(nullptr); }
@@ -305,13 +330,6 @@ struct light_ptr
       counter_->counter_.load(::std::memory_order_relaxed) :
       detail::counter_type{};
   }
-
-private:
-  template <typename U> friend struct ::std::hash;
-
-  counter_base* counter_{};
-
-  element_type* ptr_{};
 };
 
 template<class T, class ...Args>

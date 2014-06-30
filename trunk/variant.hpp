@@ -210,14 +210,7 @@ struct variant
 
   variant() = default;
 
-  ~variant()
-  {
-    if (*this)
-    {
-      deleter_(*this);
-    }
-    // else do nothing
-  }
+  ~variant() { clear(); }
 
   variant(variant const& other) { *this = other; }
 
@@ -292,7 +285,7 @@ struct variant
 
       new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
-      deleter_ = destructor_stub<user_type>;
+      deleter_ = deleter_stub<user_type>;
       copier_ = get_copier<user_type>();
       mover_ = get_mover<user_type>();
       streamer_ = get_streamer<S, user_type>();
@@ -319,7 +312,7 @@ struct variant
 
     if (detail::index_of<user_type, T...>{} == store_type_)
     {
-      *static_cast<user_type*>(static_cast<void*>(store_)) = ::std::move(u);
+      *reinterpret_cast<user_type*>(store_) = ::std::move(u);
     }
     else
     {
@@ -327,7 +320,7 @@ struct variant
 
       new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
-      deleter_ = destructor_stub<user_type>;
+      deleter_ = deleter_stub<user_type>;
       copier_ = get_copier<user_type>();
       mover_ = get_mover<user_type>();
       streamer_ = get_streamer<S, user_type>();
@@ -357,7 +350,7 @@ struct variant
 
     new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
-    deleter_ = destructor_stub<user_type>;
+    deleter_ = deleter_stub<user_type>;
     copier_ = get_copier<user_type>();
     mover_ = get_mover<user_type>();
     streamer_ = get_streamer<S, user_type>();
@@ -381,14 +374,7 @@ struct variant
     return detail::index_of<U, T...>{} == store_type_;
   }
 
-  void clear()
-  {
-    if (*this)
-    {
-      deleter_(*this);
-    }
-    // else do nothing
-  }
+  void clear() { deleter_(*this); }
 
   bool empty() const noexcept { return !*this; }
 
@@ -399,15 +385,12 @@ struct variant
       if (mover_)
       {
         other = ::std::move(*this);
+        clear();
       }
       else if (copier_)
       {
         other = *this;
         clear();
-      }
-      else if (-1 != store_type_)
-      {
-        throw ::std::bad_typeid();
       }
       // else do nothing
     }
@@ -416,15 +399,12 @@ struct variant
       if (other.mover_)
       {
         *this = ::std::move(other);
+        other.clear();
       }
       else if (other.copier_)
       {
         *this = other;
         other.clear();
-      }
-      else if (-1 != other.store_type_)
-      {
-        throw ::std::bad_typeid();
       }
       // else do nothing
     }
@@ -438,7 +418,6 @@ struct variant
     else if (mover_ && other.copier_)
     {
       variant tmp(other);
-      assert(tmp.copier_);
 
       other = ::std::move(*this);
       *this = tmp;
@@ -446,7 +425,6 @@ struct variant
     else if (copier_ && other.mover_)
     {
       variant tmp(::std::move(other));
-      assert(tmp.mover_);
 
       other = *this;
       *this = ::std::move(tmp);
@@ -585,7 +563,7 @@ private:
   typename ::std::enable_if<
     ::std::is_copy_constructible<U>{}, copier_type
   >::type
-  get_copier() const
+  get_copier() const noexcept
   {
     return copier_stub<U>;
   }
@@ -594,7 +572,7 @@ private:
   typename ::std::enable_if<
     !::std::is_copy_constructible<U>{}, copier_type
   >::type
-  get_copier() const
+  get_copier() const noexcept
   {
     return nullptr;
   }
@@ -603,7 +581,7 @@ private:
   typename ::std::enable_if<
     ::std::is_move_constructible<U>{}, mover_type
   >::type
-  get_mover() const
+  get_mover() const noexcept
   {
     return mover_stub<U>;
   }
@@ -612,7 +590,7 @@ private:
   typename ::std::enable_if<
     !::std::is_move_constructible<U>{}, mover_type
   >::type
-  get_mover() const
+  get_mover() const noexcept
   {
     return nullptr;
   }
@@ -622,7 +600,7 @@ private:
     detail::is_streamable<S, U>{},
     streamer_type
   >::type
-  get_streamer() const
+  get_streamer() const noexcept
   {
     return streamer_stub<S, U>;
   }
@@ -632,15 +610,17 @@ private:
     !detail::is_streamable<S, U>{},
     streamer_type
   >::type
-  get_streamer() const
+  get_streamer() const noexcept
   {
     return nullptr;
   }
 
+  static void dummy_deleter_stub(variant&) noexcept { } 
+
   template <typename U>
-  static void destructor_stub(variant& v)
+  static void deleter_stub(variant& v)
   {
-    v.deleter_ = nullptr;
+    v.deleter_ = dummy_deleter_stub;
     v.copier_ = nullptr;
     v.mover_ = nullptr;
     v.streamer_ = nullptr;
@@ -759,7 +739,7 @@ private:
   }
 
   using deleter_type = void (*)(variant&);
-  deleter_type deleter_{};
+  deleter_type deleter_{dummy_deleter_stub};
 
   copier_type copier_{};
   mover_type mover_{};
