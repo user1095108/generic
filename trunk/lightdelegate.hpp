@@ -15,34 +15,34 @@ namespace detail
 {
   // stubs
   template <typename FP, FP fp, class R, class ...A>
-  static constexpr R function_stub(A&&... args)
+  static R function_stub(A&&... args)
   {
     return fp(::std::forward<A>(args)...);
   }
 
   template <typename FP, FP fp, class C, class R, class ...A>
-  static constexpr R member_function_stub(C* const object, A&&... args)
+  static R member_function_stub(C* const object, A&&... args)
   {
     return (object->*fp)(::std::forward<A>(args)...);
   }
 
   // factories
   template <typename FP, FP fp, class R, class ...A>
-  inline constexpr auto make_delegate(R (* const)(A...)) ->
+  inline auto make_delegate(R (* const)(A...)) noexcept ->
     decltype(&function_stub<FP, fp, R, A...>)
   {
     return function_stub<FP, fp, R, A...>;
   }
 
   template <typename FP, FP fp, class C, class R, class ...A>
-  inline constexpr auto make_delegate(R (C::* const)(A...)) ->
+  inline auto make_delegate(R (C::* const)(A...)) noexcept ->
     decltype(&member_function_stub<FP, fp, C, R, A...>)
   {
     return member_function_stub<FP, fp, C, R, A...>;
   }
 
   template <typename FP, FP fp, class C, class R, class ...A>
-  inline constexpr auto make_delegate(R (C::* const)(A...) const) ->
+  inline auto make_delegate(R (C::* const)(A...) const) noexcept ->
     decltype(&member_function_stub<FP, fp, C, R, A...>)
   {
     return member_function_stub<FP, fp, C, R, A...>;
@@ -50,7 +50,7 @@ namespace detail
 }
 
 template <typename FP, FP fp>
-constexpr inline auto make_delegate() ->
+inline auto make_delegate() noexcept ->
   decltype(detail::make_delegate<FP, fp>(fp))
 {
   return detail::make_delegate<FP, fp>(fp);
