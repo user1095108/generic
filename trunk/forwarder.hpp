@@ -21,6 +21,18 @@ class forwarder;
 template<typename R, typename ...A>
 class forwarder<R (A...)>
 {
+  static constexpr auto max_functor_size = 5 * sizeof(::std::uintptr_t);
+
+  template <typename U>
+  static R invoker_stub(void const* const ptr, A&&... args)
+  {
+    return (*static_cast<U const*>(ptr))(::std::forward<A>(args)...);
+  }
+
+  R (*stub_)(void const*, A&&...){};
+
+  typename ::std::aligned_storage<max_functor_size>::type store_;
+
 public:
   forwarder() = default;
 
@@ -62,17 +74,6 @@ public:
     //assert(stub_);
     return stub_(&store_, ::std::forward<A>(args)...);
   }
-
-private:
-  template <typename U>
-  static R invoker_stub(void const* const ptr, A&&... args)
-  {
-    return (*static_cast<U const*>(ptr))(::std::forward<A>(args)...);
-  }
-
-  R (*stub_)(void const*, A&&...){};
-
-  typename ::std::aligned_storage<sizeof(::std::uintptr_t)>::type store_;
 };
 
 }
