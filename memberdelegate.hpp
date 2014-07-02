@@ -15,8 +15,7 @@ namespace detail
 {
 
 template <typename T>
-constexpr auto address(T&& t) ->
-  typename ::std::remove_reference<T>::type*
+auto address(T&& t) -> typename ::std::remove_reference<T>::type*
 {
   return &t;
 }
