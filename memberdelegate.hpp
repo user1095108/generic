@@ -33,6 +33,27 @@ struct S
 };
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
+auto make_delegate(C* const object, R (C::* const)(A...) const) ->
+  decltype((*decltype(S<FP, fp, C, A...>::l)(nullptr))(object))
+{
+  return (*decltype(S<FP, fp, C, A...>::l)(nullptr))(object);
+}
+
+template <typename FP, FP fp, typename R, class C, typename ...A>
+auto make_delegate(C* const object, R (C::* const)(A...) const volatile) ->
+  decltype((*decltype(S<FP, fp, C, A...>::l)(nullptr))(object))
+{
+  return (*decltype(S<FP, fp, C, A...>::l)(nullptr))(object);
+}
+
+template <typename FP, FP fp, typename R, class C, typename ...A>
+auto make_delegate(C* const object, R (C::* const)(A...) volatile) ->
+  decltype((*decltype(S<FP, fp, C, A...>::l)(nullptr))(object))
+{
+  return (*decltype(S<FP, fp, C, A...>::l)(nullptr))(object);
+}
+
+template <typename FP, FP fp, typename R, class C, typename ...A>
 auto make_delegate(C* const object, R (C::* const)(A...)) ->
   decltype((*decltype(S<FP, fp, C, A...>::l)(nullptr))(object))
 {
