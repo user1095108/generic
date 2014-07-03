@@ -17,7 +17,7 @@ namespace detail
 {
 
 template <typename FP, FP fp, class C, typename ...A>
-struct member_delegate
+struct member_delegate_
 {
   C* const object;
 
@@ -29,29 +29,29 @@ struct member_delegate
 };
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
-inline auto make_delegate(C const* const object, R (C::* const)(A...) const) ->
-  member_delegate<FP, fp, C const, A...>
+inline auto member_delegate(C const* const object, R (C::* const)(A...) const) ->
+  member_delegate_<FP, fp, C const, A...>
 {
   return {object};
 }
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
-inline auto make_delegate(C const* const object, R (C::* const)(A...) const volatile) ->
-  member_delegate<FP, fp, C const, A...>
+inline auto member_delegate(C const* const object, R (C::* const)(A...) const volatile) ->
+  member_delegate_<FP, fp, C const, A...>
 {
   return {object};
 }
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
-inline auto make_delegate(C* const object, R (C::* const)(A...) volatile) ->
-  member_delegate<FP, fp, C, A...>
+inline auto member_delegate(C* const object, R (C::* const)(A...) volatile) ->
+  member_delegate_<FP, fp, C, A...>
 {
   return {object};
 }
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
-inline auto make_delegate(C* const object, R (C::* const)(A...)) ->
-  member_delegate<FP, fp, C, A...>
+inline auto member_delegate(C* const object, R (C::* const)(A...)) ->
+  member_delegate_<FP, fp, C, A...>
 {
   return {object};
 }
@@ -59,31 +59,31 @@ inline auto make_delegate(C* const object, R (C::* const)(A...)) ->
 }
 
 template <typename FP, FP fp, class C>
-inline auto make_delegate(C* const object) ->
-  decltype(detail::make_delegate<FP, fp>(object, fp))
+inline auto member_delegate(C* const object) ->
+  decltype(detail::member_delegate<FP, fp>(object, fp))
 {
-  return detail::make_delegate<FP, fp>(object, fp);
+  return detail::member_delegate<FP, fp>(object, fp);
 }
 
 template <typename FP, FP fp, class C>
-inline auto make_delegate(C const* const object) ->
-  decltype(detail::make_delegate<FP, fp>(object, fp))
+inline auto member_delegate(C const* const object) ->
+  decltype(detail::member_delegate<FP, fp>(object, fp))
 {
-  return detail::make_delegate<FP, fp>(object, fp);
+  return detail::member_delegate<FP, fp>(object, fp);
 }
 
 template <typename FP, FP fp, class C>
-inline auto make_delegate(C& object) ->
-  decltype(detail::make_delegate<FP, fp>(&object, fp))
+inline auto member_delegate(C& object) ->
+  decltype(detail::member_delegate<FP, fp>(&object, fp))
 {
-  return detail::make_delegate<FP, fp>(&object, fp);
+  return detail::member_delegate<FP, fp>(&object, fp);
 }
 
 template <typename FP, FP fp, class C>
-inline auto make_delegate(C const& object) ->
-  decltype(detail::make_delegate<FP, fp>(&object, fp))
+inline auto member_delegate(C const& object) ->
+  decltype(detail::member_delegate<FP, fp>(&object, fp))
 {
-  return detail::make_delegate<FP, fp>(&object, fp);
+  return detail::member_delegate<FP, fp>(&object, fp);
 }
 
 }
