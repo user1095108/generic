@@ -27,28 +27,28 @@ struct member_delegate
 };
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
-auto make_delegate(C* const object, R (C::* const)(A...) const) ->
+inline auto make_delegate(C* const object, R (C::* const)(A...) const) ->
   member_delegate<FP, fp, C, A...>
 {
   return {object};
 }
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
-auto make_delegate(C* const object, R (C::* const)(A...) const volatile) ->
+inline auto make_delegate(C* const object, R (C::* const)(A...) const volatile) ->
   member_delegate<FP, fp, C, A...>
 {
   return {object};
 }
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
-auto make_delegate(C* const object, R (C::* const)(A...) volatile) ->
+inline auto make_delegate(C* const object, R (C::* const)(A...) volatile) ->
   member_delegate<FP, fp, C, A...>
 {
   return {object};
 }
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
-auto make_delegate(C* const object, R (C::* const)(A...)) ->
+inline auto make_delegate(C* const object, R (C::* const)(A...)) ->
   member_delegate<FP, fp, C, A...>
 {
   return {object};
