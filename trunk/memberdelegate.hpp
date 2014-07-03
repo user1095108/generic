@@ -7,57 +7,51 @@
 namespace generic
 {
 
-#ifndef DELEGATE
-# define DELEGATE(f) decltype(&f),&f
-#endif // DELEGATE
+#ifndef MEMBER
+# define MEMBER(f) decltype(&f),&f
+#endif // MEMBER
 
 namespace detail
 {
 
-template <typename T>
-auto address(T&& t) -> typename ::std::remove_reference<T>::type*
-{
-  return &t;
-}
-
 template <typename FP, FP fp, class C, typename ...A>
-struct S
+struct member_delegate
 {
-  static constexpr auto* l = false ?
-    address([](C* const object) noexcept {
-      return [object](A&& ...args) {
-        return (object->*fp)(::std::forward<A>(args)...); 
-      };
-    }) :
-    nullptr;
+  C* const object;
+
+  auto operator()(A&& ...args) const ->
+    decltype((object->*fp)(::std::forward<A>(args)...))
+  {
+    return (object->*fp)(::std::forward<A>(args)...);
+  }
 };
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
 auto make_delegate(C* const object, R (C::* const)(A...) const) ->
-  decltype((*decltype(S<FP, fp, C, A...>::l)(nullptr))(object))
+  member_delegate<FP, fp, C, A...>
 {
-  return (*decltype(S<FP, fp, C, A...>::l)(nullptr))(object);
+  return {object};
 }
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
 auto make_delegate(C* const object, R (C::* const)(A...) const volatile) ->
-  decltype((*decltype(S<FP, fp, C, A...>::l)(nullptr))(object))
+  member_delegate<FP, fp, C, A...>
 {
-  return (*decltype(S<FP, fp, C, A...>::l)(nullptr))(object);
+  return {object};
 }
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
 auto make_delegate(C* const object, R (C::* const)(A...) volatile) ->
-  decltype((*decltype(S<FP, fp, C, A...>::l)(nullptr))(object))
+  member_delegate<FP, fp, C, A...>
 {
-  return (*decltype(S<FP, fp, C, A...>::l)(nullptr))(object);
+  return {object};
 }
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
 auto make_delegate(C* const object, R (C::* const)(A...)) ->
-  decltype((*decltype(S<FP, fp, C, A...>::l)(nullptr))(object))
+  member_delegate<FP, fp, C, A...>
 {
-  return (*decltype(S<FP, fp, C, A...>::l)(nullptr))(object);
+  return {object};
 }
 
 }
@@ -67,6 +61,27 @@ auto make_delegate(C* const object) ->
   decltype(detail::make_delegate<FP, fp>(object, fp))
 {
   return detail::make_delegate<FP, fp>(object, fp);
+}
+
+template <typename FP, FP fp, class C>
+auto make_delegate(C& object) ->
+  decltype(detail::make_delegate<FP, fp>(&object, fp))
+{
+  return detail::make_delegate<FP, fp>(&object, fp);
+}
+
+template <typename FP, FP fp, class C>
+auto make_delegate(C const* const object) ->
+  decltype(detail::make_delegate<FP, fp>(object, fp))
+{
+  return detail::make_delegate<FP, fp>(object, fp);
+}
+
+template <typename FP, FP fp, class C>
+auto make_delegate(C const& object) ->
+  decltype(detail::make_delegate<FP, fp>(&object, fp))
+{
+  return detail::make_delegate<FP, fp>(&object, fp);
 }
 
 }
