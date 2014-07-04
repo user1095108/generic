@@ -69,6 +69,8 @@ public:
     return *this;
   }
 
+  explicit operator bool() const noexcept { return stub_; }
+
   R operator() (A... args) const
   {
     //assert(stub_);
