@@ -1,6 +1,6 @@
-#pragma once
 #ifndef FORWARDER_HPP
 # define FORWARDER_HPP
+# pragma once
 
 #include <cassert>
 
@@ -21,7 +21,7 @@ class forwarder;
 template<typename R, typename ...A>
 class forwarder<R (A...)>
 {
-  static constexpr auto max_functor_size = 5 * sizeof(::std::uintptr_t);
+  static constexpr auto max_functor_size = 3 * sizeof(::std::uintptr_t);
 
   template <typename U>
   static R invoker_stub(void const* const ptr, A&&... args)
