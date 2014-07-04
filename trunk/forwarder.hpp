@@ -71,7 +71,9 @@ public:
 
   explicit operator bool() const noexcept { return stub_; }
 
-  R operator() (A... args) const
+  void reset() noexcept { stub_ = {}; }
+
+  R operator()(A... args) const
   {
     //assert(stub_);
     return stub_(&store_, ::std::forward<A>(args)...);
