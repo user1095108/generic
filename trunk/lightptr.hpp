@@ -1,6 +1,6 @@
-#pragma once
 #ifndef LIGHTPTR_HPP
 # define LIGHTPTR_HPP
+# pragma once
 
 #include <cassert>
 
@@ -38,7 +38,7 @@ namespace detail
 }
 
 template <typename T>
-struct light_ptr
+class light_ptr
 {
   template <typename U, typename V>
   struct deletion_type
@@ -97,7 +97,7 @@ struct light_ptr
 
     detail::atomic_type counter_{};
 
-    invoker_type invoker_;
+    invoker_type const invoker_;
 
   public:
     explicit counter_base(detail::counter_type const c,

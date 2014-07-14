@@ -1,3 +1,7 @@
+#ifndef CFORMAT_HPP
+# define CFORMAT_HPP
+# pragma once
+
 #include <cerrno>
 
 #include <cstdarg>
@@ -196,3 +200,5 @@ inline ::std::wstring wcstrftime(wchar_t const* const format,
 }
 
 }
+
+#endif // CFORMAT_HPP
