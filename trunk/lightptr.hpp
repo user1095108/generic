@@ -137,7 +137,6 @@ class light_ptr
 
     void inc_ref() noexcept
     {
-      //assert(counter_ptr);
       counter_.fetch_add(detail::counter_type(1),
         ::std::memory_order_relaxed);
     }
