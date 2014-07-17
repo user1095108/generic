@@ -115,7 +115,7 @@ class light_ptr
         counter_.fetch_sub(detail::counter_type(1),
           ::std::memory_order_relaxed))
       {
-        typedef char type_must_be_complete[sizeof(U) ? 1 : -1];
+        using type_must_be_complete = char[sizeof(U) ? 1 : -1];
         (void)sizeof(type_must_be_complete);
         invoker_(this, ptr);
       }
@@ -143,22 +143,22 @@ class light_ptr
     }
   };
 
-  template <typename U>
+  template <typename D>
   class counter : public counter_base
   {
-    typename ::std::decay<U>::type d_;
+    typename ::std::decay<D>::type d_;
 
   public:
-    explicit counter(detail::counter_type const c, U&& d) :
+    explicit counter(detail::counter_type const c, D&& d) :
       counter_base(c, invoker),
-      d_(::std::forward<U>(d))
+      d_(::std::forward<D>(d))
     {
     }
 
   private:
     static void invoker(counter_base* const ptr, element_type* const e)
     {
-      auto const c(static_cast<counter<U>*>(ptr));
+      auto const c(static_cast<counter<D>*>(ptr));
 
       decltype(d_) const d(::std::move(c->d_));
 
