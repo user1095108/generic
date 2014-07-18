@@ -1,6 +1,6 @@
-#pragma once
 #ifndef STACKALLOCATOR_HPP
 # define STACKALLOCATOR_HPP
+# pragma once
 
 #include <cassert>
 
