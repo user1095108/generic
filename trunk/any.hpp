@@ -19,6 +19,7 @@ namespace generic
 
 class any
 {
+public:
   using typeid_t = void (*)();
 
   template <typename T>
@@ -27,7 +28,6 @@ class any
     return typeid_t(type_id<T>);
   }
 
-public:
   any() = default;
 
   any(any const& other) :
