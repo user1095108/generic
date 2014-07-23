@@ -51,7 +51,7 @@ public:
   ~any() { delete content; }
 
 public: // modifiers
-  void clear() noexcept { swap(any()); }
+  void clear() { swap(any()); }
 
   bool empty() const noexcept { return !*this; }
 
