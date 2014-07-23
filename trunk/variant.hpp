@@ -1,6 +1,6 @@
-#pragma once
 #ifndef VARIANT_HPP
 # define VARIANT_HPP
+# pragma once
 
 #include <cassert>
 
