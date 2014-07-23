@@ -43,7 +43,7 @@ public:
     >::type
   >
   any(ValueType&& value) :
-    content(new holder<typename ::std::decay<ValueType>::type>(
+    content(new holder<typename ::std::remove_reference<ValueType>::type>(
       ::std::forward<ValueType>(value)))
   {
   }
@@ -52,6 +52,8 @@ public:
 
 public: // modifiers
   void clear() noexcept { swap(any()); }
+
+  bool empty() const noexcept { return !*this; }
 
   void swap(any& other) noexcept { ::std::swap(content, other.content); }
 
