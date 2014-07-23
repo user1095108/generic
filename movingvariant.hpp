@@ -209,7 +209,7 @@ struct moving_variant
 
   moving_variant() = default;
 
-  ~moving_variant() { deleter_(*this); }
+  ~moving_variant() { clear(); }
 
   moving_variant(moving_variant const& other) = delete;
 
