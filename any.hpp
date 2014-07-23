@@ -43,7 +43,7 @@ public:
     >::type
   >
   any(ValueType&& value) :
-    content(new holder<typename ::std::remove_reference<ValueType>::type>(
+    content(new holder<typename ::std::decay<ValueType>::type>(
       ::std::forward<ValueType>(value)))
   {
   }
