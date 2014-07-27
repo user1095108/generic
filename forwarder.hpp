@@ -1,5 +1,5 @@
-#ifndef FORWARDER_HPP
-# define FORWARDER_HPP
+#ifndef GENERIC_FORWARDER_HPP
+# define GENERIC_FORWARDER_HPP
 # pragma once
 
 #include <cassert>
@@ -82,4 +82,4 @@ public:
 
 }
 
-#endif // FORWARDER_HPP
+#endif // GENERIC_FORWARDER_HPP
