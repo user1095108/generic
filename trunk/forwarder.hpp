@@ -52,7 +52,9 @@ public:
   >
   forwarder& operator=(T&& f)
   {
-    static_assert(sizeof(T) <= sizeof(store_),
+    using functor_type = typename ::std::decay<T>::type;
+
+    static_assert(sizeof(functor_type) <= sizeof(store_),
       "functor too large");
     static_assert(::std::is_trivially_destructible<T>::value,
       "functor not trivially destructible");
@@ -61,7 +63,6 @@ public:
 //  static_assert(::std::is_trivially_copy_constructible<T>::value,
 //    "functor not trivially copy constructible");
 
-    using functor_type = typename ::std::decay<T>::type;
     new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
 
     stub_ = invoker_stub<functor_type>;
@@ -71,13 +72,13 @@ public:
 
   explicit operator bool() const noexcept { return stub_; }
 
-  void reset() noexcept { stub_ = {}; }
-
   R operator()(A... args) const
   {
     //assert(stub_);
     return stub_(&store_, ::std::forward<A>(args)...);
   }
+
+  void reset() noexcept { stub_ = {}; }
 };
 
 }
