@@ -1,5 +1,5 @@
-#ifndef VARIANT_HPP
-# define VARIANT_HPP
+#ifndef GENERIC_VARIANT_HPP
+# define GENERIC_VARIANT_HPP
 # pragma once
 
 #include <cassert>
@@ -757,4 +757,4 @@ private:
 
 }
 
-#endif // VARIANT_HPP
+#endif // GENERIC_VARIANT_HPP
