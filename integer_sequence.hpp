@@ -10,6 +10,10 @@ namespace generic
 template <typename T, T ...Is>
 struct integer_sequence
 {
+  static_assert(::std::is_integral<T>{} &&
+    !::std::is_same<typename ::std::decay<T>::type, bool>{},
+    "T must be integral and not bool");
+
   static constexpr ::std::size_t size() noexcept { return sizeof...(Is); }
 };
 
