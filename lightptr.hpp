@@ -146,7 +146,7 @@ class light_ptr
   template <typename D>
   class counter : public counter_base
   {
-    typename ::std::decay<D>::type d_;
+    typename ::std::decay<D>::type const d_;
 
   public:
     explicit counter(detail::counter_type const c, D&& d) :
@@ -160,11 +160,11 @@ class light_ptr
     {
       auto const c(static_cast<counter<D>*>(ptr));
 
-      decltype(d_) const d(::std::move(c->d_));
+      // invoke deleter on the element
+      c->d_(e);
 
+      // delete from a static member function
       delete c;
-
-      d(e);
     }
   };
 
