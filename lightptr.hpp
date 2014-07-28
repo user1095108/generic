@@ -99,7 +99,7 @@ class light_ptr
 
     invoker_type const invoker_;
 
-  public:
+  protected:
     explicit counter_base(detail::counter_type const c,
       invoker_type const invoker) noexcept :
       counter_(c),
@@ -107,6 +107,7 @@ class light_ptr
     {
     }
 
+  public:
     template <typename U>
     typename ::std::enable_if<!::std::is_void<U>{}>::type
     dec_ref(U* const ptr)

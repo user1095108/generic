@@ -1,5 +1,5 @@
-#ifndef MEMBERDELEGATE_HPP
-# define MEMBERDELEGATE_HPP
+#ifndef GENERIC_MEMBER_HPP
+# define GENERIC_MEMBER_HPP
 # pragma once
 
 #include <type_traits>
@@ -59,28 +59,28 @@ inline auto member_delegate(C* const object, R (C::* const)(A...)) ->
 }
 
 template <typename FP, FP fp, class C>
-inline auto member_delegate(C* const object) ->
+inline auto member(C* const object) ->
   decltype(detail::member_delegate<FP, fp>(object, fp))
 {
   return detail::member_delegate<FP, fp>(object, fp);
 }
 
 template <typename FP, FP fp, class C>
-inline auto member_delegate(C const* const object) ->
+inline auto member(C const* const object) ->
   decltype(detail::member_delegate<FP, fp>(object, fp))
 {
   return detail::member_delegate<FP, fp>(object, fp);
 }
 
 template <typename FP, FP fp, class C>
-inline auto member_delegate(C& object) ->
+inline auto member(C& object) ->
   decltype(detail::member_delegate<FP, fp>(&object, fp))
 {
   return detail::member_delegate<FP, fp>(&object, fp);
 }
 
 template <typename FP, FP fp, class C>
-inline auto member_delegate(C const& object) ->
+inline auto member(C const& object) ->
   decltype(detail::member_delegate<FP, fp>(&object, fp))
 {
   return detail::member_delegate<FP, fp>(&object, fp);
@@ -88,4 +88,4 @@ inline auto member_delegate(C const& object) ->
 
 }
 
-#endif // MEMBERDELEGATE_HPP
+#endif // GENERIC_MEMBER_HPP
