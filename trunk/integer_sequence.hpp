@@ -76,6 +76,9 @@ struct make_integer_range : detail::expand_indices<T, A, B - 1>::type {};
 template <typename T, T A>
 struct make_integer_range<T, A, A> : integer_sequence<T> {};
 
+template <::std::size_t A, ::std::size_t B>
+using make_index_range = make_integer_range<::std::size_t, A, B>;
+
 }
 
 #endif // GENERIC_INTEGER_SEQUENCE_HPP
