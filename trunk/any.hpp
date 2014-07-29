@@ -198,13 +198,14 @@ inline ValueType any_cast(any& operand)
 #ifndef NDEBUG
   auto const result(any_cast<nonref>(&operand));
 
-  if (!result)
+  if (result)
+  {
+    return *result;
+  }
+  else
   {
     throw ::std::bad_cast();
   }
-  // else do nothing
-
-  return *result;
 #else
   return *unsafe_any_cast<nonref>(&operand);
 #endif // NDEBUG
