@@ -35,12 +35,6 @@ template <typename T, T, T, typename = void>
 struct expand_indices;
 
 template <typename T, T A, T B>
-struct expand_indices<T, A, B, typename ::std::enable_if<A == B>::type>
-{
-  using type = integer_sequence<T, A>;
-};
-
-template <typename T, T A, T B>
 struct expand_indices<T, A, B, typename ::std::enable_if<A != B>::type>
 {
   static_assert(A < B, "A > B");
@@ -48,6 +42,12 @@ struct expand_indices<T, A, B, typename ::std::enable_if<A != B>::type>
     typename expand_indices<T, A, (A + B) / 2>::type,
     typename expand_indices<T, (A + B) / 2 + 1, B>::type
   >::type;
+};
+
+template <typename T, T A, T B>
+struct expand_indices<T, A, B, typename ::std::enable_if<A == B>::type>
+{
+  using type = integer_sequence<T, A>;
 };
 
 }
