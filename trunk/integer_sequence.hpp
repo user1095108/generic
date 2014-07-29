@@ -77,7 +77,7 @@ template <typename T, T A>
 struct make_integer_range<T, A, A> : integer_sequence<T> {};
 
 template <::std::size_t A, ::std::size_t B>
-using make_index_range = make_integer_range<::std::size_t, A, B>;
+using make_index_range = make_integer_range<decltype(A), A, B>;
 
 }
 
