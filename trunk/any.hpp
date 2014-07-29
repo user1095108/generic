@@ -23,7 +23,7 @@ public:
   using typeid_t = void (*)();
 
   template <typename T>
-  static typeid_t type_id()
+  static typeid_t type_id() noexcept
   {
     return typeid_t(type_id<T>);
   }
