@@ -368,14 +368,19 @@ struct moving_variant
   >::type
   cget() const
   {
-    if (mdetail::index_of<U, T...>{} == store_type_)
-    {
-      return *static_cast<U const*>(static_cast<void const*>(store_));
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
+    return get<U>();
+  }
+
+  template <typename U>
+  typename ::std::enable_if<
+    (-1 == mdetail::index_of<U, T...>{}) &&
+    (-1 != mdetail::compatible_index_of<U, T...>{}) &&
+    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U
+  >::type
+  cget() const
+  {
+    return get<U>();
   }
 
   template <typename U>
@@ -386,14 +391,7 @@ struct moving_variant
   >::type
   cget() const
   {
-    if (mdetail::index_of<U, T...>{} == store_type_)
-    {
-      return *static_cast<U const*>(static_cast<void const*>(store_));
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
+    return get<U>();
   }
 
   template <typename U>
@@ -422,7 +420,7 @@ struct moving_variant
   {
     if (mdetail::index_of<U, T...>{} == store_type_)
     {
-      return *static_cast<U const*>(static_cast<void const*>(store_));
+      return *reinterpret_cast<U const*>(store_);
     }
     else
     {
@@ -446,9 +444,8 @@ struct moving_variant
       "internal error");
     if (mdetail::compatible_index_of<U, T...>{} == store_type_)
     {
-      return U(*static_cast<
-        typename mdetail::compatible_type<U, T...>::type const*>(
-          static_cast<void const*>(store_)));
+      return U(*reinterpret_cast<
+        typename mdetail::compatible_type<U, T...>::type const*>(store_));
     }
     else
     {

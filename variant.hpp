@@ -450,14 +450,19 @@ struct variant
   >::type
   cget() const
   {
-    if (detail::index_of<U, T...>{} == store_type_)
-    {
-      return *reinterpret_cast<U const*>(store_);
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
+    return get<U>();
+  }
+
+  template <typename U>
+  typename ::std::enable_if<
+    (-1 == detail::index_of<U, T...>{}) &&
+    (-1 != detail::compatible_index_of<U, T...>{}) &&
+    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U
+  >::type
+  cget() const
+  {
+    return get<U>();
   }
 
   template <typename U>
@@ -468,14 +473,7 @@ struct variant
   >::type
   cget() const
   {
-    if (detail::index_of<U, T...>{} == store_type_)
-    {
-      return *reinterpret_cast<U const*>(store_);
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
+    return get<U>();
   }
 
   template <typename U>
