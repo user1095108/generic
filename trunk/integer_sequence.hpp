@@ -55,21 +55,6 @@ struct expand_indices<T, A, B, typename ::std::enable_if<A == B>::type>
 template <std::size_t ...Is>
 using index_sequence = integer_sequence<::std::size_t, Is...>;
 
-template <typename T, T N>
-struct make_integer_sequence :
-  ::std::conditional<bool(N),
-    typename detail::expand_indices<T, 0, N - 1>::type,
-    integer_sequence<T>
-  >::type
-{
-};
-
-template <::std::size_t N>
-using make_index_sequence = make_integer_sequence<decltype(N), N>;
-
-template <typename ...T>
-using index_sequence_for = make_index_sequence<sizeof...(T)>;
-
 template <typename T, T A, T B>
 struct make_integer_range : detail::expand_indices<T, A, B - 1>::type {};
 
@@ -78,6 +63,15 @@ struct make_integer_range<T, A, A> : integer_sequence<T> {};
 
 template <::std::size_t A, ::std::size_t B>
 using make_index_range = make_integer_range<decltype(A), A, B>;
+
+template <typename T, T N>
+using make_integer_sequence = make_integer_range<T, 0, N>;
+
+template <::std::size_t N>
+using make_index_sequence = make_integer_sequence<decltype(N), N>;
+
+template <typename ...T>
+using index_sequence_for = make_index_sequence<sizeof...(T)>;
 
 }
 
