@@ -58,14 +58,14 @@ using index_sequence = integer_sequence<::std::size_t, Is...>;
 template <typename T, T N>
 struct make_integer_sequence :
   ::std::conditional<bool(N),
-    detail::expand_indices<T, 0, N - 1>,
+    typename detail::expand_indices<T, 0, N - 1>::type,
     integer_sequence<T>
-  >
+  >::type
 {
 };
 
 template <::std::size_t N>
-using make_index_sequence = make_integer_sequence<::std::size_t, N>;
+using make_index_sequence = make_integer_sequence<decltype(N), N>;
 
 template <typename ...T>
 using index_sequence_for = make_index_sequence<sizeof...(T)>;
