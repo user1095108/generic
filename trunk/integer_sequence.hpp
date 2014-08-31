@@ -26,7 +26,8 @@ namespace detail
 template<typename, typename, typename> struct catenate_indices;
 
 template <typename T, T ...Is, T ...Js>
-struct catenate_indices<T, integer_sequence<T, Is...>, integer_sequence<T, Js...> >
+struct catenate_indices<T, integer_sequence<T, Is...>,
+  integer_sequence<T, Js...> >
 {
   using type = integer_sequence<T, Is..., Js...>;
 };
@@ -56,10 +57,14 @@ template <std::size_t ...Is>
 using index_sequence = integer_sequence<::std::size_t, Is...>;
 
 template <typename T, T A, T B>
-struct make_integer_range : detail::expand_indices<T, A, B - 1>::type {};
+struct make_integer_range : detail::expand_indices<T, A, B - 1>::type
+{
+};
 
 template <typename T, T A>
-struct make_integer_range<T, A, A> : integer_sequence<T> {};
+struct make_integer_range<T, A, A> : integer_sequence<T>
+{
+};
 
 template <::std::size_t A, ::std::size_t B>
 using make_index_range = make_integer_range<decltype(A), A, B>;
