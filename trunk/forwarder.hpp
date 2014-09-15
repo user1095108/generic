@@ -15,14 +15,12 @@
 namespace generic
 {
 
-template<typename F>
+template<typename F, ::std::size_t N = 3 * sizeof(::std::uintptr_t)>
 class forwarder;
 
-template<typename R, typename ...A>
-class forwarder<R (A...)>
+template<typename R, typename ...A, ::std::size_t N>
+class forwarder<R (A...), N>
 {
-  static constexpr auto max_functor_size = 3 * sizeof(::std::uintptr_t);
-
   template <typename U>
   static R invoker_stub(void const* const ptr, A&&... args)
   {
@@ -31,7 +29,7 @@ class forwarder<R (A...)>
 
   R (*stub_)(void const*, A&&...){};
 
-  typename ::std::aligned_storage<max_functor_size>::type store_;
+  typename ::std::aligned_storage<N>::type store_;
 
 public:
   forwarder() = default;
