@@ -16,10 +16,16 @@ namespace generic
 
 // cstrlen
 //////////////////////////////////////////////////////////////////////////////
-inline constexpr ::std::size_t cstrlen(char const* const p,
-  ::std::size_t const s = {}) noexcept
+template <::std::size_t N>
+inline constexpr ::std::size_t cstrlen(char const (&)[N])
 {
-  return *p ? cstrlen(p + 1, s + 1) : s;
+  return N - 1;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+inline constexpr ::std::size_t cstrlen(char const* const p) noexcept
+{
+  return *p ? 1 + cstrlen(p + 1) : 0;
 }
 
 // join
