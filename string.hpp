@@ -17,7 +17,7 @@ namespace generic
 // cstrlen
 //////////////////////////////////////////////////////////////////////////////
 template <::std::size_t N>
-inline constexpr ::std::size_t cstrlen(char const (&)[N])
+inline constexpr ::std::size_t cstrlen(char const (&)[N]) noexcept
 {
   return N - 1;
 }
@@ -105,7 +105,7 @@ inline ::std::basic_string<CharT, Traits, Allocator>&
 ltrim(::std::basic_string<CharT, Traits, Allocator>& s)
 {
   s.erase(s.begin(), ::std::find_if(s.begin(), s.end(),
-    [](char const c){ return !::std::isspace(c); }));
+    [](char const c) noexcept {return !::std::isspace(c);}));
 
   return s;
 }
@@ -115,7 +115,7 @@ inline ::std::basic_string<CharT, Traits, Allocator>&
 rtrim(::std::basic_string<CharT, Traits, Allocator>& s)
 {
   s.erase(::std::find_if(s.rbegin(), s.rend(),
-    [](char const c){ return !::std::isspace(c); }).base(), s.end());
+    [](char const c) noexcept {return !::std::isspace(c);}).base(), s.end());
 
   return s;
 }
