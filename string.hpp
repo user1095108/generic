@@ -98,6 +98,43 @@ split(::std::basic_string<CharT, Traits, Allocator> const& s,
   return r;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+inline ::std::vector<::std::string>
+split(::std::string const& s, char const* const delims = "\f\n\r\t\v")
+{
+  ::std::vector<typename ::std::decay<decltype(s)>::type> r;
+
+  auto const S(s.size());
+  decltype(s.size()) i{};
+
+  while (i < S)
+  {
+    while ((i < S) && ::std::strchr(delims, s[i]))
+    {
+      ++i;
+    }
+
+    if (i == S)
+    {
+      break;
+    }
+    // else do nothing
+
+    auto j(i + 1);
+
+    while ((j < S) && !::std::strchr(delims, s[j]))
+    {
+      ++j;
+    }
+
+    r.push_back(s.substr(i, j - i));
+
+    i = j + 1;
+  }
+
+  return r;
+}
+
 // trim
 //////////////////////////////////////////////////////////////////////////////
 template<class CharT, class Traits, class Allocator>
