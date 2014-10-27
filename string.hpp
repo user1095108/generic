@@ -38,9 +38,9 @@ inline typename C::value_type join(C const& container,
   {
     typename C::value_type r(container.front());
 
-    auto const end(container.cend());
+    auto const end(container.end());
 
-    for (typename C::const_iterator i(container.cbegin() + 1); i != end; ++i)
+    for (typename C::const_iterator i(container.begin() + 1); i != end; ++i)
     {
       r += sep + *i;
     }
@@ -62,9 +62,9 @@ inline typename C::value_type join(C const& container,
   {
     typename C::value_type r(container.front());
 
-    auto const end(container.cend());
+    auto const end(container.end());
 
-    for (typename C::const_iterator i(container.cbegin() + 1); i != end; ++i)
+    for (typename C::const_iterator i(container.begin() + 1); i != end; ++i)
     {
       r += sep + *i;
     }
