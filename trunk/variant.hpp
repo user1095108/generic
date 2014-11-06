@@ -224,7 +224,14 @@ struct variant
     }
     else if (rhs.copier_)
     {
-      rhs.copier_(*this, rhs);
+      rhs.copier_(store_, store_type_, deleter_, rhs);
+
+      deleter_ = rhs.deleter_;
+      copier_ = rhs.copier_;
+      mover_ = rhs.mover_;
+      streamer_ = rhs.streamer_;
+
+      store_type_ = rhs.store_type_;
     }
     else
     {
@@ -242,7 +249,14 @@ struct variant
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(*this, rhs);
+      rhs.mover_(store_, store_type_, deleter_, rhs);
+
+      deleter_ = rhs.deleter_;
+      copier_ = rhs.copier_;
+      mover_ = rhs.mover_;
+      streamer_ = rhs.streamer_;
+
+      store_type_ = rhs.store_type_;
     }
     else
     {
@@ -374,7 +388,17 @@ struct variant
     return detail::index_of<U, T...>{} == store_type_;
   }
 
-  void clear() { deleter_(*this); }
+  void clear()
+  { 
+    deleter_ = dummy_deleter_stub;
+    copier_ = nullptr;
+    mover_ = nullptr;
+    streamer_ = nullptr;
+
+    store_type_ = -1;
+
+    deleter_(&store_);
+  }
 
   bool empty() const noexcept { return !*this; }
 
@@ -544,8 +568,9 @@ struct variant
   int type_index() const noexcept { return store_type_; }
 
 private:
-  using copier_type = void (*)(variant&, variant const&);
-  using mover_type = void (*)(variant&, variant&);
+  using deleter_type = void (*)(void*);
+  using copier_type = void (*)(void*, int, deleter_type, variant const&);
+  using mover_type = void (*)(void*, int, deleter_type, variant&);
   using streamer_type = void (*)(void*, variant const&);
 
   template <typename charT, typename traits>
@@ -613,19 +638,12 @@ private:
     return nullptr;
   }
 
-  static void dummy_deleter_stub(variant&) noexcept { } 
+  static void dummy_deleter_stub(void* const) noexcept { } 
 
   template <typename U>
-  static void deleter_stub(variant& v)
+  static void deleter_stub(void* const store)
   {
-    v.deleter_ = dummy_deleter_stub;
-    v.copier_ = nullptr;
-    v.mover_ = nullptr;
-    v.streamer_ = nullptr;
-
-    v.store_type_ = -1;
-
-    reinterpret_cast<U*>(v.store_)->~U();
+    reinterpret_cast<U*>(store)->~U();
   }
 
   template <typename U>
@@ -633,26 +651,19 @@ private:
     ::std::is_copy_constructible<U>{} &&
     ::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(variant& dst, variant const& src)
+  copier_stub(void* const store, int const store_type,
+    deleter_type const deleter, variant const& src)
   {
-    if (src.store_type_ == dst.store_type_)
+    if (src.store_type_ == store_type)
     {
-      *reinterpret_cast<U*>(dst.store_) =
+      *reinterpret_cast<U*>(store) =
         *reinterpret_cast<U const*>(src.store_);
     }
     else
     {
-      dst.clear();
+      deleter(store);
 
-      new (static_cast<void*>(dst.store_)) U(
-        *reinterpret_cast<U const*>(src.store_));
-
-      dst.deleter_ = src.deleter_;
-      dst.copier_ = src.copier_;
-      dst.mover_ = src.mover_;
-      dst.streamer_ = src.streamer_;
-
-      dst.store_type_ = src.store_type_;
+      new (store) U(*reinterpret_cast<U const*>(src.store_));
     }
   }
 
@@ -661,19 +672,12 @@ private:
     ::std::is_copy_constructible<U>{} &&
     !::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(variant& dst, variant const& src)
+  copier_stub(void* const store, int const store_type,
+    deleter_type const deleter, variant const& src)
   {
-    dst.clear();
+    deleter(store);;
 
-    new (static_cast<void*>(dst.store_)) U(
-      *reinterpret_cast<U const*>(src.store_));
-
-    dst.deleter_ = src.deleter_;
-    dst.copier_ = src.copier_;
-    dst.mover_ = src.mover_;
-    dst.streamer_ = src.streamer_;
-
-    dst.store_type_ = src.store_type_;
+    new (store) U(*reinterpret_cast<U const*>(src.store_));
   }
 
   template <typename U>
@@ -681,26 +685,19 @@ private:
     ::std::is_move_constructible<U>{} &&
     ::std::is_move_assignable<U>{}
   >::type
-  mover_stub(variant& dst, variant& src)
+  mover_stub(void* const store, int const store_type,
+    deleter_type const deleter, variant& src)
   {
-    if (src.store_type_ == dst.store_type_)
+    if (src.store_type_ == store_type)
     {
-      *reinterpret_cast<U*>(dst.store_) =
+      *reinterpret_cast<U*>(store) =
         ::std::move(*reinterpret_cast<U*>(src.store_));
     }
     else
     {
-      dst.clear();
+      deleter(store);
 
-      new (static_cast<void*>(dst.store_)) U(
-        ::std::move(*reinterpret_cast<U*>(src.store_)));
-
-      dst.deleter_ = src.deleter_;
-      dst.copier_ = src.copier_;
-      dst.mover_ = src.mover_;
-      dst.streamer_ = src.streamer_;
-
-      dst.store_type_ = src.store_type_;
+      new (store) U(::std::move(*reinterpret_cast<U*>(src.store_)));
     }
   }
 
@@ -709,19 +706,12 @@ private:
     ::std::is_move_constructible<U>{} &&
     !::std::is_move_assignable<U>{}
   >::type
-  mover_stub(variant& dst, variant& src)
+  mover_stub(void* const store, int store_type, deleter_type const deleter,
+    variant& src)
   {
-    dst.clear();
+    deleter(store);
 
-    new (static_cast<void*>(dst.store_)) U(
-      ::std::move(*reinterpret_cast<U*>(src.store_)));
-
-    dst.deleter_ = src.deleter_;
-    dst.copier_ = src.copier_;
-    dst.mover_ = src.mover_;
-    dst.streamer_ = src.streamer_;
-
-    dst.store_type_ = src.store_type_;
+    new (store) U(::std::move(*reinterpret_cast<U*>(src.store_)));
   }
 
   template <class S, typename U>
@@ -733,7 +723,6 @@ private:
     *static_cast<S*>(os) << v.cget<U>();
   }
 
-  using deleter_type = void (*)(variant&);
   deleter_type deleter_{dummy_deleter_stub};
 
   copier_type copier_{};
