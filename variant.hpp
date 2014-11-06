@@ -706,8 +706,8 @@ private:
     ::std::is_move_constructible<U>{} &&
     !::std::is_move_assignable<U>{}
   >::type
-  mover_stub(void* const store, int store_type, deleter_type const deleter,
-    variant& src)
+  mover_stub(void* const store, int store_type,
+    deleter_type const deleter, variant& src)
   {
     deleter(store);
 
