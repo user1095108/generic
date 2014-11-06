@@ -224,7 +224,7 @@ struct variant
     }
     else if (rhs.copier_)
     {
-      rhs.copier_(store_, store_type_, deleter_, rhs);
+      rhs.copier_(store_, store_type_ == rhs.store_type_, deleter_, rhs);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
@@ -249,7 +249,7 @@ struct variant
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(store_, store_type_, deleter_, rhs);
+      rhs.mover_(store_, store_type_ == rhs.store_type, deleter_, rhs);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
@@ -569,8 +569,8 @@ struct variant
 
 private:
   using deleter_type = void (*)(void*);
-  using copier_type = void (*)(void*, int, deleter_type, variant const&);
-  using mover_type = void (*)(void*, int, deleter_type, variant&);
+  using copier_type = void (*)(void*, bool, deleter_type, variant const&);
+  using mover_type = void (*)(void*, bool, deleter_type, variant&);
   using streamer_type = void (*)(void*, variant const&);
 
   template <typename charT, typename traits>
@@ -651,10 +651,10 @@ private:
     ::std::is_copy_constructible<U>{} &&
     ::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(void* const store, int const store_type,
+  copier_stub(void* const store, bool const same_type,
     deleter_type const deleter, variant const& src)
   {
-    if (src.store_type_ == store_type)
+    if (same_type)
     {
       *reinterpret_cast<U*>(store) =
         *reinterpret_cast<U const*>(src.store_);
@@ -672,7 +672,7 @@ private:
     ::std::is_copy_constructible<U>{} &&
     !::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(void* const store, int const store_type,
+  copier_stub(void* const store, bool const,
     deleter_type const deleter, variant const& src)
   {
     deleter(store);
@@ -685,10 +685,10 @@ private:
     ::std::is_move_constructible<U>{} &&
     ::std::is_move_assignable<U>{}
   >::type
-  mover_stub(void* const store, int const store_type,
+  mover_stub(void* const store, bool const same_type,
     deleter_type const deleter, variant& src)
   {
-    if (src.store_type_ == store_type)
+    if (same_type)
     {
       *reinterpret_cast<U*>(store) =
         ::std::move(*reinterpret_cast<U*>(src.store_));
@@ -706,7 +706,7 @@ private:
     ::std::is_move_constructible<U>{} &&
     !::std::is_move_assignable<U>{}
   >::type
-  mover_stub(void* const store, int store_type,
+  mover_stub(void* const store, bool const,
     deleter_type const deleter, variant& src)
   {
     deleter(store);
