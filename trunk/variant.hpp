@@ -210,7 +210,7 @@ struct variant
 
   variant() = default;
 
-  ~variant() { clear(); }
+  ~variant() { deleter_(&store_); }
 
   variant(variant const& other) { *this = other; }
 
@@ -390,14 +390,14 @@ struct variant
 
   void clear()
   { 
+    deleter_(store_);
+
     deleter_ = dummy_deleter_stub;
     copier_ = nullptr;
     mover_ = nullptr;
     streamer_ = nullptr;
 
     store_type_ = -1;
-
-    deleter_(&store_);
   }
 
   bool empty() const noexcept { return !*this; }
@@ -675,7 +675,7 @@ private:
   copier_stub(void* const store, int const store_type,
     deleter_type const deleter, variant const& src)
   {
-    deleter(store);;
+    deleter(store);
 
     new (store) U(*reinterpret_cast<U const*>(src.store_));
   }
