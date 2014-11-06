@@ -717,11 +717,8 @@ private:
       ::std::move(*reinterpret_cast<U*>(src.store_)));
 
     dst.deleter_ = src.deleter_;
-
     dst.copier_ = src.copier_;
-
     dst.mover_ = src.mover_;
-
     dst.streamer_ = src.streamer_;
 
     dst.store_type_ = src.store_type_;
