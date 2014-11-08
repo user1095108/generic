@@ -225,15 +225,19 @@ class variant
   }
 
   template <typename U, typename OS, ::std::size_t I>
-  constexpr OS& stream_value(OS& os, int const i) const
+  constexpr OS& stream_value(OS& os) const
   {
-    return I == i ? os << get<U>() : os;
+    return I == store_type_ ?
+      os << get<U>() :
+      os;
   }
 
   template <typename U, typename ...V, typename OS, ::std::size_t I = 0>
-  constexpr OS& stream_value(OS& os, int const i) const
+  constexpr OS& stream_value(OS& os) const
   {
-    return I == i ? os << get<U>() : stream_value<V..., OS, I + 1>(os, i);
+    return I == store_type_ ?
+      os << get<U>() :
+      stream_value<V..., OS, I + 1>(os);
   }
 
 public:
@@ -675,14 +679,9 @@ private:
   friend ::std::basic_ostream<charT, traits>& operator<<(
     ::std::basic_ostream<charT, traits>& os, variant const& v)
   {
-    if (-1 == v.store_type_)
-    {
-      throw ::std::bad_typeid();
-    }
-    else
-    {
-      return v.stream_value<T...>(os, v.store_type_);
-    }
+    return -1 == v.store_type_ ?
+      os << "<empty variant>" :
+      v.stream_value<T...>(os);
   }
 
   template <class U>
