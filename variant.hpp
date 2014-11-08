@@ -209,17 +209,19 @@ class variant
   static constexpr auto const max_align = alignof(max_align_type);
 
   template <typename U, typename Z, ::std::size_t I>
-  constexpr static int convert_type_index(Z const& v, int const i) noexcept
+  constexpr static int convert_store_type(Z const& v) noexcept
   {
-    return i == I ? Z::template type_index<U>() : -1;
+    return I == v.store_type_ ?
+      Z::template type_index<U>() :
+      -1;
   }
 
   template <typename U, typename ...V, typename Z, ::std::size_t I = 0>
-  constexpr static int convert_type_index(Z const& v, int const i) noexcept
+  constexpr static int convert_store_type(Z const& v) noexcept
   {
-    return I == i ?
+    return I == v.store_type_ ?
       Z::template type_index<U>() :
-      convert_type_index<V..., Z, I + 1>(v, i);
+      convert_store_type<V..., Z, I + 1>(v);
   }
 
   template <typename U, typename OS, ::std::size_t I>
@@ -278,7 +280,7 @@ public:
     else if (rhs.copier_)
     {
       auto const converted_store_type(
-        convert_type_index<T...>(rhs, rhs.store_type_)
+        convert_store_type<T...>(rhs)
       );
 
       if (-1 == converted_store_type)
@@ -340,7 +342,7 @@ public:
     else if (rhs.mover_)
     {
       auto const converted_store_type(
-        convert_type_index<T...>(rhs, rhs.store_type_)
+        convert_store_type<T...>(rhs)
       );
 
       if (-1 == converted_store_type)
