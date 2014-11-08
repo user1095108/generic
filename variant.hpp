@@ -208,38 +208,30 @@ class variant
 
   static constexpr auto const max_align = alignof(max_align_type);
 
-  template <typename Z>
-  constexpr static int convert_type_index(Z const& v, int const i,
-    int const j = 0) noexcept
+  template <typename U, typename Z, ::std::size_t I>
+  constexpr static int convert_type_index(Z const& v, int const i) noexcept
   {
-    return -1;
+    return i == I ? Z::template type_index<U>() : -1;
   }
 
-  template <typename U, typename ...V, typename Z>
-  constexpr static int convert_type_index(Z const& v, int const i,
-    int const j = 0) noexcept
+  template <typename U, typename ...V, typename Z, ::std::size_t I = 0>
+  constexpr static int convert_type_index(Z const& v, int const i) noexcept
   {
-    return i == j ? v.type_index<U>() : convert_type_index<V...>(v, i, j + 1);
+    return I == i ?
+      Z::template type_index<U>() :
+      convert_type_index<V..., Z, I + 1>(v, i);
   }
 
-  template <typename U, typename OS>
-  OS& stream_value(OS& os, int const i, int const j = 0) const
+  template <typename U, typename OS, ::std::size_t I>
+  constexpr OS& stream_value(OS& os, int const i) const
   {
-    if (i == j)
-    {
-      return os << get<U>();
-    }
-    else
-    {
-      assert(!"can't stream value of unknown type");
-    }
+    return I == i ? os << get<U>() : os;
   }
 
-  template <typename U, typename ...V, typename OS>
-  typename ::std::enable_if<bool(sizeof...(V)), OS&>::type
-  stream_value(OS& os, int const i, int const j = 0) const
+  template <typename U, typename ...V, typename OS, ::std::size_t I = 0>
+  constexpr OS& stream_value(OS& os, int const i) const
   {
-    return i == j ? os << get<U>() : stream_value<V...>(os, i, j + 1);
+    return I == i ? os << get<U>() : stream_value<V..., OS, I + 1>(os, i);
   }
 
 public:
