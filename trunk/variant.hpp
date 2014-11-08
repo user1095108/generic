@@ -189,8 +189,8 @@ struct is_move_or_copy_constructible :
 # pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif // __GNUC__
 
-template <typename... T>
-struct variant
+template <typename ...T>
+class variant
 {
   static_assert(!detail::any_of< ::std::is_reference<T>...>{},
     "reference types are unsupported");
@@ -208,6 +208,41 @@ struct variant
 
   static constexpr auto const max_align = alignof(max_align_type);
 
+  template <typename Z>
+  constexpr static int convert_type_index(Z const& v, int const i,
+    int const j = 0) noexcept
+  {
+    return -1;
+  }
+
+  template <typename U, typename ...V, typename Z>
+  constexpr static int convert_type_index(Z const& v, int const i,
+    int const j = 0) noexcept
+  {
+    return i == j ? v.type_index<U>() : convert_type_index<V...>(v, i, j + 1);
+  }
+
+  template <typename U, typename OS>
+  OS& stream_value(OS& os, int const i, int const j = 0) const
+  {
+    if (i == j)
+    {
+      return os << get<U>();
+    }
+    else
+    {
+      assert(!"can't stream value of unknown type");
+    }
+  }
+
+  template <typename U, typename ...V, typename OS>
+  typename ::std::enable_if<bool(sizeof...(V)), OS&>::type
+  stream_value(OS& os, int const i, int const j = 0) const
+  {
+    return i == j ? os << get<U>() : stream_value<V...>(os, i, j + 1);
+  }
+
+public:
   variant() = default;
 
   ~variant() { deleter_(&store_); }
@@ -224,14 +259,51 @@ struct variant
     }
     else if (rhs.copier_)
     {
-      rhs.copier_(store_, store_type_ == rhs.store_type_, deleter_, rhs);
+      rhs.copier_(store_, store_type_ == rhs.store_type_, deleter_,
+        rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
       mover_ = rhs.mover_;
-      streamer_ = rhs.streamer_;
 
       store_type_ = rhs.store_type_;
+    }
+    else
+    {
+      throw ::std::bad_typeid();
+    }
+
+    return *this;
+  }
+
+  template <typename ...U>
+  variant& operator=(variant<U...> const& rhs)
+  {
+    if (!rhs)
+    {
+      clear();
+    }
+    else if (rhs.copier_)
+    {
+      auto const converted_store_type(
+        convert_type_index<T...>(rhs, rhs.store_type_)
+      );
+
+      if (-1 == converted_store_type)
+      {
+        throw ::std::bad_typeid();
+      }
+      else
+      {
+        rhs.copier_(store_, store_type_ == converted_store_type, deleter_,
+          rhs.store_);
+
+        deleter_ = rhs.deleter_;
+        copier_ = rhs.copier_;
+        mover_ = rhs.mover_;
+
+        store_type_ = converted_store_type;
+      }
     }
     else
     {
@@ -249,14 +321,51 @@ struct variant
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(store_, store_type_ == rhs.store_type, deleter_, rhs);
+      rhs.mover_(store_, store_type_ == rhs.store_type_, deleter_,
+        rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
       mover_ = rhs.mover_;
-      streamer_ = rhs.streamer_;
 
       store_type_ = rhs.store_type_;
+    }
+    else
+    {
+      throw ::std::bad_typeid();
+    }
+
+    return *this;
+  }
+
+  template <typename ...U>
+  variant& operator=(variant<U...>&& rhs)
+  {
+    if (!rhs)
+    {
+      clear();
+    }
+    else if (rhs.mover_)
+    {
+      auto const converted_store_type(
+        convert_type_index<T...>(rhs, rhs.store_type_)
+      );
+
+      if (-1 == converted_store_type)
+      {
+        throw ::std::bad_typeid();
+      }
+      else
+      {
+        rhs.mover_(store_, store_type_ == converted_store_type, deleter_,
+          rhs.store_);
+
+        deleter_ = rhs.deleter_;
+        copier_ = rhs.copier_;
+        mover_ = rhs.mover_;
+
+        store_type_ = converted_store_type;
+      }
     }
     else
     {
@@ -278,7 +387,7 @@ struct variant
     *this = ::std::forward<U>(f);
   }
 
-  template <typename S = ::std::ostream, typename U>
+  template <typename U>
   typename ::std::enable_if<detail::any_of< ::std::is_same<
       typename ::std::decay<U>::type, T>...>{} &&
     ::std::is_copy_assignable<typename ::std::decay<U>::type>{} &&
@@ -302,7 +411,6 @@ struct variant
       deleter_ = deleter_stub<user_type>;
       copier_ = get_copier<user_type>();
       mover_ = get_mover<user_type>();
-      streamer_ = get_streamer<S, user_type>();
 
       store_type_ = detail::index_of<user_type, T...>{};
     }
@@ -310,7 +418,7 @@ struct variant
     return *this;
   }
 
-  template <typename S = ::std::ostream, typename U>
+  template <typename U>
   typename ::std::enable_if<
     detail::any_of< ::std::is_same<
       typename ::std::decay<U>::type, T>...>{} &&
@@ -337,7 +445,6 @@ struct variant
       deleter_ = deleter_stub<user_type>;
       copier_ = get_copier<user_type>();
       mover_ = get_mover<user_type>();
-      streamer_ = get_streamer<S, user_type>();
 
       store_type_ = detail::index_of<user_type, T...>{};
     }
@@ -345,7 +452,7 @@ struct variant
     return *this;
   }
 
-  template <typename S = ::std::ostream, typename U>
+  template <typename U>
   typename ::std::enable_if<
     detail::any_of< ::std::is_same<
       typename ::std::decay<U>::type, T>...>{} &&
@@ -367,7 +474,6 @@ struct variant
     deleter_ = deleter_stub<user_type>;
     copier_ = get_copier<user_type>();
     mover_ = get_mover<user_type>();
-    streamer_ = get_streamer<S, user_type>();
 
     store_type_ = detail::index_of<user_type, T...>{};
 
@@ -376,10 +482,10 @@ struct variant
 
   explicit operator bool() const noexcept { return -1 != store_type_; }
 
-  template <typename S = ::std::ostream, typename U>
+  template <typename U>
   variant& assign(U&& u)
   {
-    return operator=<S>(::std::forward<U>(u));
+    return operator=(::std::forward<U>(u));
   }
 
   template <typename U>
@@ -395,7 +501,6 @@ struct variant
     deleter_ = dummy_deleter_stub;
     copier_ = nullptr;
     mover_ = nullptr;
-    streamer_ = nullptr;
 
     store_type_ = -1;
   }
@@ -569,17 +674,21 @@ struct variant
 
 private:
   using deleter_type = void (*)(void*);
-  using copier_type = void (*)(void*, bool, deleter_type, variant const&);
-  using mover_type = void (*)(void*, bool, deleter_type, variant&);
-  using streamer_type = void (*)(void*, variant const&);
+  using copier_type = void (*)(void*, bool, deleter_type, void const*);
+  using mover_type = void (*)(void*, bool, deleter_type, void*);
 
   template <typename charT, typename traits>
   friend ::std::basic_ostream<charT, traits>& operator<<(
     ::std::basic_ostream<charT, traits>& os, variant const& v)
   {
-    v.streamer_(&os, v);
-
-    return os;
+    if (-1 == v.store_type_)
+    {
+      throw ::std::bad_typeid();
+    }
+    else
+    {
+      return v.stream_value<T...>(os, v.store_type_);
+    }
   }
 
   template <class U>
@@ -618,26 +727,6 @@ private:
     return nullptr;
   }
 
-  template <class S, class U>
-  typename ::std::enable_if<
-    detail::is_streamable<S, U>{},
-    streamer_type
-  >::type
-  get_streamer() const noexcept
-  {
-    return streamer_stub<S, U>;
-  }
-
-  template <class S, class U>
-  typename ::std::enable_if<
-    !detail::is_streamable<S, U>{},
-    streamer_type
-  >::type
-  get_streamer() const noexcept
-  {
-    return nullptr;
-  }
-
   static void dummy_deleter_stub(void* const) noexcept { } 
 
   template <typename U>
@@ -651,19 +740,19 @@ private:
     ::std::is_copy_constructible<U>{} &&
     ::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(void* const store, bool const same_type,
-    deleter_type const deleter, variant const& src)
+  copier_stub(void* const dst_store, bool const same_type,
+    deleter_type const deleter, void const* const src_store)
   {
     if (same_type)
     {
-      *reinterpret_cast<U*>(store) =
-        *reinterpret_cast<U const*>(src.store_);
+      *reinterpret_cast<U*>(dst_store) =
+        *reinterpret_cast<U const*>(src_store);
     }
     else
     {
-      deleter(store);
+      deleter(dst_store);
 
-      new (store) U(*reinterpret_cast<U const*>(src.store_));
+      new (dst_store) U(*reinterpret_cast<U const*>(src_store));
     }
   }
 
@@ -672,12 +761,12 @@ private:
     ::std::is_copy_constructible<U>{} &&
     !::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(void* const store, bool const,
-    deleter_type const deleter, variant const& src)
+  copier_stub(void* const dst_store, bool const,
+    deleter_type const deleter, void const* const src_store)
   {
-    deleter(store);
+    deleter(dst_store);
 
-    new (store) U(*reinterpret_cast<U const*>(src.store_));
+    new (dst_store) U(*reinterpret_cast<U const*>(src_store));
   }
 
   template <typename U>
@@ -685,19 +774,19 @@ private:
     ::std::is_move_constructible<U>{} &&
     ::std::is_move_assignable<U>{}
   >::type
-  mover_stub(void* const store, bool const same_type,
-    deleter_type const deleter, variant& src)
+  mover_stub(void* const dst_store, bool const same_type,
+    deleter_type const deleter, void* const src_store)
   {
     if (same_type)
     {
-      *reinterpret_cast<U*>(store) =
-        ::std::move(*reinterpret_cast<U*>(src.store_));
+      *reinterpret_cast<U*>(dst_store) =
+        ::std::move(*reinterpret_cast<U*>(src_store));
     }
     else
     {
-      deleter(store);
+      deleter(dst_store);
 
-      new (store) U(::std::move(*reinterpret_cast<U*>(src.store_)));
+      new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
     }
   }
 
@@ -706,29 +795,19 @@ private:
     ::std::is_move_constructible<U>{} &&
     !::std::is_move_assignable<U>{}
   >::type
-  mover_stub(void* const store, bool const,
-    deleter_type const deleter, variant& src)
+  mover_stub(void* const dst_store, bool const,
+    deleter_type const deleter, void* const src_store)
   {
-    deleter(store);
+    deleter(dst_store);
 
-    new (store) U(::std::move(*reinterpret_cast<U*>(src.store_)));
+    new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
   }
 
-  template <class S, typename U>
-  static typename ::std::enable_if<
-    detail::is_streamable<S, U>{}
-  >::type
-  streamer_stub(void* const os, variant const& v)
-  {
-    *static_cast<S*>(os) << v.cget<U>();
-  }
-
+public:
   deleter_type deleter_{dummy_deleter_stub};
 
   copier_type copier_{};
   mover_type mover_{};
-
-  streamer_type streamer_{};
 
   int store_type_{-1};
 
