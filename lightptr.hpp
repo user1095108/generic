@@ -179,13 +179,13 @@ public:
   light_ptr() = default;
 
   template <typename U>
-  explicit light_ptr(U* p)
+  explicit light_ptr(U* const p)
   {
     reset(p);
   }
 
   template <typename U, typename D>
-  explicit light_ptr(U* p, D&& d)
+  explicit light_ptr(U* const p, D&& d)
   {
     reset(p, ::std::forward<D>(d));
   }
