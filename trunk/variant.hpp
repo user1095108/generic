@@ -376,7 +376,7 @@ public:
       !::std::is_same<typename ::std::decay<U>::type, variant>{}
     >::type
   >
-  explicit variant(U&& f)
+  variant(U&& f)
   {
     *this = ::std::forward<U>(f);
   }
