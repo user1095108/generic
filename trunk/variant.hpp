@@ -299,6 +299,13 @@ public:
 
   variant(variant&& other) { *this = ::std::move(other); }
 
+  bool operator==(variant const& v) const noexcept
+  {
+    return v.store_type_ == store_type_ ?
+      binary_relation<::std::equal_to, 0, T...>(v) :
+      false;
+  }
+
   template <typename ...U>
   bool operator==(variant<U...> const& v) const noexcept
   {
@@ -307,12 +314,26 @@ public:
       false;
   }
 
+  bool operator<(variant const& v) const noexcept
+  {
+    return v.store_type_ == store_type_ ?
+      binary_relation<::std::less, 0, T...>(v) :
+      store_type_ < v.store_type_;
+  }
+
   template <typename ...U>
   bool operator<(variant<U...> const& v) const noexcept
   {
     return v.template convert_store_type<T...>() == store_type_ ?
       binary_relation<::std::less, 0, T...>(v) :
-      false;
+      store_type_ < v.store_type_;
+  }
+
+  bool operator<=(variant const& v) const noexcept
+  {
+    return v.store_type_ == store_type_ ?
+      binary_relation<::std::less_equal, 0, T...>(v) :
+      store_type_ <= v.store_type_;
   }
 
   template <typename ...U>
@@ -320,7 +341,14 @@ public:
   {
     return v.template convert_store_type<T...>() == store_type_ ?
       binary_relation<::std::less_equal, 0, T...>(v) :
-      false;
+      store_type_ <= v.store_type_;
+  }
+
+  bool operator>(variant const& v) const noexcept
+  {
+    return v.store_type_ == store_type_ ?
+      binary_relation<::std::greater, 0, T...>(v) :
+      store_type_ > v.store_type_;
   }
 
   template <typename ...U>
@@ -328,7 +356,14 @@ public:
   {
     return v.template convert_store_type<T...>() == store_type_ ?
       binary_relation<::std::greater, 0, T...>(v) :
-      false;
+      store_type_ > v.store_type_;
+  }
+
+  bool operator>=(variant const& v) const noexcept
+  {
+    return v.store_type_ == store_type_ ?
+      binary_relation<::std::greater_equal, 0, T...>(v) :
+      store_type_ >= v.store_type_;
   }
 
   template <typename ...U>
@@ -336,7 +371,7 @@ public:
   {
     return v.template convert_store_type<T...>() == store_type_ ?
       binary_relation<::std::greater_equal, 0, T...>(v) :
-      false;
+      store_type_ >= v.store_type_;
   }
 
   variant& operator=(variant const& rhs)
