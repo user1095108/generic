@@ -211,9 +211,7 @@ class variant
   template <typename U, typename Z, ::std::size_t I>
   constexpr static int convert_store_type(Z const& v) noexcept
   {
-    return I == v.store_type_ ?
-      Z::template type_index<U>() :
-      -1;
+    return I == v.store_type_ ? Z::template type_index<U>() : -1;
   }
 
   template <typename U, typename ...V, typename Z, ::std::size_t I = 0>
@@ -227,9 +225,7 @@ class variant
   template <typename U, typename OS, ::std::size_t I>
   constexpr OS& stream_value(OS& os) const
   {
-    return I == store_type_ ?
-      os << get<U>() :
-      os;
+    return I == store_type_ ? os << get<U>() : os;
   }
 
   template <typename U, typename ...V, typename OS, ::std::size_t I = 0>
