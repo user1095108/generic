@@ -208,28 +208,31 @@ class variant
 
   static constexpr auto const max_align = alignof(max_align_type);
 
-  template <typename U, typename Z, int I>
-  constexpr static int convert_store_type(Z const& v) noexcept
+  template <typename ...U>
+  friend class variant;
+
+  template <typename U, int I>
+  int convert_store_type() const noexcept
   {
-    return I == v.store_type_ ? Z::template type_index<U>() : -1;
+    return I == store_type_ ? type_index<U>() : -1;
   }
 
-  template <typename U, typename ...V, typename Z, int I = 0>
-  constexpr static int convert_store_type(Z const& v) noexcept
+  template <typename U, typename ...V, int I = 0>
+  int convert_store_type() const noexcept
   {
-    return I == v.store_type_ ?
-      Z::template type_index<U>() :
-      convert_store_type<V..., Z, I + 1>(v);
+    return I == store_type_ ?
+      type_index<U>() :
+      convert_store_type<V..., I + 1>();
   }
 
   template <typename U, typename OS, ::std::size_t I>
-  constexpr OS& stream_value(OS& os) const
+  OS& stream_value(OS& os) const
   {
     return I == store_type_ ? os << get<U>() : os;
   }
 
   template <typename U, typename ...V, typename OS, ::std::size_t I = 0>
-  constexpr OS& stream_value(OS& os) const
+  OS& stream_value(OS& os) const
   {
     return I == store_type_ ?
       os << get<U>() :
@@ -280,7 +283,7 @@ public:
     else if (rhs.copier_)
     {
       auto const converted_store_type(
-        convert_store_type<T...>(rhs)
+        rhs.convert_store_type<T...>()
       );
 
       if (-1 == converted_store_type)
@@ -342,7 +345,7 @@ public:
     else if (rhs.mover_)
     {
       auto const converted_store_type(
-        convert_store_type<T...>(rhs)
+        rhs.convert_store_type<T...>()
       );
 
       if (-1 == converted_store_type)
@@ -792,7 +795,7 @@ private:
     new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
   }
 
-public:
+private:
   deleter_type deleter_{dummy_deleter_stub};
 
   copier_type copier_{};
