@@ -237,6 +237,45 @@ class variant
     return I == store_type_ ? ::std::hash<U>(get<U>()) : hash_value<V...>();
   }
 
+/*
+  template <template <typename> class R, int I, typename U, typename A>
+  bool binary_relation(A const& a) const noexcept
+  {
+    return detail::index_of<U, T...>{} == store_type_ ?
+      R<U>()(get<U>(), a) :
+      false;
+  }
+
+  template <template <typename> class R, typename U, typename ...V,
+    typename A>
+  typename ::std::enable_if<bool(sizeof...(V)), bool>::type
+  binary_relation(A const& a) const noexcept
+  {
+    return detail::index_of<U, T...>{} == store_type_ ?
+      R<U>()(get<U>(), a) :
+      binary_relation<R, V...>(a);
+  }
+*/
+
+  template <template <typename> class R, int I, typename U, typename ...A>
+  typename ::std::enable_if<bool(I), bool>::type
+  binary_relation(variant<A...> const& a) const noexcept
+  {
+    return I == store_type_ ?
+      R<U>()(get<U>(), a.template get<U>()) :
+      false;
+  }
+
+  template <template <typename> class R, int I, typename U, typename ...V,
+    typename ...A>
+  typename ::std::enable_if<bool(sizeof...(V)), bool>::type
+  binary_relation(variant<A...> const& a) const noexcept
+  {
+    return I == store_type_ ?
+      R<U>()(get<U>(), a.template get<U>()) :
+      binary_relation<R, I + 1, V...>(a);
+  }
+
   template <typename U, typename OS, ::std::size_t I>
   OS& stream_value(OS& os) const
   {
@@ -259,6 +298,46 @@ public:
   variant(variant const& other) { *this = other; }
 
   variant(variant&& other) { *this = ::std::move(other); }
+
+  template <typename ...U>
+  bool operator==(variant<U...> const& v) const noexcept
+  {
+    return v.template convert_store_type<T...>() == store_type_ ?
+      binary_relation<::std::equal_to, 0, T...>(v) :
+      false;
+  }
+
+  template <typename ...U>
+  bool operator<(variant<U...> const& v) const noexcept
+  {
+    return v.template convert_store_type<T...>() == store_type_ ?
+      binary_relation<::std::less, 0, T...>(v) :
+      false;
+  }
+
+  template <typename ...U>
+  bool operator<=(variant<U...> const& v) const noexcept
+  {
+    return v.template convert_store_type<T...>() == store_type_ ?
+      binary_relation<::std::less_equal, 0, T...>(v) :
+      false;
+  }
+
+  template <typename ...U>
+  bool operator>(variant<U...> const& v) const noexcept
+  {
+    return v.template convert_store_type<T...>() == store_type_ ?
+      binary_relation<::std::greater, 0, T...>(v) :
+      false;
+  }
+
+  template <typename ...U>
+  bool operator>=(variant<U...> const& v) const noexcept
+  {
+    return v.template convert_store_type<T...>() == store_type_ ?
+      binary_relation<::std::greater_equal, 0, T...>(v) :
+      false;
+  }
 
   variant& operator=(variant const& rhs)
   {
@@ -295,7 +374,7 @@ public:
     else if (rhs.copier_)
     {
       auto const converted_store_type(
-        rhs.convert_store_type<T...>()
+        rhs.template convert_store_type<T...>()
       );
 
       if (-1 == converted_store_type)
@@ -357,7 +436,7 @@ public:
     else if (rhs.mover_)
     {
       auto const converted_store_type(
-        rhs.convert_store_type<T...>()
+        rhs.template convert_store_type<T...>()
       );
 
       if (-1 == converted_store_type)
