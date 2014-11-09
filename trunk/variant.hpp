@@ -208,13 +208,13 @@ class variant
 
   static constexpr auto const max_align = alignof(max_align_type);
 
-  template <typename U, typename Z, ::std::size_t I>
+  template <typename U, typename Z, int I>
   constexpr static int convert_store_type(Z const& v) noexcept
   {
     return I == v.store_type_ ? Z::template type_index<U>() : -1;
   }
 
-  template <typename U, typename ...V, typename Z, ::std::size_t I = 0>
+  template <typename U, typename ...V, typename Z, int I = 0>
   constexpr static int convert_store_type(Z const& v) noexcept
   {
     return I == v.store_type_ ?
