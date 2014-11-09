@@ -253,8 +253,8 @@ public:
     }
     else if (rhs.copier_)
     {
-      rhs.copier_(store_, store_type_ == rhs.store_type_, deleter_,
-        rhs.store_);
+      rhs.copier_(store_type_ == rhs.store_type_, deleter_,
+        store_, rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
@@ -289,8 +289,8 @@ public:
       }
       else
       {
-        rhs.copier_(store_, store_type_ == converted_store_type, deleter_,
-          rhs.store_);
+        rhs.copier_(store_type_ == converted_store_type, deleter_,
+          store_, rhs.store_);
 
         deleter_ = rhs.deleter_;
         copier_ = rhs.copier_;
@@ -315,8 +315,8 @@ public:
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(store_, store_type_ == rhs.store_type_, deleter_,
-        rhs.store_);
+      rhs.mover_(store_type_ == rhs.store_type_, deleter_,
+        store_, rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
@@ -351,8 +351,8 @@ public:
       }
       else
       {
-        rhs.mover_(store_, store_type_ == converted_store_type, deleter_,
-          rhs.store_);
+        rhs.mover_(store_type_ == converted_store_type, deleter_,
+          store_, rhs.store_);
 
         deleter_ = rhs.deleter_;
         copier_ = rhs.copier_;
@@ -668,8 +668,8 @@ public:
 
 private:
   using deleter_type = void (*)(void*);
-  using copier_type = void (*)(void*, bool, deleter_type, void const*);
-  using mover_type = void (*)(void*, bool, deleter_type, void*);
+  using copier_type = void (*)(bool, deleter_type, void*, void const*);
+  using mover_type = void (*)(bool, deleter_type, void*, void*);
 
   template <typename charT, typename traits>
   friend ::std::basic_ostream<charT, traits>& operator<<(
@@ -729,8 +729,8 @@ private:
     ::std::is_copy_constructible<U>{} &&
     ::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(void* const dst_store, bool const same_type,
-    deleter_type const deleter, void const* const src_store)
+  copier_stub(bool const same_type, deleter_type const deleter,
+    void* const dst_store, void const* const src_store)
   {
     if (same_type)
     {
@@ -750,8 +750,8 @@ private:
     ::std::is_copy_constructible<U>{} &&
     !::std::is_copy_assignable<U>{}
   >::type
-  copier_stub(void* const dst_store, bool const,
-    deleter_type const deleter, void const* const src_store)
+  copier_stub(bool const, deleter_type const deleter,
+    void* const dst_store, void const* const src_store)
   {
     deleter(dst_store);
 
@@ -763,8 +763,8 @@ private:
     ::std::is_move_constructible<U>{} &&
     ::std::is_move_assignable<U>{}
   >::type
-  mover_stub(void* const dst_store, bool const same_type,
-    deleter_type const deleter, void* const src_store)
+  mover_stub(bool const same_type, deleter_type const deleter,
+    void* const dst_store, void* const src_store)
   {
     if (same_type)
     {
@@ -784,8 +784,8 @@ private:
     ::std::is_move_constructible<U>{} &&
     !::std::is_move_assignable<U>{}
   >::type
-  mover_stub(void* const dst_store, bool const,
-    deleter_type const deleter, void* const src_store)
+  mover_stub(bool const, deleter_type const deleter,
+    void* const dst_store, void* const src_store)
   {
     deleter(dst_store);
 
