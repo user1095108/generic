@@ -225,6 +225,18 @@ class variant
       convert_store_type<V..., I + 1>();
   }
 
+  template <typename U, ::std::size_t I>
+  ::std::size_t hash_value() const
+  {
+    return I == store_type_ ? ::std::hash<U>(get<U>()) : 0;
+  }
+
+  template <typename U, typename ...V, ::std::size_t I = 0>
+  ::std::size_t hash_value() const
+  {
+    return I == store_type_ ? ::std::hash<U>(get<U>()) : hash_value<V...>();
+  }
+
   template <typename U, typename OS, ::std::size_t I>
   OS& stream_value(OS& os) const
   {
@@ -810,6 +822,21 @@ private:
 # pragma GCC diagnostic pop
 #endif // __GNUC__
 
+}
+
+namespace std
+{
+  template <typename ...T>
+  struct hash<::generic::variant<T...> >
+  {
+    size_t operator()(::generic::variant<T...> const& v) const noexcept
+    {
+      auto const seed(v.get_hash());
+
+      return hash<decltype(v.type_index())>()(v.type_index()) +
+        0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+  };
 }
 
 #endif // GENERIC_VARIANT_HPP
