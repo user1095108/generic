@@ -324,9 +324,11 @@ public:
   template <typename ...U>
   bool operator<(variant<U...> const& v) const noexcept
   {
-    return v.template convert_store_type<T...>() == store_type_ ?
+    auto const converted_store_type(v.template convert_store_type<T...>());
+
+    return converted_store_type == store_type_ ?
       binary_relation<::std::less, 0, T...>(v) :
-      store_type_ < v.store_type_;
+      store_type_ < converted_store_type;
   }
 
   bool operator<=(variant const& v) const noexcept
@@ -339,9 +341,11 @@ public:
   template <typename ...U>
   bool operator<=(variant<U...> const& v) const noexcept
   {
-    return v.template convert_store_type<T...>() == store_type_ ?
+    auto const converted_store_type(v.template convert_store_type<T...>());
+
+    return converted_store_type == store_type_ ?
       binary_relation<::std::less_equal, 0, T...>(v) :
-      store_type_ <= v.store_type_;
+      store_type_ <= converted_store_type;
   }
 
   bool operator>(variant const& v) const noexcept
@@ -354,9 +358,11 @@ public:
   template <typename ...U>
   bool operator>(variant<U...> const& v) const noexcept
   {
-    return v.template convert_store_type<T...>() == store_type_ ?
+    auto const converted_store_type(v.template convert_store_type<T...>());
+
+    return converted_store_type == store_type_ ?
       binary_relation<::std::greater, 0, T...>(v) :
-      store_type_ > v.store_type_;
+      store_type_ > converted_store_type;
   }
 
   bool operator>=(variant const& v) const noexcept
@@ -369,9 +375,11 @@ public:
   template <typename ...U>
   bool operator>=(variant<U...> const& v) const noexcept
   {
-    return v.template convert_store_type<T...>() == store_type_ ?
+    auto const converted_store_type(v.template convert_store_type<T...>());
+
+    return converted_store_type == store_type_ ?
       binary_relation<::std::greater_equal, 0, T...>(v) :
-      store_type_ >= v.store_type_;
+      store_type_ >= converted_store_type;
   }
 
   variant& operator=(variant const& rhs)
