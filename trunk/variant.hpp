@@ -354,7 +354,7 @@ public:
   {
     return (v.store_type_ == store_type_) && *this ?
       binary_relation<::std::equal_to, 0, T...>(v) :
-      v.store_type_ == store_type_;
+      store_type_ == v.store_type_;
   }
 
   template <typename ...U>
