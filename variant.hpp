@@ -129,14 +129,23 @@ struct compatible_type<A, B>
     ::std::is_constructible<A, B>{}, B, void>::type;
 };
 
-template <class S, class C, typename = void>
+template <template <typename> class, typename, typename = void>
+struct is_comparable : ::std::false_type { };
+
+template <template <typename> class R, typename U>
+struct is_comparable<R, U,
+  decltype(void(::std::declval<R<U> const&>()(
+    ::std::declval<U const&>(), ::std::declval<U const&>())))
+> : ::std::true_type
+{
+};
+
+template <class, class, typename = void>
 struct is_streamable : ::std::false_type { };
 
 template <class S, class C>
-struct is_streamable<S,
-  C,
-  decltype(void(sizeof(decltype(::std::declval<S&>() <<
-    ::std::declval<C const&>()))))
+struct is_streamable<S, C,
+  decltype(void(::std::declval<S&>() << ::std::declval<C const&>()))
 > : ::std::true_type
 {
 };
@@ -211,18 +220,19 @@ class variant
   template <typename ...U>
   friend class variant;
 
-  template <typename U, int I>
+  template <int I, typename U>
   int convert_store_type() const noexcept
   {
     return I == store_type_ ? type_index<U>() : -1;
   }
 
-  template <typename U, typename ...V, int I = 0>
-  int convert_store_type() const noexcept
+  template <int I, typename U, typename ...V>
+  typename ::std::enable_if<bool(sizeof...(V)), int>::type
+  convert_store_type() const noexcept
   {
     return I == store_type_ ?
       type_index<U>() :
-      convert_store_type<V..., I + 1>();
+      convert_store_type<I + 1, V...>();
   }
 
   template <typename U, ::std::size_t I>
@@ -258,17 +268,38 @@ class variant
 */
 
   template <template <typename> class R, int I, typename U, typename ...A>
-  typename ::std::enable_if<bool(I), bool>::type
+  typename ::std::enable_if<bool(I) &&
+    !detail::is_comparable<R, U>{}, bool>::type
+  binary_relation(variant<A...> const& a) const noexcept
+  {
+    throw ::std::bad_typeid();
+  }
+
+  template <template <typename> class R, int I, typename U, typename ...A>
+  typename ::std::enable_if<bool(I) &&
+    detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
     return I == store_type_ ?
       R<U>()(get<U>(), a.template get<U>()) :
-      false;
+      throw ::std::bad_typeid();
   }
 
   template <template <typename> class R, int I, typename U, typename ...V,
     typename ...A>
-  typename ::std::enable_if<bool(sizeof...(V)), bool>::type
+  typename ::std::enable_if<bool(sizeof...(V)) &&
+    !detail::is_comparable<R, U>{}, bool>::type
+  binary_relation(variant<A...> const& a) const noexcept
+  {
+    return I == store_type_ ?
+      throw ::std::bad_typeid() :
+      binary_relation<R, I + 1, V...>(a);
+  }
+
+  template <template <typename> class R, int I, typename U, typename ...V,
+    typename ...A>
+  typename ::std::enable_if<bool(sizeof...(V)) &&
+    detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
     return I == store_type_ ?
@@ -276,18 +307,38 @@ class variant
       binary_relation<R, I + 1, V...>(a);
   }
 
-  template <typename U, typename OS, ::std::size_t I>
-  OS& stream_value(OS& os) const
+  template <::std::size_t I, typename OS, typename U>
+  typename ::std::enable_if<!detail::is_streamable<OS, U>{}, OS&>::type
+  stream_value(OS& os) const
+  {
+    throw ::std::bad_typeid();
+  }
+
+  template <::std::size_t I, typename OS, typename U>
+  typename ::std::enable_if<detail::is_streamable<OS, U>{}, OS&>::type
+  stream_value(OS& os) const
   {
     return I == store_type_ ? os << get<U>() : os;
   }
 
-  template <typename U, typename ...V, typename OS, ::std::size_t I = 0>
-  OS& stream_value(OS& os) const
+  template <::std::size_t I, typename OS, typename U, typename ...V>
+  typename ::std::enable_if<!detail::is_streamable<OS, U>{} &&
+    bool(sizeof...(V)), OS&>::type
+  stream_value(OS& os) const
+  {
+    return I == store_type_ ?
+      throw ::std::bad_typeid() :
+      stream_value<I + 1, OS, V...>(os);
+  }
+
+  template <::std::size_t I, typename OS, typename U, typename ...V>
+  typename ::std::enable_if<detail::is_streamable<OS, U>{} &&
+    bool(sizeof...(V)), OS&>::type
+  stream_value(OS& os) const
   {
     return I == store_type_ ?
       os << get<U>() :
-      stream_value<V..., OS, I + 1>(os);
+      stream_value<I + 1, OS, V...>(os);
   }
 
 public:
@@ -301,22 +352,24 @@ public:
 
   bool operator==(variant const& v) const noexcept
   {
-    return v.store_type_ == store_type_ ?
+    return (v.store_type_ == store_type_) && *this ?
       binary_relation<::std::equal_to, 0, T...>(v) :
-      false;
+      v.store_type_ == store_type_;
   }
 
   template <typename ...U>
   bool operator==(variant<U...> const& v) const noexcept
   {
-    return v.template convert_store_type<T...>() == store_type_ ?
+    auto const converted_store_type(v.template convert_store_type<0, T...>());
+
+    return (converted_store_type == store_type_) && *this ?
       binary_relation<::std::equal_to, 0, T...>(v) :
-      false;
+      converted_store_type == store_type_;
   }
 
   bool operator<(variant const& v) const noexcept
   {
-    return v.store_type_ == store_type_ ?
+    return (v.store_type_ == store_type_) && *this ?
       binary_relation<::std::less, 0, T...>(v) :
       store_type_ < v.store_type_;
   }
@@ -324,16 +377,16 @@ public:
   template <typename ...U>
   bool operator<(variant<U...> const& v) const noexcept
   {
-    auto const converted_store_type(v.template convert_store_type<T...>());
+    auto const converted_store_type(v.template convert_store_type<0, T...>());
 
-    return converted_store_type == store_type_ ?
+    return (converted_store_type == store_type_) && *this?
       binary_relation<::std::less, 0, T...>(v) :
       store_type_ < converted_store_type;
   }
 
   bool operator<=(variant const& v) const noexcept
   {
-    return v.store_type_ == store_type_ ?
+    return (v.store_type_ == store_type_) && *this ?
       binary_relation<::std::less_equal, 0, T...>(v) :
       store_type_ <= v.store_type_;
   }
@@ -341,16 +394,16 @@ public:
   template <typename ...U>
   bool operator<=(variant<U...> const& v) const noexcept
   {
-    auto const converted_store_type(v.template convert_store_type<T...>());
+    auto const converted_store_type(v.template convert_store_type<0, T...>());
 
-    return converted_store_type == store_type_ ?
+    return (converted_store_type == store_type_) && *this ?
       binary_relation<::std::less_equal, 0, T...>(v) :
       store_type_ <= converted_store_type;
   }
 
   bool operator>(variant const& v) const noexcept
   {
-    return v.store_type_ == store_type_ ?
+    return (v.store_type_ == store_type_) && *this ?
       binary_relation<::std::greater, 0, T...>(v) :
       store_type_ > v.store_type_;
   }
@@ -358,7 +411,7 @@ public:
   template <typename ...U>
   bool operator>(variant<U...> const& v) const noexcept
   {
-    auto const converted_store_type(v.template convert_store_type<T...>());
+    auto const converted_store_type(v.template convert_store_type<0, T...>());
 
     return converted_store_type == store_type_ ?
       binary_relation<::std::greater, 0, T...>(v) :
@@ -375,7 +428,7 @@ public:
   template <typename ...U>
   bool operator>=(variant<U...> const& v) const noexcept
   {
-    auto const converted_store_type(v.template convert_store_type<T...>());
+    auto const converted_store_type(v.template convert_store_type<0, T...>());
 
     return converted_store_type == store_type_ ?
       binary_relation<::std::greater_equal, 0, T...>(v) :
@@ -417,7 +470,7 @@ public:
     else if (rhs.copier_)
     {
       auto const converted_store_type(
-        rhs.template convert_store_type<T...>()
+        rhs.template convert_store_type<0, T...>()
       );
 
       if (-1 == converted_store_type)
@@ -479,7 +532,7 @@ public:
     else if (rhs.mover_)
     {
       auto const converted_store_type(
-        rhs.template convert_store_type<T...>()
+        rhs.template convert_store_type<0, T...>()
       );
 
       if (-1 == converted_store_type)
@@ -814,7 +867,7 @@ private:
   {
     return -1 == v.store_type_ ?
       os << "<empty variant>" :
-      v.stream_value<T...>(os);
+      v.stream_value<0, decltype(os), T...>(os);
   }
 
   template <class U>
