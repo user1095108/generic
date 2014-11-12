@@ -32,7 +32,8 @@ template <typename A, typename B>
 struct max_align_type<A, B>
 {
   using type = typename ::std::conditional<
-    (alignof(A) > alignof(B)), A, B>::type;
+    (alignof(A) > alignof(B)), A, B
+  >::type;
 };
 
 template <typename A>
@@ -116,9 +117,9 @@ template <typename A, typename B, typename ...C>
 struct compatible_type
 {
   using type = typename ::std::conditional<
-      ::std::is_constructible<A, B>{},
-      B,
-      typename compatible_type<A, C...>::type
+    ::std::is_constructible<A, B>{},
+    B,
+    typename compatible_type<A, C...>::type
   >::type;
 };
 
