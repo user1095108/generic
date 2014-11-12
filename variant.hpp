@@ -1036,7 +1036,7 @@ namespace std
   {
     size_t operator()(::generic::variant<T...> const& v) const noexcept
     {
-      auto const seed(v.hash());
+      auto const seed(v.hash<0, T...>());
 
       return hash<decltype(v.type_index())>()(v.type_index()) +
         0x9e3779b9 + (seed << 6) + (seed >> 2);
