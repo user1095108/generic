@@ -232,6 +232,8 @@ class variant
   template <typename ...U>
   friend class variant;
 
+  friend struct ::std::hash<variant<T...> >;
+
   template <int I, typename U>
   int convert_type_index() const noexcept
   {
@@ -249,34 +251,38 @@ class variant
 
   template <int I, typename U>
   typename ::std::enable_if<!detail::is_hashable<U>{}, ::std::size_t>::type
-  hash() const
+  get_hash() const
   {
     throw ::std::bad_typeid();
   }
 
   template <int I, typename U>
   typename ::std::enable_if<detail::is_hashable<U>{}, ::std::size_t>::type
-  hash() const
+  get_hash() const
   {
     return I == type_index_ ?
-      ::std::hash<U>(get<U>()) :
+      ::std::hash<U>()(get<U>()) :
       throw ::std::bad_typeid();
   }
 
   template <int I, typename U, typename ...V>
   typename ::std::enable_if<bool(sizeof...(V)) &&
     !detail::is_hashable<U>{}, int>::type
-  hash() const
+  get_hash() const
   {
-    return I == type_index_ ? throw ::std::bad_typeid() : hash<I + 1, V...>();
+    return I == type_index_ ?
+      throw ::std::bad_typeid() :
+      get_hash<I + 1, V...>();
   }
 
   template <int I, typename U, typename ...V>
   typename ::std::enable_if<bool(sizeof...(V)) &&
     detail::is_hashable<U>{}, int>::type
-  hash() const
+  get_hash() const
   {
-    return I == type_index_ ? ::std::hash<U>(get<U>()) : hash<I + 1, V...>();
+    return I == type_index_ ?
+      ::std::hash<U>()(get<U>()) :
+      get_hash<I + 1, V...>();
   }
 
 /*
@@ -1036,7 +1042,7 @@ namespace std
   {
     size_t operator()(::generic::variant<T...> const& v) const noexcept
     {
-      auto const seed(v.hash<0, T...>());
+      auto const seed(v.template get_hash<0, T...>());
 
       return hash<decltype(v.type_index())>()(v.type_index()) +
         0x9e3779b9 + (seed << 6) + (seed >> 2);
