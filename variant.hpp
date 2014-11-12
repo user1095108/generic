@@ -134,9 +134,20 @@ template <template <typename> class, typename, typename = void>
 struct is_comparable : ::std::false_type { };
 
 template <template <typename> class R, typename U>
-struct is_comparable<R, U,
+struct is_comparable<R,
+  U,
   decltype(void(::std::declval<R<U> const&>()(
     ::std::declval<U const&>(), ::std::declval<U const&>())))
+> : ::std::true_type
+{
+};
+
+template <typename, typename = void>
+struct is_hashable : ::std::false_type { };
+
+template <typename U>
+struct is_hashable<U,
+  decltype(void(::std::hash<U>()(::std::declval<U const&>())))
 > : ::std::true_type
 {
 };
@@ -236,16 +247,36 @@ class variant
       convert_type_index<I + 1, V...>();
   }
 
-  template <typename U, ::std::size_t I>
-  ::std::size_t hash_value() const
+  template <int I, typename U>
+  typename ::std::enable_if<!detail::is_hashable<U>{}, ::std::size_t>::type
+  hash() const
   {
-    return I == type_index_ ? ::std::hash<U>(get<U>()) : 0;
+    throw ::std::bad_typeid();
   }
 
-  template <typename U, typename ...V, ::std::size_t I = 0>
-  ::std::size_t hash_value() const
+  template <int I, typename U>
+  typename ::std::enable_if<detail::is_hashable<U>{}, ::std::size_t>::type
+  hash() const
   {
-    return I == type_index_ ? ::std::hash<U>(get<U>()) : hash_value<V...>();
+    return I == type_index_ ?
+      ::std::hash<U>(get<U>()) :
+      throw ::std::bad_typeid();
+  }
+
+  template <int I, typename U, typename ...V>
+  typename ::std::enable_if<bool(sizeof...(V)) &&
+    !detail::is_hashable<U>{}, int>::type
+  hash() const
+  {
+    return I == type_index_ ? throw ::std::bad_typeid() : hash<I + 1, V...>();
+  }
+
+  template <int I, typename U, typename ...V>
+  typename ::std::enable_if<bool(sizeof...(V)) &&
+    detail::is_hashable<U>{}, int>::type
+  hash() const
+  {
+    return I == type_index_ ? ::std::hash<U>(get<U>()) : hash<I + 1, V...>();
   }
 
 /*
@@ -269,16 +300,14 @@ class variant
 */
 
   template <template <typename> class R, int I, typename U, typename ...A>
-  typename ::std::enable_if<bool(I) &&
-    !detail::is_comparable<R, U>{}, bool>::type
+  typename ::std::enable_if<!detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
     throw ::std::bad_typeid();
   }
 
   template <template <typename> class R, int I, typename U, typename ...A>
-  typename ::std::enable_if<bool(I) &&
-    detail::is_comparable<R, U>{}, bool>::type
+  typename ::std::enable_if<detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
     return I == type_index_ ?
@@ -1007,7 +1036,7 @@ namespace std
   {
     size_t operator()(::generic::variant<T...> const& v) const noexcept
     {
-      auto const seed(v.get_hash());
+      auto const seed(v.hash());
 
       return hash<decltype(v.type_index())>()(v.type_index()) +
         0x9e3779b9 + (seed << 6) + (seed >> 2);
