@@ -479,8 +479,8 @@ public:
     }
     else if (rhs.copier_)
     {
-      rhs.copier_(type_index_ == rhs.type_index_, deleter_,
-        store_, rhs.store_);
+      rhs.copier_(type_index_ == rhs.type_index_, deleter_, store_,
+        rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
@@ -515,8 +515,8 @@ public:
       }
       else
       {
-        rhs.copier_(type_index_ == converted_type_index, deleter_,
-          store_, rhs.store_);
+        rhs.copier_(type_index_ == converted_type_index, deleter_, store_,
+          rhs.store_);
 
         deleter_ = rhs.deleter_;
         copier_ = rhs.copier_;
@@ -541,8 +541,8 @@ public:
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(type_index_ == rhs.type_index_, deleter_,
-        store_, rhs.store_);
+      rhs.mover_(type_index_ == rhs.type_index_, deleter_, store_,
+        rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
@@ -849,7 +849,7 @@ public:
   >::type
   get() const
   {
-    if (detail::index_of<U, T...>{} == type_index_)
+    if (detail::index_of<U, T...>{} == type_index_) 
     {
       return *reinterpret_cast<U const*>(store_);
     }
