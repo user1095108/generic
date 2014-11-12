@@ -221,37 +221,37 @@ class variant
   friend class variant;
 
   template <int I, typename U>
-  int convert_store_type() const noexcept
+  int convert_type_index() const noexcept
   {
-    return I == store_type_ ? type_index<U>() : -1;
+    return I == type_index_ ? type_index<U>() : -1;
   }
 
   template <int I, typename U, typename ...V>
   typename ::std::enable_if<bool(sizeof...(V)), int>::type
-  convert_store_type() const noexcept
+  convert_type_index() const noexcept
   {
-    return I == store_type_ ?
+    return I == type_index_ ?
       type_index<U>() :
-      convert_store_type<I + 1, V...>();
+      convert_type_index<I + 1, V...>();
   }
 
   template <typename U, ::std::size_t I>
   ::std::size_t hash_value() const
   {
-    return I == store_type_ ? ::std::hash<U>(get<U>()) : 0;
+    return I == type_index_ ? ::std::hash<U>(get<U>()) : 0;
   }
 
   template <typename U, typename ...V, ::std::size_t I = 0>
   ::std::size_t hash_value() const
   {
-    return I == store_type_ ? ::std::hash<U>(get<U>()) : hash_value<V...>();
+    return I == type_index_ ? ::std::hash<U>(get<U>()) : hash_value<V...>();
   }
 
 /*
   template <template <typename> class R, int I, typename U, typename A>
   bool binary_relation(A const& a) const noexcept
   {
-    return detail::index_of<U, T...>{} == store_type_ ?
+    return detail::index_of<U, T...>{} == type_index_ ?
       R<U>()(get<U>(), a) :
       false;
   }
@@ -261,7 +261,7 @@ class variant
   typename ::std::enable_if<bool(sizeof...(V)), bool>::type
   binary_relation(A const& a) const noexcept
   {
-    return detail::index_of<U, T...>{} == store_type_ ?
+    return detail::index_of<U, T...>{} == type_index_ ?
       R<U>()(get<U>(), a) :
       binary_relation<R, V...>(a);
   }
@@ -280,7 +280,7 @@ class variant
     detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
-    return I == store_type_ ?
+    return I == type_index_ ?
       R<U>()(get<U>(), a.template get<U>()) :
       throw ::std::bad_typeid();
   }
@@ -291,7 +291,7 @@ class variant
     !detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
-    return I == store_type_ ?
+    return I == type_index_ ?
       throw ::std::bad_typeid() :
       binary_relation<R, I + 1, V...>(a);
   }
@@ -302,7 +302,7 @@ class variant
     detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
-    return I == store_type_ ?
+    return I == type_index_ ?
       R<U>()(get<U>(), a.template get<U>()) :
       binary_relation<R, I + 1, V...>(a);
   }
@@ -318,7 +318,7 @@ class variant
   typename ::std::enable_if<detail::is_streamable<OS, U>{}, OS&>::type
   stream_value(OS& os) const
   {
-    return I == store_type_ ? os << get<U>() : os;
+    return I == type_index_ ? os << get<U>() : os;
   }
 
   template <::std::size_t I, typename OS, typename U, typename ...V>
@@ -326,7 +326,7 @@ class variant
     bool(sizeof...(V)), OS&>::type
   stream_value(OS& os) const
   {
-    return I == store_type_ ?
+    return I == type_index_ ?
       throw ::std::bad_typeid() :
       stream_value<I + 1, OS, V...>(os);
   }
@@ -336,7 +336,7 @@ class variant
     bool(sizeof...(V)), OS&>::type
   stream_value(OS& os) const
   {
-    return I == store_type_ ?
+    return I == type_index_ ?
       os << get<U>() :
       stream_value<I + 1, OS, V...>(os);
   }
@@ -352,87 +352,87 @@ public:
 
   bool operator==(variant const& v) const noexcept
   {
-    return (v.store_type_ == store_type_) && *this ?
+    return (v.type_index_ == type_index_) && *this ?
       binary_relation<::std::equal_to, 0, T...>(v) :
-      store_type_ == v.store_type_;
+      type_index_ == v.type_index_;
   }
 
   template <typename ...U>
   bool operator==(variant<U...> const& v) const noexcept
   {
-    auto const converted_store_type(v.template convert_store_type<0, T...>());
+    auto const converted_type_index(v.template convert_type_index<0, T...>());
 
-    return (converted_store_type == store_type_) && *this ?
+    return (converted_type_index == type_index_) && *this ?
       binary_relation<::std::equal_to, 0, T...>(v) :
-      converted_store_type == store_type_;
+      converted_type_index == type_index_;
   }
 
   bool operator<(variant const& v) const noexcept
   {
-    return (v.store_type_ == store_type_) && *this ?
+    return (v.type_index_ == type_index_) && *this ?
       binary_relation<::std::less, 0, T...>(v) :
-      store_type_ < v.store_type_;
+      type_index_ < v.type_index_;
   }
 
   template <typename ...U>
   bool operator<(variant<U...> const& v) const noexcept
   {
-    auto const converted_store_type(v.template convert_store_type<0, T...>());
+    auto const converted_type_index(v.template convert_type_index<0, T...>());
 
-    return (converted_store_type == store_type_) && *this?
+    return (converted_type_index == type_index_) && *this?
       binary_relation<::std::less, 0, T...>(v) :
-      store_type_ < converted_store_type;
+      type_index_ < converted_type_index;
   }
 
   bool operator<=(variant const& v) const noexcept
   {
-    return (v.store_type_ == store_type_) && *this ?
+    return (v.type_index_ == type_index_) && *this ?
       binary_relation<::std::less_equal, 0, T...>(v) :
-      store_type_ <= v.store_type_;
+      type_index_ <= v.type_index_;
   }
 
   template <typename ...U>
   bool operator<=(variant<U...> const& v) const noexcept
   {
-    auto const converted_store_type(v.template convert_store_type<0, T...>());
+    auto const converted_type_index(v.template convert_type_index<0, T...>());
 
-    return (converted_store_type == store_type_) && *this ?
+    return (converted_type_index == type_index_) && *this ?
       binary_relation<::std::less_equal, 0, T...>(v) :
-      store_type_ <= converted_store_type;
+      type_index_ <= converted_type_index;
   }
 
   bool operator>(variant const& v) const noexcept
   {
-    return (v.store_type_ == store_type_) && *this ?
+    return (v.type_index_ == type_index_) && *this ?
       binary_relation<::std::greater, 0, T...>(v) :
-      store_type_ > v.store_type_;
+      type_index_ > v.type_index_;
   }
 
   template <typename ...U>
   bool operator>(variant<U...> const& v) const noexcept
   {
-    auto const converted_store_type(v.template convert_store_type<0, T...>());
+    auto const converted_type_index(v.template convert_type_index<0, T...>());
 
-    return converted_store_type == store_type_ ?
+    return converted_type_index == type_index_ ?
       binary_relation<::std::greater, 0, T...>(v) :
-      store_type_ > converted_store_type;
+      type_index_ > converted_type_index;
   }
 
   bool operator>=(variant const& v) const noexcept
   {
-    return v.store_type_ == store_type_ ?
+    return v.type_index_ == type_index_ ?
       binary_relation<::std::greater_equal, 0, T...>(v) :
-      store_type_ >= v.store_type_;
+      type_index_ >= v.type_index_;
   }
 
   template <typename ...U>
   bool operator>=(variant<U...> const& v) const noexcept
   {
-    auto const converted_store_type(v.template convert_store_type<0, T...>());
+    auto const converted_type_index(v.template convert_type_index<0, T...>());
 
-    return converted_store_type == store_type_ ?
+    return converted_type_index == type_index_ ?
       binary_relation<::std::greater_equal, 0, T...>(v) :
-      store_type_ >= converted_store_type;
+      type_index_ >= converted_type_index;
   }
 
   variant& operator=(variant const& rhs)
@@ -443,14 +443,14 @@ public:
     }
     else if (rhs.copier_)
     {
-      rhs.copier_(store_type_ == rhs.store_type_, deleter_,
+      rhs.copier_(type_index_ == rhs.type_index_, deleter_,
         store_, rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
       mover_ = rhs.mover_;
 
-      store_type_ = rhs.store_type_;
+      type_index_ = rhs.type_index_;
     }
     else
     {
@@ -469,24 +469,24 @@ public:
     }
     else if (rhs.copier_)
     {
-      auto const converted_store_type(
-        rhs.template convert_store_type<0, T...>()
+      auto const converted_type_index(
+        rhs.template convert_type_index<0, T...>()
       );
 
-      if (-1 == converted_store_type)
+      if (-1 == converted_type_index)
       {
         throw ::std::bad_typeid();
       }
       else
       {
-        rhs.copier_(store_type_ == converted_store_type, deleter_,
+        rhs.copier_(type_index_ == converted_type_index, deleter_,
           store_, rhs.store_);
 
         deleter_ = rhs.deleter_;
         copier_ = rhs.copier_;
         mover_ = rhs.mover_;
 
-        store_type_ = converted_store_type;
+        type_index_ = converted_type_index;
       }
     }
     else
@@ -505,14 +505,14 @@ public:
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(store_type_ == rhs.store_type_, deleter_,
+      rhs.mover_(type_index_ == rhs.type_index_, deleter_,
         store_, rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
       mover_ = rhs.mover_;
 
-      store_type_ = rhs.store_type_;
+      type_index_ = rhs.type_index_;
     }
     else
     {
@@ -531,24 +531,24 @@ public:
     }
     else if (rhs.mover_)
     {
-      auto const converted_store_type(
-        rhs.template convert_store_type<0, T...>()
+      auto const converted_type_index(
+        rhs.template convert_type_index<0, T...>()
       );
 
-      if (-1 == converted_store_type)
+      if (-1 == converted_type_index)
       {
         throw ::std::bad_typeid();
       }
       else
       {
-        rhs.mover_(store_type_ == converted_store_type, deleter_,
+        rhs.mover_(type_index_ == converted_type_index, deleter_,
           store_, rhs.store_);
 
         deleter_ = rhs.deleter_;
         copier_ = rhs.copier_;
         mover_ = rhs.mover_;
 
-        store_type_ = converted_store_type;
+        type_index_ = converted_type_index;
       }
     }
     else
@@ -582,7 +582,7 @@ public:
   {
     using user_type = typename ::std::decay<U>::type;
 
-    if (detail::index_of<user_type, T...>{} == store_type_)
+    if (detail::index_of<user_type, T...>{} == type_index_)
     {
       *reinterpret_cast<user_type*>(store_) = u;
     }
@@ -596,7 +596,7 @@ public:
       copier_ = get_copier<user_type>();
       mover_ = get_mover<user_type>();
 
-      store_type_ = detail::index_of<user_type, T...>{};
+      type_index_ = detail::index_of<user_type, T...>{};
     }
 
     return *this;
@@ -616,7 +616,7 @@ public:
   {
     using user_type = typename ::std::decay<U>::type;
 
-    if (detail::index_of<user_type, T...>{} == store_type_)
+    if (detail::index_of<user_type, T...>{} == type_index_)
     {
       *reinterpret_cast<user_type*>(store_) = ::std::move(u);
     }
@@ -630,7 +630,7 @@ public:
       copier_ = get_copier<user_type>();
       mover_ = get_mover<user_type>();
 
-      store_type_ = detail::index_of<user_type, T...>{};
+      type_index_ = detail::index_of<user_type, T...>{};
     }
 
     return *this;
@@ -659,12 +659,12 @@ public:
     copier_ = get_copier<user_type>();
     mover_ = get_mover<user_type>();
 
-    store_type_ = detail::index_of<user_type, T...>{};
+    type_index_ = detail::index_of<user_type, T...>{};
 
     return *this;
   }
 
-  explicit operator bool() const noexcept { return -1 != store_type_; }
+  explicit operator bool() const noexcept { return -1 != type_index_; }
 
   template <typename U>
   variant& assign(U&& u)
@@ -675,7 +675,7 @@ public:
   template <typename U>
   bool contains() const noexcept
   {
-    return detail::index_of<U, T...>{} == store_type_;
+    return detail::index_of<U, T...>{} == type_index_;
   }
 
   void clear()
@@ -686,14 +686,14 @@ public:
     copier_ = nullptr;
     mover_ = nullptr;
 
-    store_type_ = -1;
+    type_index_ = -1;
   }
 
   bool empty() const noexcept { return !*this; }
 
   void swap(variant& other)
   {
-    if (-1 == other.store_type_)
+    if (-1 == other.type_index_)
     {
       if (mover_)
       {
@@ -707,7 +707,7 @@ public:
       }
       // else do nothing
     }
-    else if (-1 == store_type_)
+    else if (-1 == type_index_)
     {
       if (other.mover_)
       {
@@ -796,7 +796,7 @@ public:
   >::type
   get()
   {
-    if (detail::index_of<U, T...>{} == store_type_)
+    if (detail::index_of<U, T...>{} == type_index_)
     {
       return *reinterpret_cast<U*>(store_);
     }
@@ -813,7 +813,7 @@ public:
   >::type
   get() const
   {
-    if (detail::index_of<U, T...>{} == store_type_)
+    if (detail::index_of<U, T...>{} == type_index_)
     {
       return *reinterpret_cast<U const*>(store_);
     }
@@ -837,7 +837,7 @@ public:
         detail::compatible_index_of<U, T...>{}, T...>::type,
       typename detail::compatible_type<U, T...>::type>{},
       "internal error");
-    if (detail::compatible_index_of<U, T...>{} == store_type_)
+    if (detail::compatible_index_of<U, T...>{} == type_index_)
     {
       return U(*reinterpret_cast<
         typename detail::compatible_type<U, T...>::type const*>(store_));
@@ -854,7 +854,7 @@ public:
     return detail::index_of<U, T...>{};
   }
 
-  int type_index() const noexcept { return store_type_; }
+  int type_index() const noexcept { return type_index_; }
 
 private:
   using deleter_type = void (*)(void*);
@@ -865,7 +865,7 @@ private:
   friend ::std::basic_ostream<charT, traits>& operator<<(
     ::std::basic_ostream<charT, traits>& os, variant const& v)
   {
-    return -1 == v.store_type_ ?
+    return -1 == v.type_index_ ?
       os << "<empty variant>" :
       v.stream_value<0, decltype(os), T...>(os);
   }
@@ -988,7 +988,7 @@ private:
   copier_type copier_{};
   mover_type mover_{};
 
-  int store_type_{-1};
+  int type_index_{-1};
 
   alignas(max_align_type) char store_[sizeof(max_size_type)];
 };
