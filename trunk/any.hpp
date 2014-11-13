@@ -117,7 +117,7 @@ private: // types
   public: // queries
     typeid_t type_id() const noexcept final
     {
-      return type_id<ValueType>();
+      return any::type_id<ValueType>();
     }
 
   public:
@@ -144,7 +144,7 @@ private: // types
   public: // queries
     typeid_t type_id() const noexcept final
     {
-      return type_id<ValueType>();
+      return any::type_id<ValueType>();
     }
 
   public:
@@ -178,7 +178,7 @@ template<typename ValueType>
 inline ValueType* any_cast(any* const operand) noexcept
 {
   return operand &&
-    (operand->type() ==
+    (operand->type_id() ==
       any::type_id<typename ::std::decay<ValueType>::type>()) ?
     &static_cast<any::holder<ValueType>*>(operand->content)->held :
     nullptr;
