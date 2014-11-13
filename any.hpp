@@ -98,7 +98,7 @@ private: // types
 
     virtual placeholder* clone() const = 0;
 
-    virtual typeid_t type() const noexcept = 0;
+    virtual typeid_t type_id() const noexcept = 0;
   };
 
   template <typename ValueType, typename = void>
