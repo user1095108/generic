@@ -85,7 +85,7 @@ public: // queries
 
   typeid_t type_id() const noexcept
   {
-    return content ? content->type_id() : type_id<void>();
+    return content ? content->type_id_ : type_id<void>();
   }
 
 private: // types
@@ -98,7 +98,7 @@ private: // types
 
     virtual placeholder* clone() const = 0;
 
-    virtual typeid_t type_id() const noexcept = 0;
+    typeid_t type_id_;
   };
 
   template <typename ValueType, typename = void>
@@ -108,17 +108,12 @@ private: // types
     template <class T> holder(T&& value) :
       held(::std::forward<T>(value))
     {
+      type_id_ = any::type_id<ValueType>;
     }
 
     holder& operator=(holder const&) = delete;
 
     placeholder* clone() const final { throw ::std::logic_error(""); }
-
-  public: // queries
-    typeid_t type_id() const noexcept final
-    {
-      return any::type_id<ValueType>();
-    }
 
   public:
     ValueType held;
@@ -137,15 +132,10 @@ private: // types
     holder(T&& value) :
       held(::std::forward<T>(value))
     {
+      type_id_ = any::type_id<ValueType>();
     }
 
     placeholder* clone() const final { return new holder<ValueType>(held); }
-
-  public: // queries
-    typeid_t type_id() const noexcept final
-    {
-      return any::type_id<ValueType>();
-    }
 
   public:
     ValueType held;
