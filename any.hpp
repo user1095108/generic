@@ -106,9 +106,8 @@ private: // types
   {
   public: // constructor
     template <class T> holder(T&& value) :
-      held(::std::forward<T>(value))
+      held(type_id_ = any::type_id<ValueType>(), ::std::forward<T>(value))
     {
-      type_id_ = any::type_id<ValueType>;
     }
 
     holder& operator=(holder const&) = delete;
@@ -130,9 +129,8 @@ private: // types
   public: // constructor
     template <class T>
     holder(T&& value) :
-      held(::std::forward<T>(value))
+      held(type_id_ = any::type_id<ValueType>(), ::std::forward<T>(value))
     {
-      type_id_ = any::type_id<ValueType>();
     }
 
     placeholder* clone() const final { return new holder<ValueType>(held); }
