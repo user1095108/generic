@@ -235,18 +235,16 @@ class variant
   friend struct ::std::hash<variant<T...> >;
 
   template <int I, typename U>
-  int convert_type_index() const noexcept
+  int convert_type_id() const noexcept
   {
-    return I == type_index_ ? type_index<U>() : -1;
+    return I == type_id_ ? type_id<U>() : -1;
   }
 
   template <int I, typename U, typename ...V>
   typename ::std::enable_if<bool(sizeof...(V)), int>::type
-  convert_type_index() const noexcept
+  convert_type_id() const noexcept
   {
-    return I == type_index_ ?
-      type_index<U>() :
-      convert_type_index<I + 1, V...>();
+    return I == type_id_ ?  type_id<U>() : convert_type_id<I + 1, V...>();
   }
 
   template <int I, typename U>
@@ -260,7 +258,7 @@ class variant
   typename ::std::enable_if<detail::is_hashable<U>{}, ::std::size_t>::type
   get_hash() const
   {
-    return I == type_index_ ?
+    return I == type_id_ ?
       ::std::hash<U>()(get<U>()) :
       throw ::std::bad_typeid();
   }
@@ -270,7 +268,7 @@ class variant
     !detail::is_hashable<U>{}, int>::type
   get_hash() const
   {
-    return I == type_index_ ?
+    return I == type_id_ ?
       throw ::std::bad_typeid() :
       get_hash<I + 1, V...>();
   }
@@ -280,7 +278,7 @@ class variant
     detail::is_hashable<U>{}, int>::type
   get_hash() const
   {
-    return I == type_index_ ?
+    return I == type_id_ ?
       ::std::hash<U>()(get<U>()) :
       get_hash<I + 1, V...>();
   }
@@ -289,7 +287,7 @@ class variant
   template <template <typename> class R, int I, typename U, typename A>
   bool binary_relation(A const& a) const noexcept
   {
-    return detail::index_of<U, T...>{} == type_index_ ?
+    return detail::index_of<U, T...>{} == type_id_ ?
       R<U>()(get<U>(), a) :
       false;
   }
@@ -299,7 +297,7 @@ class variant
   typename ::std::enable_if<bool(sizeof...(V)), bool>::type
   binary_relation(A const& a) const noexcept
   {
-    return detail::index_of<U, T...>{} == type_index_ ?
+    return detail::index_of<U, T...>{} == type_id_ ?
       R<U>()(get<U>(), a) :
       binary_relation<R, V...>(a);
   }
@@ -316,7 +314,7 @@ class variant
   typename ::std::enable_if<detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
-    return I == type_index_ ?
+    return I == type_id_ ?
       R<U>()(get<U>(), a.template get<U>()) :
       throw ::std::bad_typeid();
   }
@@ -327,7 +325,7 @@ class variant
     !detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
-    return I == type_index_ ?
+    return I == type_id_ ?
       throw ::std::bad_typeid() :
       binary_relation<R, I + 1, V...>(a);
   }
@@ -338,7 +336,7 @@ class variant
     detail::is_comparable<R, U>{}, bool>::type
   binary_relation(variant<A...> const& a) const noexcept
   {
-    return I == type_index_ ?
+    return I == type_id_ ?
       R<U>()(get<U>(), a.template get<U>()) :
       binary_relation<R, I + 1, V...>(a);
   }
@@ -354,7 +352,7 @@ class variant
   typename ::std::enable_if<detail::is_streamable<OS, U>{}, OS&>::type
   stream_value(OS& os) const
   {
-    return I == type_index_ ? os << get<U>() : os;
+    return I == type_id_ ? os << get<U>() : os;
   }
 
   template <::std::size_t I, typename OS, typename U, typename ...V>
@@ -362,7 +360,7 @@ class variant
     bool(sizeof...(V)), OS&>::type
   stream_value(OS& os) const
   {
-    return I == type_index_ ?
+    return I == type_id_ ?
       throw ::std::bad_typeid() :
       stream_value<I + 1, OS, V...>(os);
   }
@@ -372,7 +370,7 @@ class variant
     bool(sizeof...(V)), OS&>::type
   stream_value(OS& os) const
   {
-    return I == type_index_ ?
+    return I == type_id_ ?
       os << get<U>() :
       stream_value<I + 1, OS, V...>(os);
   }
@@ -388,87 +386,87 @@ public:
 
   bool operator==(variant const& v) const noexcept
   {
-    return (v.type_index_ == type_index_) && *this ?
+    return (v.type_id_ == type_id_) && *this ?
       binary_relation<::std::equal_to, 0, T...>(v) :
-      type_index_ == v.type_index_;
+      type_id_ == v.type_id_;
   }
 
   template <typename ...U>
   bool operator==(variant<U...> const& v) const noexcept
   {
-    auto const converted_type_index(v.template convert_type_index<0, T...>());
+    auto const converted_type_id(v.template convert_type_id<0, T...>());
 
-    return (converted_type_index == type_index_) && *this ?
+    return (converted_type_id == type_id_) && *this ?
       binary_relation<::std::equal_to, 0, T...>(v) :
-      converted_type_index == type_index_;
+      converted_type_id == type_id_;
   }
 
   bool operator<(variant const& v) const noexcept
   {
-    return (v.type_index_ == type_index_) && *this ?
+    return (v.type_id_ == type_id_) && *this ?
       binary_relation<::std::less, 0, T...>(v) :
-      type_index_ < v.type_index_;
+      type_id_ < v.type_id_;
   }
 
   template <typename ...U>
   bool operator<(variant<U...> const& v) const noexcept
   {
-    auto const converted_type_index(v.template convert_type_index<0, T...>());
+    auto const converted_type_id(v.template convert_type_id<0, T...>());
 
-    return (converted_type_index == type_index_) && *this?
+    return (converted_type_id == type_id_) && *this?
       binary_relation<::std::less, 0, T...>(v) :
-      type_index_ < converted_type_index;
+      type_id_ < converted_type_id;
   }
 
   bool operator<=(variant const& v) const noexcept
   {
-    return (v.type_index_ == type_index_) && *this ?
+    return (v.type_id_ == type_id_) && *this ?
       binary_relation<::std::less_equal, 0, T...>(v) :
-      type_index_ <= v.type_index_;
+      type_id_ <= v.type_id_;
   }
 
   template <typename ...U>
   bool operator<=(variant<U...> const& v) const noexcept
   {
-    auto const converted_type_index(v.template convert_type_index<0, T...>());
+    auto const converted_type_id(v.template convert_type_id<0, T...>());
 
-    return (converted_type_index == type_index_) && *this ?
+    return (converted_type_id == type_id_) && *this ?
       binary_relation<::std::less_equal, 0, T...>(v) :
-      type_index_ <= converted_type_index;
+      type_id_ <= converted_type_id;
   }
 
   bool operator>(variant const& v) const noexcept
   {
-    return (v.type_index_ == type_index_) && *this ?
+    return (v.type_id_ == type_id_) && *this ?
       binary_relation<::std::greater, 0, T...>(v) :
-      type_index_ > v.type_index_;
+      type_id_ > v.type_id_;
   }
 
   template <typename ...U>
   bool operator>(variant<U...> const& v) const noexcept
   {
-    auto const converted_type_index(v.template convert_type_index<0, T...>());
+    auto const converted_type_id(v.template convert_type_id<0, T...>());
 
-    return converted_type_index == type_index_ ?
+    return converted_type_id == type_id_ ?
       binary_relation<::std::greater, 0, T...>(v) :
-      type_index_ > converted_type_index;
+      type_id_ > converted_type_id;
   }
 
   bool operator>=(variant const& v) const noexcept
   {
-    return v.type_index_ == type_index_ ?
+    return v.type_id_ == type_id_ ?
       binary_relation<::std::greater_equal, 0, T...>(v) :
-      type_index_ >= v.type_index_;
+      type_id_ >= v.type_id_;
   }
 
   template <typename ...U>
   bool operator>=(variant<U...> const& v) const noexcept
   {
-    auto const converted_type_index(v.template convert_type_index<0, T...>());
+    auto const converted_type_id(v.template convert_type_id<0, T...>());
 
-    return converted_type_index == type_index_ ?
+    return converted_type_id == type_id_ ?
       binary_relation<::std::greater_equal, 0, T...>(v) :
-      type_index_ >= converted_type_index;
+      type_id_ >= converted_type_id;
   }
 
   variant& operator=(variant const& rhs)
@@ -479,14 +477,14 @@ public:
     }
     else if (rhs.copier_)
     {
-      rhs.copier_(type_index_ == rhs.type_index_, deleter_, store_,
+      rhs.copier_(type_id_ == rhs.type_id_, deleter_, store_,
         rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
       mover_ = rhs.mover_;
 
-      type_index_ = rhs.type_index_;
+      type_id_ = rhs.type_id_;
     }
     else
     {
@@ -505,24 +503,24 @@ public:
     }
     else if (rhs.copier_)
     {
-      auto const converted_type_index(
-        rhs.template convert_type_index<0, T...>()
+      auto const converted_type_id(
+        rhs.template convert_type_id<0, T...>()
       );
 
-      if (-1 == converted_type_index)
+      if (-1 == converted_type_id)
       {
         throw ::std::bad_typeid();
       }
       else
       {
-        rhs.copier_(type_index_ == converted_type_index, deleter_, store_,
-          rhs.store_);
+        rhs.copier_(type_id_ == converted_type_id,
+          deleter_, store_, rhs.store_);
 
         deleter_ = rhs.deleter_;
         copier_ = rhs.copier_;
         mover_ = rhs.mover_;
 
-        type_index_ = converted_type_index;
+        type_id_ = converted_type_id;
       }
     }
     else
@@ -541,14 +539,14 @@ public:
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(type_index_ == rhs.type_index_, deleter_, store_,
-        rhs.store_);
+      rhs.mover_(type_id_ == rhs.type_id_,
+        deleter_, store_, rhs.store_);
 
       deleter_ = rhs.deleter_;
       copier_ = rhs.copier_;
       mover_ = rhs.mover_;
 
-      type_index_ = rhs.type_index_;
+      type_id_ = rhs.type_id_;
     }
     else
     {
@@ -567,24 +565,22 @@ public:
     }
     else if (rhs.mover_)
     {
-      auto const converted_type_index(
-        rhs.template convert_type_index<0, T...>()
-      );
+      auto const converted_type_id(rhs.template convert_type_id<0, T...>());
 
-      if (-1 == converted_type_index)
+      if (-1 == converted_type_id)
       {
         throw ::std::bad_typeid();
       }
       else
       {
-        rhs.mover_(type_index_ == converted_type_index, deleter_,
-          store_, rhs.store_);
+        rhs.mover_(type_id_ == converted_type_id,
+          deleter_, store_, rhs.store_);
 
         deleter_ = rhs.deleter_;
         copier_ = rhs.copier_;
         mover_ = rhs.mover_;
 
-        type_index_ = converted_type_index;
+        type_id_ = converted_type_id;
       }
     }
     else
@@ -618,7 +614,7 @@ public:
   {
     using user_type = typename ::std::decay<U>::type;
 
-    if (detail::index_of<user_type, T...>{} == type_index_)
+    if (detail::index_of<user_type, T...>{} == type_id_)
     {
       *reinterpret_cast<user_type*>(store_) = u;
     }
@@ -632,7 +628,7 @@ public:
       copier_ = get_copier<user_type>();
       mover_ = get_mover<user_type>();
 
-      type_index_ = detail::index_of<user_type, T...>{};
+      type_id_ = detail::index_of<user_type, T...>{};
     }
 
     return *this;
@@ -652,7 +648,7 @@ public:
   {
     using user_type = typename ::std::decay<U>::type;
 
-    if (detail::index_of<user_type, T...>{} == type_index_)
+    if (detail::index_of<user_type, T...>{} == type_id_)
     {
       *reinterpret_cast<user_type*>(store_) = ::std::move(u);
     }
@@ -666,7 +662,7 @@ public:
       copier_ = get_copier<user_type>();
       mover_ = get_mover<user_type>();
 
-      type_index_ = detail::index_of<user_type, T...>{};
+      type_id_ = detail::index_of<user_type, T...>{};
     }
 
     return *this;
@@ -695,12 +691,12 @@ public:
     copier_ = get_copier<user_type>();
     mover_ = get_mover<user_type>();
 
-    type_index_ = detail::index_of<user_type, T...>{};
+    type_id_ = detail::index_of<user_type, T...>{};
 
     return *this;
   }
 
-  explicit operator bool() const noexcept { return -1 != type_index_; }
+  explicit operator bool() const noexcept { return -1 != type_id_; }
 
   template <typename U>
   variant& assign(U&& u)
@@ -711,7 +707,7 @@ public:
   template <typename U>
   bool contains() const noexcept
   {
-    return detail::index_of<U, T...>{} == type_index_;
+    return detail::index_of<U, T...>{} == type_id_;
   }
 
   void clear()
@@ -722,14 +718,14 @@ public:
     copier_ = nullptr;
     mover_ = nullptr;
 
-    type_index_ = -1;
+    type_id_ = -1;
   }
 
   bool empty() const noexcept { return !*this; }
 
   void swap(variant& other)
   {
-    if (-1 == other.type_index_)
+    if (-1 == other.type_id_)
     {
       if (mover_)
       {
@@ -743,7 +739,7 @@ public:
       }
       // else do nothing
     }
-    else if (-1 == type_index_)
+    else if (-1 == type_id_)
     {
       if (other.mover_)
       {
@@ -832,7 +828,7 @@ public:
   >::type
   get()
   {
-    if (detail::index_of<U, T...>{} == type_index_)
+    if (detail::index_of<U, T...>{} == type_id_)
     {
       return *reinterpret_cast<U*>(store_);
     }
@@ -849,7 +845,7 @@ public:
   >::type
   get() const
   {
-    if (detail::index_of<U, T...>{} == type_index_) 
+    if (detail::index_of<U, T...>{} == type_id_) 
     {
       return *reinterpret_cast<U const*>(store_);
     }
@@ -873,7 +869,7 @@ public:
         detail::compatible_index_of<U, T...>{}, T...>::type,
       typename detail::compatible_type<U, T...>::type>{},
       "internal error");
-    if (detail::compatible_index_of<U, T...>{} == type_index_)
+    if (detail::compatible_index_of<U, T...>{} == type_id_)
     {
       return U(*reinterpret_cast<
         typename detail::compatible_type<U, T...>::type const*>(store_));
@@ -885,12 +881,12 @@ public:
   }
 
   template <typename U>
-  static constexpr int type_index() noexcept
+  static constexpr int type_id() noexcept
   {
     return detail::index_of<U, T...>{};
   }
 
-  int type_index() const noexcept { return type_index_; }
+  int type_id() const noexcept { return type_id_; }
 
 private:
   using deleter_type = void (*)(void*);
@@ -901,7 +897,7 @@ private:
   friend ::std::basic_ostream<charT, traits>& operator<<(
     ::std::basic_ostream<charT, traits>& os, variant const& v)
   {
-    return -1 == v.type_index_ ?
+    return -1 == v.type_id_ ?
       os << "<empty variant>" :
       v.stream_value<0, decltype(os), T...>(os);
   }
@@ -1024,7 +1020,7 @@ private:
   copier_type copier_{};
   mover_type mover_{};
 
-  int type_index_{-1};
+  int type_id_{-1};
 
   alignas(max_align_type) char store_[sizeof(max_size_type)];
 };
@@ -1044,7 +1040,7 @@ namespace std
     {
       auto const seed(v.template get_hash<0, T...>());
 
-      return hash<decltype(v.type_index())>()(v.type_index()) +
+      return hash<decltype(v.type_id())>()(v.type_id()) +
         0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
   };
