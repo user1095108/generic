@@ -85,7 +85,7 @@ public: // queries
 
   typeid_t type_id() const noexcept
   {
-    return content ? content->type() : type_id<void>();
+    return content ? content->type_id() : type_id<void>();
   }
 
 private: // types
