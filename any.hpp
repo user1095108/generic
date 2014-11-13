@@ -133,6 +133,8 @@ private: // types
     {
     }
 
+    holder& operator=(holder const&) = delete;
+
     placeholder* clone() const final { return new holder<ValueType>(held); }
 
   public:
