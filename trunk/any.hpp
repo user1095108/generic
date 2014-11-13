@@ -83,7 +83,7 @@ public: // queries
 
   explicit operator bool() const noexcept { return content; }
 
-  typeid_t type() const noexcept
+  typeid_t type_id() const noexcept
   {
     return content ? content->type() : type_id<void>();
   }
@@ -115,7 +115,7 @@ private: // types
     placeholder* clone() const final { throw ::std::logic_error(""); }
 
   public: // queries
-    typeid_t type() const noexcept final
+    typeid_t type_id() const noexcept final
     {
       return type_id<ValueType>();
     }
@@ -142,7 +142,7 @@ private: // types
     placeholder* clone() const final { return new holder<ValueType>(held); }
 
   public: // queries
-    typeid_t type() const noexcept final
+    typeid_t type_id() const noexcept final
     {
       return type_id<ValueType>();
     }
