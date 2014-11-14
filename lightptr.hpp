@@ -58,34 +58,7 @@ class light_ptr
     using type = V[];
   };
 
-  template <typename U>
-  struct is_array_type : ::std::false_type { };
-
-  template <typename U>
-  struct is_array_type<U[]> : ::std::true_type { };
-
-  template <typename U, ::std::size_t N>
-  struct is_array_type<U[N]> : ::std::true_type { };
-
-  template <typename U>
-  struct remove_array
-  {
-    using type = U;
-  };
-
-  template <typename U>
-  struct remove_array<U[]>
-  {
-    using type = U;
-  };
-
-  template <typename U, ::std::size_t N>
-  struct remove_array<U[N]>
-  {
-    using type = U;
-  };
-
-  using element_type = typename remove_array<T>::type;
+  using element_type = typename ::std::remove_extent<T>::type;
 
   using deleter_type = detail::deleter_type<element_type>;
 
@@ -269,7 +242,7 @@ public:
   T* operator->() const noexcept { return reinterpret_cast<T*>(ptr_); }
 
   template <typename U = T, typename =
-    typename ::std::enable_if<is_array_type<U>{}>::type>
+    typename ::std::enable_if<::std::is_array<U>{}>::type>
   typename detail::ref_type<element_type>::type operator[](
     ::std::size_t const i) const noexcept
   {
