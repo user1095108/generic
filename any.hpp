@@ -23,10 +23,15 @@ public:
   using typeid_t = void (*)();
 
   template <typename T>
-  static constexpr typeid_t type_id() noexcept
+  static typeid_t type_id() noexcept
   {
     return typeid_t(type_id<T>);
   }
+
+  template <typename T>
+  using remove_cvr = ::std::remove_cv<
+    typename ::std::remove_reference<T>::type
+  >;
 
   any() = default;
 
@@ -43,7 +48,7 @@ public:
     >::type
   >
   any(ValueType&& value) :
-    content(new holder<typename ::std::decay<ValueType>::type>(
+    content(new holder<typename remove_cvr<ValueType>::type>(
       ::std::forward<ValueType>(value)))
   {
   }
@@ -71,7 +76,7 @@ public: // modifiers
 
   template<typename ValueType,
     typename = typename ::std::enable_if<
-      !::std::is_same<any, typename ::std::decay<ValueType>::type>{}
+      !::std::is_same<any, typename remove_cvr<ValueType>::type>{}
     >::type
   >
   any& operator=(ValueType&& rhs)
@@ -169,7 +174,7 @@ inline ValueType* any_cast(any* const operand) noexcept
 {
   return operand &&
     (operand->type_id() ==
-      any::type_id<typename ::std::decay<ValueType>::type>()) ?
+      any::type_id<typename any::remove_cvr<ValueType>::type>()) ?
     &static_cast<any::holder<ValueType>*>(operand->content)->held :
     nullptr;
 }
