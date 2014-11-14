@@ -20,6 +20,11 @@ namespace generic
 class any
 {
 public:
+  template <typename T>
+  using remove_cvr = ::std::remove_cv<
+    typename ::std::remove_reference<T>::type
+  >;
+
   using typeid_t = void (*)();
 
   template <typename T>
@@ -27,11 +32,6 @@ public:
   {
     return typeid_t(type_id<T>);
   }
-
-  template <typename T>
-  using remove_cvr = ::std::remove_cv<
-    typename ::std::remove_reference<T>::type
-  >;
 
   any() = default;
 
@@ -76,7 +76,7 @@ public: // modifiers
 
   template<typename ValueType,
     typename = typename ::std::enable_if<
-      !::std::is_same<any, typename remove_cvr<ValueType>::type>{}
+      !::std::is_same<any, typename remove_cvr<ValueType>::type>::value
     >::type
   >
   any& operator=(ValueType&& rhs)
@@ -97,7 +97,7 @@ private: // types
 
   struct placeholder
   {
-    placeholder() = default;
+    placeholder(typeid_t const ti) noexcept : type_id_(ti) {}
 
     virtual ~placeholder() = default;
 
@@ -110,8 +110,10 @@ private: // types
   struct holder : public placeholder
   {
   public: // constructor
-    template <class T> holder(T&& value) :
-      held(type_id_ = any::type_id<ValueType>(), ::std::forward<T>(value))
+    template <class T>
+    holder(T&& value) : 
+      placeholder(type_id<ValueType>()),
+      held(::std::forward<T>(value))
     {
     }
 
@@ -127,15 +129,26 @@ private: // types
   struct holder<
     ValueType,
     typename ::std::enable_if<
-      ::std::is_copy_constructible<ValueType>::value
+      ::std::is_copy_constructible<ValueType>::value ||
+      ::std::is_array<ValueType>::value
     >::type
   > : public placeholder
   {
   public: // constructor
-    template <class T>
-    holder(T&& value) :
-      held(type_id_ = any::type_id<ValueType>(), ::std::forward<T>(value))
+    template <class T, typename U = ValueType>
+    holder(T&& value,
+      typename ::std::enable_if<!::std::is_array<U>::value>::type* = nullptr) :
+      placeholder(type_id<ValueType>()),
+      held(::std::forward<T>(value))
     {
+    }
+
+    template <class T, typename U = ValueType>
+    holder(T&& value,
+      typename ::std::enable_if<::std::is_array<U>::value>::type* = nullptr) :
+      placeholder(type_id<ValueType>())
+    {
+      ::std::copy(::std::begin(value), ::std::end(value), ::std::begin(held));
     }
 
     holder& operator=(holder const&) = delete;
