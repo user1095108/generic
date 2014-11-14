@@ -44,7 +44,7 @@ public:
 
   template<typename ValueType,
     typename = typename ::std::enable_if<
-      !::std::is_same<any, typename ::std::decay<ValueType>::type>::value
+      !::std::is_same<any, typename ::std::decay<ValueType>::type>{}
     >::type
   >
   any(ValueType&& value) :
@@ -64,19 +64,13 @@ public: // modifiers
 
   void swap(any&& other) noexcept { ::std::swap(content, other.content); }
 
-  any& operator=(any const& rhs) { return *this = any(rhs); }
+  any& operator=(any const& rhs) { swap(any(rhs)); return *this; }
 
-  any& operator=(any&& rhs) noexcept
-  {
-    content = rhs.content;
-    rhs.content = nullptr;
-
-    return *this;
-  }
+  any& operator=(any&& rhs) noexcept { swap(rhs); return *this; }
 
   template<typename ValueType,
     typename = typename ::std::enable_if<
-      !::std::is_same<any, typename remove_cvr<ValueType>::type>::value
+      !::std::is_same<any, typename remove_cvr<ValueType>::type>{}
     >::type
   >
   any& operator=(ValueType&& rhs)
@@ -129,15 +123,15 @@ private: // types
   struct holder<
     ValueType,
     typename ::std::enable_if<
-      ::std::is_copy_constructible<ValueType>::value ||
-      ::std::is_array<ValueType>::value
+      ::std::is_array<ValueType>{} ||
+      ::std::is_copy_constructible<ValueType>{}
     >::type
   > : public placeholder
   {
   public: // constructor
     template <class T, typename U = ValueType>
     holder(T&& value,
-      typename ::std::enable_if<!::std::is_array<U>::value>::type* = nullptr) :
+      typename ::std::enable_if<!::std::is_array<U>{}>::type* = nullptr) :
       placeholder(type_id<ValueType>()),
       held(::std::forward<T>(value))
     {
@@ -145,7 +139,7 @@ private: // types
 
     template <class T, typename U = ValueType>
     holder(T&& value,
-      typename ::std::enable_if<::std::is_array<U>::value>::type* = nullptr) :
+      typename ::std::enable_if<::std::is_array<U>{}>::type* = nullptr) :
       placeholder(type_id<ValueType>())
     {
       ::std::copy(::std::begin(value), ::std::end(value), ::std::begin(held));
