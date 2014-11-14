@@ -75,7 +75,7 @@ public: // modifiers
   >
   any& operator=(ValueType&& rhs)
   {
-    return swap(any(::std::forward<ValueType>(rhs)));
+    return *this = any(::std::forward<ValueType>(rhs));
   }
 
 public: // queries
