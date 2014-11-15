@@ -33,6 +33,32 @@ public:
     return typeid_t(type_id<T>);
   }
 
+  template <typename T>
+  static constexpr T* begin(T& value) noexcept
+  {
+    return &value;
+  }
+
+  template <typename T, ::std::size_t N>
+  static constexpr typename ::std::remove_all_extents<T>::type*
+  begin(T (&array)[N]) noexcept
+  {
+    return begin(array[0]);
+  }
+
+  template <typename T>
+  static constexpr T* end(T& value) noexcept
+  {
+    return &value + 1;
+  }
+
+  template <typename T, ::std::size_t N>
+  static constexpr typename ::std::remove_all_extents<T>::type*
+  end(T (&array)[N]) noexcept
+  {
+    return end(array[N - 1]);
+  }
+
   any() = default;
 
   any(any const& other) :
@@ -136,14 +162,14 @@ private: // types
       typename ::std::enable_if<
         ::std::is_array<U>{} &&
         !::std::is_copy_constructible<
-          typename ::std::remove_extent<U>::type
+          typename ::std::remove_all_extents<U>::type
         >{}
       >::type* = nullptr) :
       placeholder(type_id<ValueType>(), throwing_cloner)
     {
-      ::std::copy(::std::make_move_iterator(::std::begin(value)),
-        ::std::make_move_iterator(::std::end(value)),
-        ::std::begin(held));
+      ::std::copy(::std::make_move_iterator(begin(value)),
+        ::std::make_move_iterator(end(value)),
+        begin(held));
     }
 
     template <class T, typename U = ValueType>
@@ -151,12 +177,12 @@ private: // types
       typename ::std::enable_if<
         ::std::is_array<U>{} &&
         ::std::is_copy_constructible<
-          typename ::std::remove_extent<U>::type
+          typename ::std::remove_all_extents<U>::type
         >{}
       >::type* = nullptr) :
       placeholder(type_id<ValueType>(), cloner)
     {
-      ::std::copy(::std::begin(value), ::std::end(value), ::std::begin(held));
+      ::std::copy(begin(value), end(value), begin(held));
     }
 
     holder& operator=(holder const&) = delete;
