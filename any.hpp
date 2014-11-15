@@ -36,7 +36,7 @@ public:
   any() = default;
 
   any(any const& other) :
-    content(other.content ? other.content->clone() : nullptr)
+    content(other.content ? other.content->clone(other.content) : nullptr)
   {
   }
 
@@ -91,63 +91,86 @@ private: // types
 
   struct placeholder
   {
-    placeholder(typeid_t const ti) noexcept : type_id_(ti) {}
+    typeid_t const type_id_;
 
-    virtual ~placeholder() = default;
+    placeholder* (*clone)(placeholder*);
 
-    virtual placeholder* clone() const = 0;
-
-    typeid_t type_id_;
-  };
-
-  template <typename ValueType, typename = void>
-  struct holder : public placeholder
-  {
-  public: // constructor
-    template <class T>
-    holder(T&& value) : 
-      placeholder(type_id<ValueType>()),
-      held(::std::forward<T>(value))
+    placeholder(typeid_t const ti, decltype(clone) const c) noexcept :
+      type_id_(ti),
+      clone(c)
     {
     }
 
-    holder& operator=(holder const&) = delete;
-
-    placeholder* clone() const final { throw ::std::logic_error(""); }
-
-  public:
-    ValueType held;
+    virtual ~placeholder() = default;
   };
 
   template <typename ValueType>
-  struct holder<
-    ValueType,
-    typename ::std::enable_if<
-      ::std::is_array<ValueType>{} ||
-      ::std::is_copy_constructible<ValueType>{}
-    >::type
-  > : public placeholder
+  struct holder : public placeholder
   {
   public: // constructor
     template <class T, typename U = ValueType>
     holder(T&& value,
-      typename ::std::enable_if<!::std::is_array<U>{}>::type* = nullptr) :
-      placeholder(type_id<ValueType>()),
+      typename ::std::enable_if<
+        !::std::is_array<U>{} &&
+        !::std::is_copy_constructible<U>{}
+      >::type* = nullptr) :
+      placeholder(type_id<ValueType>(), throwing_cloner),
       held(::std::forward<T>(value))
     {
     }
 
     template <class T, typename U = ValueType>
     holder(T&& value,
-      typename ::std::enable_if<::std::is_array<U>{}>::type* = nullptr) :
-      placeholder(type_id<ValueType>())
+      typename ::std::enable_if<
+        !::std::is_array<U>{} &&
+        ::std::is_copy_constructible<U>{}
+      >::type* = nullptr) :
+      placeholder(type_id<ValueType>(), cloner),
+      held(::std::forward<T>(value))
     {
-      ::std::copy(::std::begin(value), ::std::end(value), ::std::begin(held));
+    }
+
+    template <class T, typename U = ValueType>
+    holder(T&& value,
+      typename ::std::enable_if<
+        ::std::is_array<U>{} &&
+        !::std::is_copy_constructible<
+          typename ::std::remove_extent<U>::type
+        >{}
+      >::type* = nullptr) :
+      placeholder(type_id<ValueType>(), throwing_cloner)
+    {
+      ::std::copy(::std::make_move_iterator(::std::begin(value)),
+        ::std::make_move_iterator(::std::end(value)),
+        ::std::begin(held));
+    }
+
+    template <class T, typename U = ValueType>
+    holder(T&& value,
+      typename ::std::enable_if<
+        ::std::is_array<U>{} &&
+        ::std::is_copy_constructible<
+          typename ::std::remove_extent<U>::type
+        >{}
+      >::type* = nullptr) :
+      placeholder(type_id<ValueType>(), cloner)
+    {
+      ::std::copy(::std::begin(value),
+        ::std::end(value),
+        ::std::begin(held));
     }
 
     holder& operator=(holder const&) = delete;
 
-    placeholder* clone() const final { return new holder<ValueType>(held); }
+    static placeholder* cloner(placeholder* const base)
+    {
+      return new holder<ValueType>(static_cast<holder*>(base)->held);
+    }
+
+    static placeholder* throwing_cloner(placeholder* const)
+    {
+      throw ::std::logic_error("");
+    }
 
   public:
     ValueType held;
