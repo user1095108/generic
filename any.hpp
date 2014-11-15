@@ -95,13 +95,14 @@ private: // types
 
     placeholder* (*clone)(placeholder*);
 
+    virtual ~placeholder() = default;
+
+  protected:
     placeholder(typeid_t const ti, decltype(clone) const c) noexcept :
       type_id_(ti),
       clone(c)
     {
     }
-
-    virtual ~placeholder() = default;
   };
 
   template <typename ValueType>
@@ -155,9 +156,7 @@ private: // types
       >::type* = nullptr) :
       placeholder(type_id<ValueType>(), cloner)
     {
-      ::std::copy(::std::begin(value),
-        ::std::end(value),
-        ::std::begin(held));
+      ::std::copy(::std::begin(value), ::std::end(value), ::std::begin(held));
     }
 
     holder& operator=(holder const&) = delete;
