@@ -62,7 +62,7 @@ public:
   any() = default;
 
   any(any const& other) :
-    content(other.content ? other.content->clone(other.content) : nullptr)
+    content(other.content ? other.content->cloner_(other.content) : nullptr)
   {
   }
 
@@ -119,14 +119,14 @@ private: // types
   {
     typeid_t const type_id_;
 
-    placeholder* (*clone)(placeholder*);
+    placeholder* (*cloner_)(placeholder*);
 
     virtual ~placeholder() = default;
 
   protected:
-    placeholder(typeid_t const ti, decltype(clone) const c) noexcept :
+    placeholder(typeid_t const ti, decltype(cloner_) const c) noexcept :
       type_id_(ti),
-      clone(c)
+      cloner_(c)
     {
     }
   };
