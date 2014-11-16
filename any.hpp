@@ -161,7 +161,10 @@ private: // types
     holder(T&& value,
       typename ::std::enable_if<
         ::std::is_array<U>{} &&
-        !::std::is_copy_constructible<
+        !::std::is_copy_assignable<
+          typename ::std::remove_all_extents<U>::type
+        >{} &&
+        ::std::is_move_assignable<
           typename ::std::remove_all_extents<U>::type
         >{}
       >::type* = nullptr) :
@@ -176,7 +179,7 @@ private: // types
     holder(T&& value,
       typename ::std::enable_if<
         ::std::is_array<U>{} &&
-        ::std::is_copy_constructible<
+        ::std::is_copy_assignable<
           typename ::std::remove_all_extents<U>::type
         >{}
       >::type* = nullptr) :
