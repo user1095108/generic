@@ -110,9 +110,41 @@ public: // queries
 
   explicit operator bool() const noexcept { return content; }
 
+  typeid_t type() const noexcept { return type_id(); }
+
   typeid_t type_id() const noexcept
   {
     return content ? content->type_id_ : type_id<void>();
+  }
+
+public: // get
+
+  template <typename ValueType>
+  ValueType get() const
+  {
+    using nonref = typename ::std::remove_reference<ValueType>::type;
+
+    return const_cast<any*>(this)->get<nonref const&>();
+  }
+
+  template <typename ValueType>
+  ValueType get()
+  {
+    using nonref = typename ::std::remove_reference<ValueType>::type;
+
+#ifndef NDEBUG
+    if (content && (type_id() ==
+      any::type_id<typename any::remove_cvr<ValueType>::type>()))
+    {
+      return static_cast<any::holder<nonref>*>(content)->held;
+    }
+    else
+    {
+      throw ::std::bad_typeid();
+    }
+#else
+    return static_cast<any::holder<nonref>*>(content)->held;
+#endif // NDEBUG
   }
 
 private: // types
