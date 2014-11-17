@@ -120,6 +120,12 @@ public: // queries
 public: // get
 
   template <typename ValueType>
+  ValueType cget() const
+  {
+    return get<ValueType>();
+  }
+
+  template <typename ValueType>
   ValueType get() const
   {
     using nonref = typename ::std::remove_reference<ValueType>::type;
