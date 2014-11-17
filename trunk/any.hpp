@@ -25,12 +25,14 @@ public:
     typename ::std::remove_reference<T>::type
   >;
 
-  using typeid_t = void (*)();
+  using typeid_t = void const*;
 
   template <typename T>
   static typeid_t type_id() noexcept
   {
-    return typeid_t(type_id<T>);
+    static char type_id;
+
+    return &type_id;
   }
 
   template <typename T>
