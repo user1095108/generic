@@ -12,6 +12,12 @@ inline constexpr decltype(N) size(T const (&)[N]) noexcept
   return N;
 }
 
+template <typename T, ::std::size_t M, ::std::size_t N>
+inline constexpr decltype(N) size(T const (&array)[M][N]) noexcept
+{
+  return M * size(*array);
+}
+
 }
 
 #endif // GENERIC_SIZE_HPP
