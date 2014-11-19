@@ -66,7 +66,10 @@ public: // modifiers
 
   void swap(any&& other) noexcept { ::std::swap(content, other.content); }
 
-  any& operator=(any const& rhs) { return content == rhs.content ? *this : *this = any(rhs); }
+  any& operator=(any const& rhs)
+  {
+    return content == rhs.content ? *this : *this = any(rhs);
+  }
 
   any& operator=(any&& rhs) noexcept { swap(rhs); return *this; }
 
