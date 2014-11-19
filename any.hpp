@@ -139,7 +139,7 @@ private: // types
   static constexpr typename ::std::remove_all_extents<T>::type*
   begin(T (&array)[N]) noexcept
   {
-    return begin(array[0]);
+    return begin(*array);
   }
 
   template <typename T>
