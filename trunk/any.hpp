@@ -35,32 +35,6 @@ public:
     return &type_id;
   }
 
-  template <typename T>
-  static constexpr T* begin(T& value) noexcept
-  {
-    return &value;
-  }
-
-  template <typename T, ::std::size_t N>
-  static constexpr typename ::std::remove_all_extents<T>::type*
-  begin(T (&array)[N]) noexcept
-  {
-    return begin(array[0]);
-  }
-
-  template <typename T>
-  static constexpr T* end(T& value) noexcept
-  {
-    return &value + 1;
-  }
-
-  template <typename T, ::std::size_t N>
-  static constexpr typename ::std::remove_all_extents<T>::type*
-  end(T (&array)[N]) noexcept
-  {
-    return end(array[N - 1]);
-  }
-
   any() = default;
 
   any(any const& other) :
@@ -155,15 +129,42 @@ public: // get
 
 private: // types
 
+  template <typename T>
+  static constexpr T* begin(T& value) noexcept
+  {
+    return &value;
+  }
+
+  template <typename T, ::std::size_t N>
+  static constexpr typename ::std::remove_all_extents<T>::type*
+  begin(T (&array)[N]) noexcept
+  {
+    return begin(array[0]);
+  }
+
+  template <typename T>
+  static constexpr T* end(T& value) noexcept
+  {
+    return &value + 1;
+  }
+
+  template <typename T, ::std::size_t N>
+  static constexpr typename ::std::remove_all_extents<T>::type*
+  end(T (&array)[N]) noexcept
+  {
+    return end(array[N - 1]);
+  }
+
   struct placeholder
   {
     typeid_t const type_id_;
 
-    placeholder* (*cloner_)(placeholder*);
+    placeholder* (* const cloner_)(placeholder*);
 
     virtual ~placeholder() = default;
 
   protected:
+
     placeholder(typeid_t const ti, decltype(cloner_) const c) noexcept :
       type_id_(ti),
       cloner_(c)
