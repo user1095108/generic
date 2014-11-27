@@ -244,7 +244,7 @@ class variant
   typename ::std::enable_if<bool(sizeof...(V)), int>::type
   convert_type_id() const noexcept
   {
-    return I == type_id_ ?  type_id<U>() : convert_type_id<I + 1, V...>();
+    return I == type_id_ ? type_id<U>() : convert_type_id<I + 1, V...>();
   }
 
   template <int I, typename U>
