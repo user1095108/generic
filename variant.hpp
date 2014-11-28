@@ -497,23 +497,27 @@ public:
 
   variant& operator=(variant const& rhs)
   {
-    if (!rhs)
+    if (this != &rhs)
     {
-      clear();
-    }
-    else if (rhs.meta_->copier)
-    {
-      rhs.meta_->copier(type_id_ == rhs.type_id_,
-        meta_->deleter, store_, rhs.store_);
+      if (!rhs)
+      {
+        clear();
+      }
+      else if (rhs.meta_->copier)
+      {
+        rhs.meta_->copier(type_id_ == rhs.type_id_,
+          meta_->deleter, store_, rhs.store_);
 
-      meta_ = rhs.meta_;
+        meta_ = rhs.meta_;
 
-      type_id_ = rhs.type_id_;
+        type_id_ = rhs.type_id_;
+      }
+      else
+      {
+        throw ::std::bad_typeid();
+      }
     }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
+    // else do nothing
 
     return *this;
   }
@@ -521,34 +525,38 @@ public:
   template <typename ...U>
   variant& operator=(variant<U...> const& rhs)
   {
-    if (!rhs)
+    if (this != &rhs)
     {
-      clear();
-    }
-    else if (rhs.copier_)
-    {
-      auto const converted_type_id(
-        rhs.template convert_type_id<0, T...>()
-      );
-
-      if (-1 == converted_type_id)
+      if (!rhs)
       {
-        throw ::std::bad_typeid();
+        clear();
+      }
+      else if (rhs.meta_->copier_)
+      {
+        auto const converted_type_id(
+          rhs.template convert_type_id<0, T...>()
+        );
+
+        if (-1 == converted_type_id)
+        {
+          throw ::std::bad_typeid();
+        }
+        else
+        {
+          rhs.meta_->copier(type_id_ == converted_type_id,
+            meta_->deleter, store_, rhs.store_);
+
+          meta_ = rhs.meta_;
+
+          type_id_ = converted_type_id;
+        }
       }
       else
       {
-        rhs.meta_->copier(type_id_ == converted_type_id,
-          meta_->deleter, store_, rhs.store_);
-
-        meta_ = rhs.meta_;
-
-        type_id_ = converted_type_id;
+        throw ::std::bad_typeid();
       }
     }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
+    // else do nothing
 
     return *this;
   }
