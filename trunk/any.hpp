@@ -112,7 +112,7 @@ public: // get
 
 #ifndef NDEBUG
     if (content && (type_id() ==
-      any::type_id<typename any::remove_reference<ValueType>::type>()))
+      type_id<typename ::std::remove_reference<ValueType>::type>()))
     {
       return static_cast<any::holder<nonref>*>(content)->held;
     }
@@ -200,12 +200,12 @@ private: // types
     holder(T&& value,
       typename ::std::enable_if<
         ::std::is_array<U>{} &&
-        !::std::is_copy_assignable<
-          typename ::std::remove_all_extents<U>::type
-        >{} &&
         ::std::is_move_assignable<
-          typename ::std::remove_all_extents<U>::type
-        >{}
+          typename ::std::remove_const<
+            typename ::std::remove_all_extents<U>::type
+          >::type
+        >{} &&
+        ::std::is_rvalue_reference<T>{}
       >::type* = nullptr) :
       placeholder(type_id<ValueType>(), throwing_cloner)
     {
@@ -219,8 +219,11 @@ private: // types
       typename ::std::enable_if<
         ::std::is_array<U>{} &&
         ::std::is_copy_assignable<
-          typename ::std::remove_all_extents<U>::type
-        >{}
+          typename ::std::remove_const<
+            typename ::std::remove_all_extents<U>::type
+          >::type
+        >{} &&
+        !::std::is_rvalue_reference<T>{}
       >::type* = nullptr) :
       placeholder(type_id<ValueType>(), cloner)
     {
@@ -240,7 +243,7 @@ private: // types
     }
 
   public:
-    ValueType held;
+    typename ::std::remove_const<ValueType>::type held;
   };
 
 private: // representation
