@@ -1038,9 +1038,9 @@ private:
   }
 
 private:
-  struct meta const* meta_{meta<void>()};
-
   int type_id_{-1};
+
+  struct meta const* meta_{meta<void>()};
 
   alignas(max_align_type) char store_[sizeof(max_size_type)];
 };
