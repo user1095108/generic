@@ -205,7 +205,7 @@ private: // types
             typename ::std::remove_all_extents<U>::type
           >::type
         >{} &&
-        ::std::is_rvalue_reference<T>{}
+        ::std::is_rvalue_reference<T&&>{}
       >::type* = nullptr) :
       placeholder(type_id<ValueType>(), throwing_cloner)
     {
@@ -223,7 +223,7 @@ private: // types
             typename ::std::remove_all_extents<U>::type
           >::type
         >{} &&
-        !::std::is_rvalue_reference<T>{}
+        !::std::is_rvalue_reference<T&&>{}
       >::type* = nullptr) :
       placeholder(type_id<ValueType>(), cloner)
     {
