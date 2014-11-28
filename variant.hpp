@@ -378,10 +378,33 @@ class variant
       stream_value<I + 1, OS, V...>(os);
   }
 
+  using deleter_type = void (*)(void*);
+  using copier_type = void (*)(bool, deleter_type, void*, void const*);
+  using mover_type = void (*)(bool, deleter_type, void*, void*);
+
+  struct meta
+  {
+    deleter_type deleter;
+    copier_type copier;
+    mover_type mover;
+  };
+
+  template <typename U>
+  static struct meta const* meta()
+  {
+    static const struct meta m{
+      deleter_stub<U>,
+      get_copier<U>(),
+      get_mover<U>()
+    };
+
+    return &m;
+  }
+
 public:
   variant() = default;
 
-  ~variant() { deleter_(&store_); }
+  ~variant() { meta_->deleter(&store_); }
 
   variant(variant const& other) { *this = other; }
 
@@ -478,14 +501,12 @@ public:
     {
       clear();
     }
-    else if (rhs.copier_)
+    else if (rhs.meta_->copier)
     {
-      rhs.copier_(type_id_ == rhs.type_id_, deleter_, store_,
-        rhs.store_);
+      rhs.meta_->copier(type_id_ == rhs.type_id_,
+        meta_->deleter, store_, rhs.store_);
 
-      deleter_ = rhs.deleter_;
-      copier_ = rhs.copier_;
-      mover_ = rhs.mover_;
+      meta_ = rhs.meta_;
 
       type_id_ = rhs.type_id_;
     }
@@ -516,12 +537,10 @@ public:
       }
       else
       {
-        rhs.copier_(type_id_ == converted_type_id,
-          deleter_, store_, rhs.store_);
+        rhs.meta_->copier(type_id_ == converted_type_id,
+          meta_->deleter, store_, rhs.store_);
 
-        deleter_ = rhs.deleter_;
-        copier_ = rhs.copier_;
-        mover_ = rhs.mover_;
+        meta_ = rhs.meta_;
 
         type_id_ = converted_type_id;
       }
@@ -542,12 +561,10 @@ public:
     }
     else if (rhs.mover_)
     {
-      rhs.mover_(type_id_ == rhs.type_id_,
-        deleter_, store_, rhs.store_);
+      rhs.meta_->mover(type_id_ == rhs.type_id_,
+        meta_->deleter, store_, rhs.store_);
 
-      deleter_ = rhs.deleter_;
-      copier_ = rhs.copier_;
-      mover_ = rhs.mover_;
+      meta_ = rhs.meta_;
 
       type_id_ = rhs.type_id_;
     }
@@ -576,12 +593,10 @@ public:
       }
       else
       {
-        rhs.mover_(type_id_ == converted_type_id,
-          deleter_, store_, rhs.store_);
+        rhs.meta_.mover(type_id_ == converted_type_id,
+          meta_->deleter, store_, rhs.store_);
 
-        deleter_ = rhs.deleter_;
-        copier_ = rhs.copier_;
-        mover_ = rhs.mover_;
+        meta_ = rhs.meta_;
 
         type_id_ = converted_type_id;
       }
@@ -632,9 +647,7 @@ public:
 
       new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
-      deleter_ = deleter_stub<user_type>;
-      copier_ = get_copier<user_type>();
-      mover_ = get_mover<user_type>();
+      meta_ = meta<user_type>();
 
       type_id_ = detail::variant::index_of<user_type, T...>{};
     }
@@ -667,9 +680,7 @@ public:
 
       new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
-      deleter_ = deleter_stub<user_type>;
-      copier_ = get_copier<user_type>();
-      mover_ = get_mover<user_type>();
+      meta_ = meta<user_type>();
 
       type_id_ = detail::variant::index_of<user_type, T...>{};
     }
@@ -695,9 +706,7 @@ public:
 
     new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
-    deleter_ = deleter_stub<user_type>;
-    copier_ = get_copier<user_type>();
-    mover_ = get_mover<user_type>();
+    meta_ = meta<user_type>();
 
     type_id_ = detail::variant::index_of<user_type, T...>{};
 
@@ -720,11 +729,9 @@ public:
 
   void clear()
   { 
-    deleter_(store_);
+    meta_->deleter(store_);
 
-    deleter_ = dummy_deleter_stub;
-    copier_ = nullptr;
-    mover_ = nullptr;
+    meta_ = meta<void>();
 
     type_id_ = -1;
   }
@@ -735,12 +742,12 @@ public:
   {
     if (-1 == other.type_id_)
     {
-      if (mover_)
+      if (meta_->mover)
       {
         other = ::std::move(*this);
         clear();
       }
-      else if (copier_)
+      else if (meta_->copier)
       {
         other = *this;
         clear();
@@ -749,40 +756,40 @@ public:
     }
     else if (-1 == type_id_)
     {
-      if (other.mover_)
+      if (other.meta_->mover)
       {
         *this = ::std::move(other);
         other.clear();
       }
-      else if (other.copier_)
+      else if (other.meta_->copier)
       {
         *this = other;
         other.clear();
       }
       // else do nothing
     }
-    else if (mover_ && other.mover_)
+    else if (meta_->mover && other.meta_->mover)
     {
       variant tmp(::std::move(other));
 
       other = ::std::move(*this);
       *this = ::std::move(tmp);
     }
-    else if (mover_ && other.copier_)
+    else if (meta_->mover && other.meta_->copier)
     {
       variant tmp(other);
 
       other = ::std::move(*this);
       *this = tmp;
     }
-    else if (copier_ && other.mover_)
+    else if (meta_->copier && other.meta_->mover)
     {
       variant tmp(::std::move(other));
 
       other = *this;
       *this = ::std::move(tmp);
     }
-    else if (copier_ && other.copier_)
+    else if (meta_->copier && other.meta_->copier)
     {
       variant tmp(other);
 
@@ -900,10 +907,6 @@ public:
   int type_id() const noexcept { return type_id_; }
 
 private:
-  using deleter_type = void (*)(void*);
-  using copier_type = void (*)(bool, deleter_type, void*, void const*);
-  using mover_type = void (*)(bool, deleter_type, void*, void*);
-
   template <typename charT, typename traits>
   friend ::std::basic_ostream<charT, traits>& operator<<(
     ::std::basic_ostream<charT, traits>& os, variant const& v)
@@ -917,7 +920,7 @@ private:
   typename ::std::enable_if<
     ::std::is_copy_constructible<U>{}, copier_type
   >::type
-  get_copier() const noexcept
+  static get_copier() noexcept
   {
     return copier_stub<U>;
   }
@@ -926,7 +929,7 @@ private:
   typename ::std::enable_if<
     !::std::is_copy_constructible<U>{}, copier_type
   >::type
-  get_copier() const noexcept
+  static get_copier() noexcept
   {
     return nullptr;
   }
@@ -935,7 +938,7 @@ private:
   typename ::std::enable_if<
     ::std::is_move_constructible<U>{}, mover_type
   >::type
-  get_mover() const noexcept
+  static get_mover() noexcept
   {
     return mover_stub<U>;
   }
@@ -944,17 +947,26 @@ private:
   typename ::std::enable_if<
     !::std::is_move_constructible<U>{}, mover_type
   >::type
-  get_mover() const noexcept
+  static get_mover() noexcept
   {
     return nullptr;
   }
 
-  static void dummy_deleter_stub(void* const) noexcept { } 
-
-  template <typename U>
-  static void deleter_stub(void* const store)
+  template <class U>
+  static typename ::std::enable_if<
+    !::std::is_same<U, void>{}
+  >::type
+  deleter_stub(void* const store)
   {
     reinterpret_cast<U*>(store)->~U();
+  }
+
+  template <class U>
+  static typename ::std::enable_if<
+    ::std::is_same<U, void>{}
+  >::type
+  deleter_stub(void* const store) noexcept
+  {
   }
 
   template <typename U>
@@ -1026,10 +1038,7 @@ private:
   }
 
 private:
-  deleter_type deleter_{dummy_deleter_stub};
-
-  copier_type copier_{};
-  mover_type mover_{};
+  struct meta const* meta_{meta<void>()};
 
   int type_id_{-1};
 
