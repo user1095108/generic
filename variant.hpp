@@ -629,10 +629,9 @@ public:
     typename U,
     typename = typename ::std::enable_if<
       detail::variant::any_of<
-        ::std::is_same<typename ::std::decay<U>::type, T>...>{} &&
-        !::std::is_same<typename ::std::decay<U>::type,
-        variant
-      >{}
+        ::std::is_same<typename ::std::decay<U>::type, T>...
+      >{} &&
+      !::std::is_same<typename ::std::decay<U>::type, variant>{}
     >::type
   >
   variant(U&& f)
