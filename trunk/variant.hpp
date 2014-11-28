@@ -559,7 +559,7 @@ public:
     {
       clear();
     }
-    else if (rhs.mover_)
+    else if (rhs.meta_->mover)
     {
       rhs.meta_->mover(type_id_ == rhs.type_id_,
         meta_->deleter, store_, rhs.store_);
@@ -965,7 +965,7 @@ private:
   static typename ::std::enable_if<
     ::std::is_same<U, void>{}
   >::type
-  deleter_stub(void* const store) noexcept
+  deleter_stub(void* const) noexcept
   {
   }
 
