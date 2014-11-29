@@ -338,7 +338,7 @@ public:
     {
       clear();
 
-      new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
+      new (static_cast<void*>(&store_)) user_type(::std::forward<U>(u));
 
       meta_ = meta<user_type>();
     }
@@ -370,7 +370,7 @@ public:
 
     clear();
 
-    new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
+    new (static_cast<void*>(&store_)) user_type(::std::forward<U>(u));
 
     meta_ = meta<user_type>();
 
