@@ -103,15 +103,39 @@ class some
     deleter_type deleter;
     copier_type copier;
     mover_type mover;
+
+    ::std::size_t size;
   };
 
   template <typename U>
-  static struct meta const* meta()
+  static typename ::std::enable_if<
+    !::std::is_same<U, void>{},
+    struct meta const*
+  >::type
+  meta()
   {
-    static const struct meta m{
+    static struct meta const m{
       deleter_stub<U>,
       get_copier<U>(),
-      get_mover<U>()
+      get_mover<U>(),
+      sizeof(U)
+    };
+
+    return &m;
+  }
+
+  template <typename U>
+  static typename ::std::enable_if<
+    ::std::is_same<U, void>{},
+    struct meta const*
+  >::type
+  meta()
+  {
+    static struct meta const m{
+      deleter_stub<U>,
+      get_copier<U>(),
+      get_mover<U>(),
+      0
     };
 
     return &m;
@@ -162,7 +186,8 @@ public:
       {
         clear();
       }
-      else if (rhs.meta_->copier_)
+      else if ((rhs.meta_->copier_) &&
+        (rhs.meta_->size <= sizeof(store_)))
       {
         rhs.meta_->copier(meta_ == rhs.meta_,
           meta_->deleter, &store_, &rhs.store_);
@@ -213,7 +238,8 @@ public:
       {
         clear();
       }
-      else if (rhs.mover_)
+      else if ((rhs.mover_) &&
+        (rhs.meta_->size <= sizeof(store_)))
       {
         rhs.meta_.mover(meta_ == rhs.meta_,
           meta_->deleter, &store_, &rhs.store_);
@@ -542,7 +568,7 @@ private:
   static typename ::std::enable_if<
     ::std::is_same<U, void>{}
   >::type
-  deleter_stub(void* const) noexcept
+  deleter_stub(void* const)
   {
   }
 
