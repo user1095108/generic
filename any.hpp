@@ -20,6 +20,11 @@ namespace generic
 class any
 {
 public:
+  template <typename T>
+  using remove_cvr = ::std::remove_cv<
+    typename ::std::remove_reference<T>::type
+  >;
+
   using typeid_t = void const*;
 
   template <typename T>
@@ -41,11 +46,13 @@ public:
 
   template<typename ValueType,
     typename = typename ::std::enable_if<
-      !::std::is_same<any, typename ::std::decay<ValueType>::type>{}
+      !::std::is_same<
+        any, typename ::std::decay<ValueType>::type
+      >{}
     >::type
   >
   any(ValueType&& value) :
-    content(new holder<typename ::std::remove_reference<ValueType>::type>(
+    content(new holder<typename remove_cvr<ValueType>::type>(
       ::std::forward<ValueType>(value)))
   {
   }
@@ -70,7 +77,9 @@ public: // modifiers
 
   template<typename ValueType,
     typename = typename ::std::enable_if<
-      !::std::is_same<any, typename ::std::decay<ValueType>::type>{}
+      !::std::is_same<
+        any, typename ::std::decay<ValueType>::type
+      >{}
     >::type
   >
   any& operator=(ValueType&& rhs)
@@ -100,7 +109,7 @@ public: // get
   template <typename ValueType>
   ValueType get() const
   {
-    using nonref = typename ::std::remove_reference<ValueType>::type;
+    using nonref = typename remove_cvr<ValueType>::type;
 
     return const_cast<any*>(this)->get<nonref const&>();
   }
@@ -108,11 +117,11 @@ public: // get
   template <typename ValueType>
   ValueType get()
   {
-    using nonref = typename ::std::remove_reference<ValueType>::type;
+    using nonref = typename remove_cvr<ValueType>::type;
 
 #ifndef NDEBUG
     if (content && (type_id() ==
-      type_id<typename ::std::remove_reference<ValueType>::type>()))
+      type_id<typename remove_cvr<ValueType>::type>()))
     {
       return static_cast<any::holder<nonref>*>(content)->held;
     }
@@ -274,7 +283,7 @@ inline ValueType* any_cast(any* const operand) noexcept
 {
   return operand &&
     (operand->type_id() ==
-      any::type_id<typename ::std::remove_reference<ValueType>::type>()) ?
+      any::type_id<typename any::remove_cvr<ValueType>::type>()) ?
     &static_cast<any::holder<ValueType>*>(operand->content)->held :
     nullptr;
 }
@@ -288,7 +297,7 @@ inline ValueType const* any_cast(any const* const operand) noexcept
 template<typename ValueType>
 inline ValueType any_cast(any& operand)
 {
-  using nonref = typename ::std::remove_reference<ValueType>::type;
+  using nonref = typename any::remove_cvr<ValueType>::type;
 
 #ifndef NDEBUG
   auto const result(any_cast<nonref>(&operand));
@@ -309,7 +318,7 @@ inline ValueType any_cast(any& operand)
 template<typename ValueType>
 inline ValueType any_cast(any const& operand)
 {
-  using nonref = typename ::std::remove_reference<ValueType>::type;
+  using nonref = typename any::remove_cvr<ValueType>::type;
 
   return any_cast<nonref const&>(const_cast<any&>(operand));
 }

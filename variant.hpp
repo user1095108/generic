@@ -21,6 +21,11 @@ namespace detail
 namespace variant
 {
 
+template <typename T>
+using remove_cvr = ::std::remove_cv<
+  typename ::std::remove_reference<T>::type
+>;
+
 template <typename A, typename ...B>
 struct max_align_type
 {
@@ -272,7 +277,8 @@ class variant
 
   template <int I, typename U, typename ...V>
   typename ::std::enable_if<
-    bool(sizeof...(V)) && !detail::variant::is_hashable<U>{},
+    bool(sizeof...(V)) &&
+    !detail::variant::is_hashable<U>{},
     int
   >::type
   get_hash() const
@@ -284,7 +290,8 @@ class variant
 
   template <int I, typename U, typename ...V>
   typename ::std::enable_if<
-    bool(sizeof...(V)) && detail::variant::is_hashable<U>{},
+    bool(sizeof...(V)) &&
+    detail::variant::is_hashable<U>{},
     int
   >::type
   get_hash() const
@@ -317,7 +324,8 @@ class variant
   template <template <typename> class R, int I, typename U, typename ...V,
     typename ...A>
   typename ::std::enable_if<
-    bool(sizeof...(V)) && !detail::variant::is_comparable<R, U>{}, bool
+    bool(sizeof...(V)) &&
+    !detail::variant::is_comparable<R, U>{}, bool
   >::type
   binary_relation(variant<A...> const& a) const noexcept
   {
@@ -329,7 +337,8 @@ class variant
   template <template <typename> class R, int I, typename U, typename ...V,
     typename ...A>
   typename ::std::enable_if<
-    bool(sizeof...(V)) && detail::variant::is_comparable<R, U>{}, bool
+    bool(sizeof...(V)) &&
+    detail::variant::is_comparable<R, U>{}, bool
   >::type
   binary_relation(variant<A...> const& a) const noexcept
   {
@@ -358,7 +367,8 @@ class variant
 
   template <::std::size_t I, typename OS, typename U, typename ...V>
   typename ::std::enable_if<
-    !detail::variant::is_streamable<OS, U>{} && bool(sizeof...(V)), OS&
+    !detail::variant::is_streamable<OS, U>{} &&
+    bool(sizeof...(V)), OS&
   >::type
   stream_value(OS& os) const
   {
@@ -369,7 +379,8 @@ class variant
 
   template <::std::size_t I, typename OS, typename U, typename ...V>
   typename ::std::enable_if<
-    detail::variant::is_streamable<OS, U>{} && bool(sizeof...(V)), OS&
+    detail::variant::is_streamable<OS, U>{} &&
+    bool(sizeof...(V)), OS&
   >::type
   stream_value(OS& os) const
   {
@@ -628,10 +639,17 @@ public:
   template <
     typename U,
     typename = typename ::std::enable_if<
-      detail::variant::any_of<
-        ::std::is_same<typename ::std::decay<U>::type, T>...
+      !::std::is_array<
+        typename detail::variant::remove_cvr<U>::type
       >{} &&
-      !::std::is_same<typename ::std::decay<U>::type, variant>{}
+      detail::variant::any_of<
+        ::std::is_same<
+          typename detail::variant::remove_cvr<U>::type, T
+        >...
+      >{} &&
+      !::std::is_same<
+        typename ::std::decay<U>::type, variant
+      >{}
     >::type
   >
   variant(U&& f)
@@ -639,18 +657,28 @@ public:
     *this = ::std::forward<U>(f);
   }
 
+  // copy assignment possible
   template <typename U>
   typename ::std::enable_if<
-    detail::variant::any_of<
-      ::std::is_same<typename ::std::decay<U>::type, T>...
+    !::std::is_array<
+      typename detail::variant::remove_cvr<U>::type
     >{} &&
-    ::std::is_copy_assignable<typename ::std::decay<U>::type>{} &&
-    !::std::is_same<typename ::std::decay<U>::type, variant>{},
+    detail::variant::any_of<
+      ::std::is_same<
+        typename detail::variant::remove_cvr<U>::type, T
+      >...
+    >{} &&
+    ::std::is_copy_assignable<
+      typename detail::variant::remove_cvr<U>::type
+    >{} &&
+    !::std::is_same<
+      typename ::std::decay<U>::type, variant
+    >{},
     variant&
   >::type
   operator=(U&& u)
   {
-    using user_type = typename ::std::decay<U>::type;
+    using user_type = typename detail::variant::remove_cvr<U>::type;
 
     if (detail::variant::index_of<user_type, T...>{} == type_id_)
     {
@@ -670,20 +698,30 @@ public:
     return *this;
   }
 
+  // move assignment possible
   template <typename U>
   typename ::std::enable_if<
     detail::variant::any_of<
-      ::std::is_same<typename ::std::decay<U>::type, T>...
+      ::std::is_same<typename detail::variant::remove_cvr<U>::type, T>...
+    >{} &&
+    !::std::is_array<
+      typename detail::variant::remove_cvr<U>::type
     >{} &&
     ::std::is_rvalue_reference<U&&>{} &&
-    !::std::is_copy_assignable<typename ::std::decay<U>::type>{} &&
-    ::std::is_move_assignable<typename ::std::decay<U>::type>{} &&
-    !::std::is_same<typename ::std::decay<U>::type, variant>{},
+    !::std::is_copy_assignable<
+      typename detail::variant::remove_cvr<U>::type
+    >{} &&
+    ::std::is_move_assignable<
+      typename detail::variant::remove_cvr<U>::type
+    >{} &&
+    !::std::is_same<
+      typename ::std::decay<U>::type, variant
+    >{},
     variant&
   >::type
   operator=(U&& u)
   {
-    using user_type = typename ::std::decay<U>::type;
+    using user_type = typename detail::variant::remove_cvr<U>::type;
 
     if (detail::variant::index_of<user_type, T...>{} == type_id_)
     {
@@ -703,19 +741,26 @@ public:
     return *this;
   }
 
+  // assignment not possible
   template <typename U>
   typename ::std::enable_if<
     detail::variant::any_of<
       ::std::is_same<typename ::std::decay<U>::type, T>...
     >{} &&
-    !::std::is_copy_assignable<typename ::std::decay<U>::type>{} &&
-    !::std::is_move_assignable<typename ::std::decay<U>::type>{} &&
-    !::std::is_same<typename ::std::decay<U>::type, variant>{},
+    !::std::is_copy_assignable<
+      typename detail::variant::remove_cvr<U>::type
+    >{} &&
+    !::std::is_move_assignable<
+      typename detail::variant::remove_cvr<U>::type
+    >{} &&
+    !::std::is_same<
+      typename ::std::decay<U>::type, variant
+    >{},
     variant&
   >::type
   operator=(U&& u)
   {
-    using user_type = typename ::std::decay<U>::type;
+    using user_type = typename detail::variant::remove_cvr<U>::type;
 
     clear();
 
