@@ -745,7 +745,7 @@ public:
   template <typename U>
   typename ::std::enable_if<
     detail::variant::any_of<
-      ::std::is_same<typename ::std::decay<U>::type, T>...
+      ::std::is_same<typename detail::variant::remove_cvr<U>::type, T>...
     >{} &&
     !::std::is_copy_assignable<
       typename detail::variant::remove_cvr<U>::type
@@ -903,7 +903,7 @@ public:
   >::type
   get()
   {
-    if (detail::variant::index_of<U, T...>{} == type_id_)
+    if (contains<U>())
     {
       return *reinterpret_cast<U*>(store_);
     }
@@ -920,7 +920,7 @@ public:
   >::type
   get() const
   {
-    if (detail::variant::index_of<U, T...>{} == type_id_) 
+    if (contains<U>()) 
     {
       return *reinterpret_cast<U const*>(store_);
     }
