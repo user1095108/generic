@@ -978,6 +978,15 @@ private:
 
   template <class U>
   typename ::std::enable_if<
+    !::std::is_copy_constructible<U>{}, copier_type
+  >::type
+  static get_copier() noexcept
+  {
+    return nullptr;
+  }
+
+  template <class U>
+  typename ::std::enable_if<
     ::std::is_copy_constructible<U>{}, copier_type
   >::type
   static get_copier() noexcept
@@ -987,9 +996,9 @@ private:
 
   template <class U>
   typename ::std::enable_if<
-    !::std::is_copy_constructible<U>{}, copier_type
+    !::std::is_move_constructible<U>{}, mover_type
   >::type
-  static get_copier() noexcept
+  static get_mover() noexcept
   {
     return nullptr;
   }
@@ -1001,15 +1010,6 @@ private:
   static get_mover() noexcept
   {
     return mover_stub<U>;
-  }
-
-  template <class U>
-  typename ::std::enable_if<
-    !::std::is_move_constructible<U>{}, mover_type
-  >::type
-  static get_mover() noexcept
-  {
-    return nullptr;
   }
 
   template <class U>
@@ -1027,6 +1027,19 @@ private:
   >::type
   deleter_stub(void* const) noexcept
   {
+  }
+
+  template <typename U>
+  static typename ::std::enable_if<
+    ::std::is_copy_constructible<U>{} &&
+    !::std::is_copy_assignable<U>{}
+  >::type
+  copier_stub(bool const, deleter_type const deleter,
+    void* const dst_store, void const* const src_store)
+  {
+    deleter(dst_store);
+
+    new (dst_store) U(*reinterpret_cast<U const*>(src_store));
   }
 
   template <typename U>
@@ -1052,15 +1065,15 @@ private:
 
   template <typename U>
   static typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{} &&
-    !::std::is_copy_assignable<U>{}
+    ::std::is_move_constructible<U>{} &&
+    !::std::is_move_assignable<U>{}
   >::type
-  copier_stub(bool const, deleter_type const deleter,
-    void* const dst_store, void const* const src_store)
+  mover_stub(bool const, deleter_type const deleter,
+    void* const dst_store, void* const src_store)
   {
     deleter(dst_store);
 
-    new (dst_store) U(*reinterpret_cast<U const*>(src_store));
+    new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
   }
 
   template <typename U>
@@ -1082,19 +1095,6 @@ private:
 
       new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
     }
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    ::std::is_move_constructible<U>{} &&
-    !::std::is_move_assignable<U>{}
-  >::type
-  mover_stub(bool const, deleter_type const deleter,
-    void* const dst_store, void* const src_store)
-  {
-    deleter(dst_store);
-
-    new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
   }
 
 private:

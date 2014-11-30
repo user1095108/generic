@@ -55,16 +55,6 @@ template <bool B>
 using bool_constant = ::std::integral_constant<bool, B>;
 
 template <class A, class ...B>
-struct all_of : bool_constant<A::value && all_of<B...>::value>
-{
-};
-
-template <class A>
-struct all_of<A> : bool_constant<A::value>
-{
-};
-
-template <class A, class ...B>
 struct any_of : bool_constant<A::value || any_of<B...>::value>
 {
 };
@@ -521,6 +511,15 @@ public:
 private:
   template <class U>
   typename ::std::enable_if<
+    !::std::is_copy_constructible<U>{}, copier_type
+  >::type
+  static get_copier() noexcept
+  {
+    return nullptr;
+  }
+
+  template <class U>
+  typename ::std::enable_if<
     ::std::is_copy_constructible<U>{}, copier_type
   >::type
   static get_copier() noexcept
@@ -530,9 +529,9 @@ private:
 
   template <class U>
   typename ::std::enable_if<
-    !::std::is_copy_constructible<U>{}, copier_type
+    !::std::is_move_constructible<U>{}, mover_type
   >::type
-  static get_copier() noexcept
+  static get_mover() noexcept
   {
     return nullptr;
   }
@@ -544,15 +543,6 @@ private:
   static get_mover() noexcept
   {
     return mover_stub<U>;
-  }
-
-  template <class U>
-  typename ::std::enable_if<
-    !::std::is_move_constructible<U>{}, mover_type
-  >::type
-  static get_mover() noexcept
-  {
-    return nullptr;
   }
 
   template <class U>
