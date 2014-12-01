@@ -501,12 +501,12 @@ public:
   }
 
   template <typename U>
-  static typeid_t* type_id() noexcept
+  static typeid_t type_id() noexcept
   {
     return meta<U>();
   }
 
-  void const* type_id() const noexcept { return meta_; }
+  typeid_t type_id() const noexcept { return meta_; }
 
 private:
   template <class U>
