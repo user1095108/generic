@@ -91,12 +91,12 @@ public: // queries
 
   explicit operator bool() const noexcept { return content; }
 
-  typeid_t type() const noexcept { return type_id(); }
-
   typeid_t type_id() const noexcept
   {
     return content ? content->type_id_ : type_id<void>();
   }
+
+  auto type() const noexcept -> decltype(type_id()) { return type_id(); }
 
 public: // get
 
