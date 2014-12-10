@@ -15,7 +15,7 @@
 namespace generic
 {
 
-template<typename F, ::std::size_t N = 3 * sizeof(::std::uintptr_t)>
+template<typename F, ::std::size_t N = 4 * sizeof(::std::uintptr_t)>
 class forwarder;
 
 template<typename R, typename ...A, ::std::size_t N>
