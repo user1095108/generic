@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#include <functional>
+
 #include <ostream>
 
 #include <type_traits>
@@ -150,12 +152,12 @@ struct is_comparable<R,
 {
 };
 
-template <typename, typename = void>
+template <typename, typename = ::std::size_t>
 struct is_hashable : ::std::false_type { };
 
 template <typename U>
 struct is_hashable<U,
-  decltype(void(::std::hash<U>()(::std::declval<U const&>())))
+  decltype(::std::hash<U>()(::std::declval<U>()))
 > : ::std::true_type
 {
 };
