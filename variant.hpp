@@ -204,10 +204,57 @@ struct any_of<A> : bool_constant<A::value>
 {
 };
 
+template <typename T, typename = void>
+struct is_copy_assignable : ::std::is_copy_assignable<T>
+{
+};
+
+template <typename T>
+struct is_copy_assignable<T,
+  decltype(void(sizeof(typename T::value_type)))
+> : is_copy_assignable<typename T::value_type>
+{
+};
+
+template <typename T, typename = void>
+struct is_move_assignable : ::std::is_move_assignable<T>
+{
+};
+
+template <typename T>
+struct is_move_assignable<T,
+  decltype(void(sizeof(typename T::value_type)))
+> : is_move_assignable<typename T::value_type>
+{
+};
+
+template <typename T, typename = void>
+struct is_copy_constructible : ::std::is_copy_constructible<T>
+{
+};
+
+template <typename T>
+struct is_copy_constructible<T,
+  decltype(void(sizeof(typename T::value_type)))
+> : is_copy_constructible<typename T::value_type>
+{
+};
+
+template <typename T, typename = void>
+struct is_move_constructible : ::std::is_move_constructible<T>
+{
+};
+
+template <typename T>
+struct is_move_constructible<T,
+  decltype(void(sizeof(typename T::value_type)))
+> : is_move_constructible<typename T::value_type>
+{
+};
+
 template <class A>
 struct is_move_or_copy_constructible :
-  bool_constant< ::std::is_copy_constructible<A>{} ||
-    ::std::is_move_constructible<A>{}>
+  bool_constant<is_copy_constructible<A>{} || is_move_constructible<A>{}>
 {
 };
 
@@ -668,7 +715,7 @@ public:
         typename detail::variant::remove_cvr<U>::type, T
       >...
     >{} &&
-    ::std::is_copy_assignable<
+    detail::variant::is_copy_assignable<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
     !::std::is_same<
@@ -708,10 +755,10 @@ public:
       typename detail::variant::remove_cvr<U>::type
     >{} &&
     ::std::is_rvalue_reference<U&&>{} &&
-    !::std::is_copy_assignable<
+    !detail::variant::is_copy_assignable<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
-    ::std::is_move_assignable<
+    detail::variant::is_move_assignable<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
     !::std::is_same<
@@ -747,10 +794,10 @@ public:
     detail::variant::any_of<
       ::std::is_same<typename detail::variant::remove_cvr<U>::type, T>...
     >{} &&
-    !::std::is_copy_assignable<
+    !detail::variant::is_copy_assignable<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
-    !::std::is_move_assignable<
+    !detail::variant::is_move_assignable<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
     !::std::is_same<
@@ -978,7 +1025,7 @@ private:
 
   template <class U>
   typename ::std::enable_if<
-    !::std::is_copy_constructible<U>{}, copier_type
+    !detail::variant::is_copy_constructible<U>{}, copier_type
   >::type
   static get_copier() noexcept
   {
@@ -987,7 +1034,7 @@ private:
 
   template <class U>
   typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{}, copier_type
+    detail::variant::is_copy_constructible<U>{}, copier_type
   >::type
   static get_copier() noexcept
   {
@@ -996,7 +1043,7 @@ private:
 
   template <class U>
   typename ::std::enable_if<
-    !::std::is_move_constructible<U>{}, mover_type
+    !detail::variant::is_move_constructible<U>{}, mover_type
   >::type
   static get_mover() noexcept
   {
@@ -1005,7 +1052,7 @@ private:
 
   template <class U>
   typename ::std::enable_if<
-    ::std::is_move_constructible<U>{}, mover_type
+    detail::variant::is_move_constructible<U>{}, mover_type
   >::type
   static get_mover() noexcept
   {
@@ -1031,8 +1078,8 @@ private:
 
   template <typename U>
   static typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{} &&
-    !::std::is_copy_assignable<U>{}
+    detail::variant::is_copy_constructible<U>{} &&
+    !detail::variant::is_copy_assignable<U>{}
   >::type
   copier_stub(bool const, deleter_type const deleter,
     void* const dst_store, void const* const src_store)
@@ -1044,8 +1091,8 @@ private:
 
   template <typename U>
   static typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{} &&
-    ::std::is_copy_assignable<U>{}
+    detail::variant::is_copy_constructible<U>{} &&
+    detail::variant::is_copy_assignable<U>{}
   >::type
   copier_stub(bool const same_type, deleter_type const deleter,
     void* const dst_store, void const* const src_store)
@@ -1065,8 +1112,8 @@ private:
 
   template <typename U>
   static typename ::std::enable_if<
-    ::std::is_move_constructible<U>{} &&
-    !::std::is_move_assignable<U>{}
+    detail::variant::is_move_constructible<U>{} &&
+    !detail::variant::is_move_assignable<U>{}
   >::type
   mover_stub(bool const, deleter_type const deleter,
     void* const dst_store, void* const src_store)
@@ -1078,8 +1125,8 @@ private:
 
   template <typename U>
   static typename ::std::enable_if<
-    ::std::is_move_constructible<U>{} &&
-    ::std::is_move_assignable<U>{}
+    detail::variant::is_move_constructible<U>{} &&
+    detail::variant::is_move_assignable<U>{}
   >::type
   mover_stub(bool const same_type, deleter_type const deleter,
     void* const dst_store, void* const src_store)
