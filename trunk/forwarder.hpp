@@ -23,6 +23,9 @@ class forwarder<R (A...), N>
 {
   template <typename U>
   static R invoker_stub(void const* const ptr, A&&... args)
+    noexcept(noexcept(
+      (*static_cast<U const*>(ptr))(::std::forward<A>(args)...)
+    ))
   {
     return (*static_cast<U const*>(ptr))(::std::forward<A>(args)...);
   }
@@ -71,6 +74,7 @@ public:
   explicit operator bool() const noexcept { return stub_; }
 
   R operator()(A... args) const
+    noexcept(noexcept(stub_(&store_, ::std::forward<A>(args)...)))
   {
     //assert(stub_);
     return stub_(&store_, ::std::forward<A>(args)...);
