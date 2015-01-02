@@ -359,7 +359,7 @@ class variant
   typename ::std::enable_if<
     !detail::variant::is_comparable<R, U>{}, bool
   >::type
-  binary_relation(variant<A...> const&) const noexcept
+  binary_relation(variant<A...> const&) const
   {
     throw ::std::bad_typeid();
   }
@@ -368,7 +368,7 @@ class variant
   typename ::std::enable_if<
     detail::variant::is_comparable<R, U>{}, bool
   >::type
-  binary_relation(variant<A...> const& a) const noexcept
+  binary_relation(variant<A...> const& a) const
   {
     return I == type_id_ ?
       R<U>()(get<U>(), a.template get<U>()) :
@@ -381,7 +381,7 @@ class variant
     bool(sizeof...(V)) &&
     !detail::variant::is_comparable<R, U>{}, bool
   >::type
-  binary_relation(variant<A...> const& a) const noexcept
+  binary_relation(variant<A...> const& a) const
   {
     return I == type_id_ ?
       throw ::std::bad_typeid() :
@@ -394,7 +394,7 @@ class variant
     bool(sizeof...(V)) &&
     detail::variant::is_comparable<R, U>{}, bool
   >::type
-  binary_relation(variant<A...> const& a) const noexcept
+  binary_relation(variant<A...> const& a) const
   {
     return I == type_id_ ?
       R<U>()(get<U>(), a.template get<U>()) :
