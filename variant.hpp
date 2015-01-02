@@ -359,7 +359,7 @@ class variant
   typename ::std::enable_if<
     !detail::variant::is_comparable<R, U>{}, bool
   >::type
-  binary_relation(variant<A...> const& a) const noexcept
+  binary_relation(variant<A...> const&) const noexcept
   {
     throw ::std::bad_typeid();
   }
@@ -405,7 +405,7 @@ class variant
   typename ::std::enable_if<
     !detail::variant::is_streamable<OS, U>{}, OS&
   >::type
-  stream_value(OS& os) const
+  stream_value(OS&) const
   {
     throw ::std::bad_typeid();
   }
