@@ -8,7 +8,7 @@ namespace generic
 struct swallow
 {
   template <typename ...T>
-  swallow(T&&) noexcept
+  swallow(T&& ...) noexcept
   {
   }
 };
