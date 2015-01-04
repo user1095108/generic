@@ -21,12 +21,6 @@ public:
 
   using value_type = U;
 
-  implstore()
-  {
-    static_assert(sizeof(U) <= sizeof(store_), "impl too large");
-    new (static_cast<void*>(&store_)) U();
-  }
-
   template <typename ...A, typename =
     typename ::std::enable_if<::std::is_constructible<U, A...>{}>::type
   >
