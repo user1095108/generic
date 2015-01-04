@@ -22,11 +22,11 @@ public:
   using value_type = U;
 
   template <typename ...A, typename =
-    typename ::std::enable_if<::std::is_constructible<U, A...>{}>::type>
+    typename ::std::enable_if<::std::is_constructible<U, A...>{}>::type
+  >
   implstore(A&& ...args)
   {
-    static_assert(sizeof(U) <= sizeof(store_),
-      "impl too large");
+    static_assert(sizeof(U) <= sizeof(store_), "impl too large");
     new (static_cast<void*>(&store_)) U(::std::forward<A>(args)...);
   }
 
