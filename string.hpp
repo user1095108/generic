@@ -139,29 +139,42 @@ split(::std::string const& s, char const* const delims = "\f\n\r\t\v")
 //////////////////////////////////////////////////////////////////////////////
 template<class CharT, class Traits, class Allocator>
 inline ::std::basic_string<CharT, Traits, Allocator>&
-ltrim(::std::basic_string<CharT, Traits, Allocator>& s)
+ltrim(::std::basic_string<CharT, Traits, Allocator>& s,
+  CharT const* cs = " ")
 {
-  s.erase(s.begin(), ::std::find_if(s.begin(), s.end(),
-    [](char const c) noexcept {return !::std::isspace(c);}));
+  s.erase(s.begin(),
+    ::std::find_if(s.begin(), s.end(),
+      [cs](char const c) noexcept {
+        return !::std::strrchr(cs, c);
+      }
+    )
+  );
 
   return s;
 }
 
 template<class CharT, class Traits, class Allocator>
 inline ::std::basic_string<CharT, Traits, Allocator>&
-rtrim(::std::basic_string<CharT, Traits, Allocator>& s)
+rtrim(::std::basic_string<CharT, Traits, Allocator>& s,
+  CharT const* cs = " ")
 {
   s.erase(::std::find_if(s.rbegin(), s.rend(),
-    [](char const c) noexcept {return !::std::isspace(c);}).base(), s.end());
+      [cs](char const c) noexcept {
+        return !::std::strrchr(cs, c);
+      }
+    ).base(),
+    s.end()
+  );
 
   return s;
 }
 
 template<class CharT, class Traits, class Allocator>
 inline ::std::basic_string<CharT, Traits, Allocator>&
-trim(::std::basic_string<CharT, Traits, Allocator>& s)
+trim(::std::basic_string<CharT, Traits, Allocator>& s,
+  CharT const* cs = " ")
 {
-  return ltrim(rtrim(s));
+  return ltrim(rtrim(s, cs), cs);
 }
 
 }
