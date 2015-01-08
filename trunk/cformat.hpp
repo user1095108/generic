@@ -61,12 +61,12 @@ inline ::std::string cformat(char const* const format, ...)
   va_start(ap, format);
 
 #if defined(_MSC_VER)
-  auto const s(static_cast<char*>(_alloca(len)));
+  auto const s(static_cast<char*>(_alloca(len + 1)));
 #else
-  char s[len];
+  char s[len + 1];
 #endif // _MSC_VER
 
-  ::std::vsnprintf(s, len, format, ap);
+  ::std::vsnprintf(s, len + 1, format, ap);
 
   va_end(ap);
 
@@ -106,12 +106,12 @@ cformat(S& r, char const* const format, ...)
   va_start(ap, format);
 
 #if defined(_MSC_VER)
-  auto const s(static_cast<char*>(_alloca(len)));
+  auto const s(static_cast<char*>(_alloca(len + 1)));
 #else
-  char s[len];
+  char s[len + 1];
 #endif // _MSC_VER
 
-  ::std::vsnprintf(s, len, format, ap);
+  ::std::vsnprintf(s, len + 1, format, ap);
 
   va_end(ap);
 
