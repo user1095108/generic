@@ -14,6 +14,8 @@
 
 #include <stdexcept>
 
+#include <string>
+
 #if defined(_MSC_VER)
 # include <malloc.h>
 #endif // _MSC_VER
@@ -148,7 +150,7 @@ inline ::std::wstring wcformat(wchar_t const* const format, ...)
 struct strftime_array_undefined : ::std::runtime_error
 {
   strftime_array_undefined() :
-    ::std::runtime_error("::std::strftime() or ::std::wcsftime() returned zero")
+    ::std::runtime_error("::std::strftime() or wcsftime() returned zero")
   {
   }
 };
@@ -190,7 +192,7 @@ inline ::std::wstring wcstrftime(wchar_t const* const format,
   wchar_t s[buffer_size];
 #endif // _MSC_VER
 
-  if (!::std::wcsftime(s, buffer_size, format, time))
+  if (!wcsftime(s, buffer_size, format, time))
   {
     throw wcsftime_array_undefined();
   }
