@@ -45,7 +45,7 @@ template <typename T>
 class scope_exit
 {
 public:
-  explicit scope_exit(T&& f) : f_(::std::move(f))
+  explicit scope_exit(T&& f) : f_(::std::forward<T>(f))
   {
     static_assert(noexcept(f_()), "throwing functors are unsupported");
   }
