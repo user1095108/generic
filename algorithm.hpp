@@ -8,14 +8,14 @@
 
 #include <utility>
 
-#include "utility.hpp"
+#include "meta.hpp"
 
 namespace generic
 {
 
 // min, max
 template <typename T>
-inline constexpr T max(T a, T b)
+inline constexpr T max(T const a, T const b) noexcept
 {
   return a > b ? a : b;
 }
@@ -23,13 +23,15 @@ inline constexpr T max(T a, T b)
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
   all_of<::std::is_same<A, T>...>{}, T>::type
-max(T a, T b, A ...args)
+max(T const a, T const b, A&& ...args) noexcept
 {
-  return a > b ? max(a, args...) : max(b, args...);
+  return a > b ?
+    max(a, ::std::forward<A>(args)...) :
+    max(b, ::std::forward<A>(args)...);
 }
 
 template <typename T>
-inline constexpr T min(T a, T b)
+inline constexpr T min(T const a, T const b) noexcept
 {
   return a < b ? a : b;
 }
@@ -37,19 +39,29 @@ inline constexpr T min(T a, T b)
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
   all_of<::std::is_same<A, T>...>{}, T>::type
-min(T a, T b, A ...args)
+min(T const a, T const b, A&& ...args) noexcept
 {
-  return a < b ? min(a, args...) : min(b, args...);
+  return a < b ?
+    min(a, ::std::forward<A>(args)...) :
+    min(b, ::std::forward<A>(args)...);
 }
 
 template <typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  all_of<::std::is_same<typename front<A...>::type, A>...>{},
-  ::std::pair<typename front<A...>::type,
-    typename front<A...>::type> >::type
-minmax(A ...args)
+  all_of<::std::is_same<
+    typename ::std::decay<typename front<A&&...>::type>::type, A>...
+  >{},
+  ::std::pair<
+    typename ::std::decay<typename front<A&&...>::type>::type,
+    typename ::std::decay<typename front<A&&...>::type>::type
+  >
+>::type
+minmax(A&& ...args) noexcept
 {
-  return {min(args...), max(args...)};
+  return {
+    min(::std::forward<A>(args)...),
+    max(::std::forward<A>(args)...)
+  };
 }
 
 }
