@@ -145,11 +145,7 @@ public: // get
   }
 
   template <typename U>
-  typename ::std::enable_if<
-    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U&
-  >::type
-  get()
+  U& get()
   {
     using nonref = typename remove_cvr<U>::type;
 
