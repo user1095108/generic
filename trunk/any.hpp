@@ -100,28 +100,62 @@ public: // queries
 
 public: // get
 
-  template <typename ValueType>
-  ValueType cget() const
+  template <typename U>
+  typename ::std::enable_if<
+    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U const&
+  >::type
+  cget() const
   {
-    return get<ValueType>();
+    return get<U>();
   }
 
-  template <typename ValueType>
-  ValueType get() const
+  template <typename U>
+  typename ::std::enable_if<
+    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U
+  >::type
+  cget() const
   {
-    using nonref = typename remove_cvr<ValueType>::type;
+    return get<U>();
+  }
+
+  template <typename U>
+  typename ::std::enable_if<
+    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U const&
+  >::type
+  get() const
+  {
+    using nonref = typename remove_cvr<U>::type;
 
     return const_cast<any*>(this)->get<nonref const&>();
   }
 
-  template <typename ValueType>
-  ValueType get()
+  template <typename U>
+  typename ::std::enable_if<
+    ::std::is_enum<U>{} || ::std::is_fundamental<U>{},
+    U
+  >::type
+  get() const
   {
-    using nonref = typename remove_cvr<ValueType>::type;
+    using nonref = typename remove_cvr<U>::type;
+
+    return const_cast<any*>(this)->get<nonref const&>();
+  }
+
+  template <typename U>
+  typename ::std::enable_if<
+    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U&
+  >::type
+  get()
+  {
+    using nonref = typename remove_cvr<U>::type;
 
 #ifndef NDEBUG
     if (content && (type_id() ==
-      type_id<typename remove_cvr<ValueType>::type>()))
+      type_id<typename remove_cvr<U>::type>()))
     {
       return static_cast<any::holder<nonref>*>(content)->held;
     }
