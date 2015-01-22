@@ -93,7 +93,7 @@ public: // queries
 
   typeid_t type_id() const noexcept
   {
-    return content ? content->type_id_ : type_id<void>();
+    return content ? content->type_id_ : nullptr;
   }
 
   auto type() const noexcept -> decltype(type_id()) { return type_id(); }
