@@ -19,19 +19,18 @@ namespace generic
 
 class any
 {
+public:
   template <typename T>
   using remove_cvr = ::std::remove_cv<
     typename ::std::remove_reference<T>::type
   >;
-
-public:
 
   using typeid_t = void const*;
 
   template <typename T>
   static typeid_t type_id() noexcept
   {
-    static struct { } const type_id;
+    static struct tmp { tmp() noexcept {} } const type_id;
 
     return &type_id;
   }
@@ -129,7 +128,7 @@ public: // get
     !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U const&
   >::type
-  get() const noexcept(noexcept(get<typename remove_cvr<U>::type const&>()))
+  get() const noexcept(noexcept(::std::declval<any>().get<U const&>()))
   {
     using nonref = typename remove_cvr<U>::type;
 
@@ -141,7 +140,7 @@ public: // get
     ::std::is_enum<U>{} || ::std::is_fundamental<U>{},
     U
   >::type
-  get() const noexcept(noexcept(get<typename remove_cvr<U>::type const&>()))
+  get() const noexcept(noexcept(::std::declval<any>().get<U>()))
   {
     using nonref = typename remove_cvr<U>::type;
 
@@ -153,7 +152,7 @@ public: // get
     !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U const&
   >::type
-  cget() const noexcept(noexcept(get<U>()))
+  cget() const noexcept(noexcept(::std::declval<any>().get<U const&>()))
   {
     return get<U>();
   }
@@ -163,7 +162,7 @@ public: // get
     (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
     U
   >::type
-  cget() const noexcept(noexcept(get<U>()))
+  cget() const noexcept(noexcept(::std::declval<any>().get<U>()))
   {
     return get<U>();
   }
