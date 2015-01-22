@@ -101,51 +101,10 @@ public: // queries
 public: // get
 
   template <typename U>
-  typename ::std::enable_if<
-    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U const&
-  >::type
-  cget() const
-  {
-    return get<U>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U
-  >::type
-  cget() const
-  {
-    return get<U>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U const&
-  >::type
-  get() const
-  {
-    using nonref = typename remove_cvr<U>::type;
-
-    return const_cast<any*>(this)->get<nonref const&>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    ::std::is_enum<U>{} || ::std::is_fundamental<U>{},
-    U
-  >::type
-  get() const
-  {
-    using nonref = typename remove_cvr<U>::type;
-
-    return const_cast<any*>(this)->get<nonref const&>();
-  }
-
-  template <typename U>
   U& get()
+  #ifdef NDEBUG
+    noexcept
+  #endif
   {
     using nonref = typename remove_cvr<U>::type;
 
@@ -162,6 +121,50 @@ public: // get
 #else
     return static_cast<any::holder<nonref>*>(content)->held;
 #endif // NDEBUG
+  }
+
+  template <typename U>
+  typename ::std::enable_if<
+    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U const&
+  >::type
+  get() const noexcept(noexcept(get<typename remove_cvr<U>::type const&>()))
+  {
+    using nonref = typename remove_cvr<U>::type;
+
+    return const_cast<any*>(this)->get<nonref const&>();
+  }
+
+  template <typename U>
+  typename ::std::enable_if<
+    ::std::is_enum<U>{} || ::std::is_fundamental<U>{},
+    U
+  >::type
+  get() const noexcept(noexcept(get<typename remove_cvr<U>::type const&>()))
+  {
+    using nonref = typename remove_cvr<U>::type;
+
+    return const_cast<any*>(this)->get<nonref const&>();
+  }
+
+  template <typename U>
+  typename ::std::enable_if<
+    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U const&
+  >::type
+  cget() const noexcept(noexcept(get<U>()))
+  {
+    return get<U>();
+  }
+
+  template <typename U>
+  typename ::std::enable_if<
+    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U
+  >::type
+  cget() const noexcept(noexcept(get<U>()))
+  {
+    return get<U>();
   }
 
 private: // types
