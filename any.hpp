@@ -154,7 +154,7 @@ public: // get
   >::type
   cget() const noexcept(noexcept(::std::declval<any>().get<U const&>()))
   {
-    return get<U>();
+    return get<U const&>();
   }
 
   template <typename U>
