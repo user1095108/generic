@@ -30,7 +30,7 @@ public:
 
     n = align(n);
 
-    if (buf_ + N >= ptr_ + n)
+    if (reinterpret_cast<char*>(&buf_) + N >= ptr_ + n)
     {
       auto r(ptr_);
 
@@ -63,11 +63,14 @@ public:
     }
   }
 
-  void reset() noexcept { ptr_ = buf_; }
+  void reset() noexcept { ptr_ = reinterpret_cast<char*>(&buf_); }
 
   static constexpr ::std::size_t size() noexcept { return N; }
 
-  ::std::size_t used() const noexcept { return ::std::size_t(ptr_ - buf_); }
+  ::std::size_t used() const noexcept
+  {
+    return ::std::size_t(ptr_ - reinterpret_cast<char*>(&buf_));
+  }
 
 private:
   static constexpr ::std::size_t align(::std::size_t const n) noexcept
@@ -77,15 +80,16 @@ private:
 
   bool pointer_in_buffer(char* const p) noexcept
   {
-    return (buf_ <= p) && (p <= buf_ + N);
+    return (reinterpret_cast<char*>(&buf_) <= p) &&
+      (p <= reinterpret_cast<char*>(&buf_) + N);
   }
 
 private:
-  static constexpr auto const alignment = alignof(::std::max_align_t);
+  typename ::std::aligned_storage<N>::type buf_;
 
-  char* ptr_{buf_};
+  char* ptr_{reinterpret_cast<char*>(&buf_)};
 
-  alignas(::std::max_align_t) char buf_[N];
+  static constexpr auto const alignment = alignof(buf_);
 };
 
 template <class T, std::size_t N>
