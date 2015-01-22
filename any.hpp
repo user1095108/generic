@@ -19,11 +19,12 @@ namespace generic
 
 class any
 {
-public:
   template <typename T>
   using remove_cvr = ::std::remove_cv<
     typename ::std::remove_reference<T>::type
   >;
+
+public:
 
   using typeid_t = void const*;
 
@@ -102,9 +103,9 @@ public: // get
 
   template <typename U>
   U& get()
-  #ifdef NDEBUG
+#ifdef NDEBUG
     noexcept
-  #endif
+#endif
   {
     using nonref = typename remove_cvr<U>::type;
 
@@ -329,6 +330,9 @@ inline ValueType const* any_cast(any const* const operand) noexcept
 
 template<typename ValueType>
 inline ValueType any_cast(any& operand)
+#ifdef NDEBUG
+  noexcept
+#endif
 {
   using nonref = typename any::remove_cvr<ValueType>::type;
 
@@ -349,7 +353,13 @@ inline ValueType any_cast(any& operand)
 }
 
 template<typename ValueType>
-inline ValueType any_cast(any const& operand)
+inline ValueType any_cast(any const& operand) noexcept(
+  noexcept(
+    any_cast<typename any::remove_cvr<ValueType>::type>(
+      const_cast<any&>(operand)
+    )
+  )
+)
 {
   using nonref = typename any::remove_cvr<ValueType>::type;
 
