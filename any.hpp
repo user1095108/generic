@@ -25,14 +25,14 @@ public:
     typename ::std::remove_reference<T>::type
   >;
 
-  using typeid_t = void const*;
+  using typeid_t = ::std::uintptr_t;
 
   template <typename T>
   static typeid_t type_id() noexcept
   {
     static struct tmp { tmp() noexcept { } } const type_id;
 
-    return &type_id;
+    return typeid_t(&type_id);
   }
 
   any() = default;
@@ -93,7 +93,7 @@ public: // queries
 
   typeid_t type_id() const noexcept
   {
-    return *this ? content->type_id_ : nullptr;
+    return *this ? content->type_id_ : typeid_t(nullptr);
   }
 
   auto type() const noexcept -> decltype(type_id()) { return type_id(); }

@@ -132,7 +132,7 @@ class some
   }
 
 public:
-  using typeid_t = void const*;
+  using typeid_t = ::std::uintptr_t;
 
   some() = default;
 
@@ -503,10 +503,10 @@ public:
   template <typename U>
   static typeid_t type_id() noexcept
   {
-    return meta<U>();
+    return typeid_t(meta<U>());
   }
 
-  typeid_t type_id() const noexcept { return meta_; }
+  typeid_t type_id() const noexcept { return typeid_t(meta_); }
 
 private:
   template <class U>
