@@ -22,7 +22,11 @@ inline constexpr T max(T const a, T const b) noexcept
 
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  all_of<::std::is_same<A, T>...>{}, T>::type
+  all_of<::std::is_same<
+    typename ::std::decay<typename front<A...>::type>::type, A>...
+  >{},
+  T
+>::type
 max(T const a, T const b, A&& ...args) noexcept
 {
   return a > b ?
@@ -38,7 +42,11 @@ inline constexpr T min(T const a, T const b) noexcept
 
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  all_of<::std::is_same<A, T>...>{}, T>::type
+  all_of<::std::is_same<
+    typename ::std::decay<typename front<A...>::type>::type, A>...
+  >{},
+  T
+>::type
 min(T const a, T const b, A&& ...args) noexcept
 {
   return a < b ?
@@ -49,11 +57,11 @@ min(T const a, T const b, A&& ...args) noexcept
 template <typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
   all_of<::std::is_same<
-    typename ::std::decay<typename front<A&&...>::type>::type, A>...
+    typename ::std::decay<typename front<A...>::type>::type, A>...
   >{},
   ::std::pair<
-    typename ::std::decay<typename front<A&&...>::type>::type,
-    typename ::std::decay<typename front<A&&...>::type>::type
+    typename ::std::decay<typename front<A...>::type>::type,
+    typename ::std::decay<typename front<A...>::type>::type
   >
 >::type
 minmax(A&& ...args) noexcept
