@@ -22,9 +22,7 @@ inline constexpr T max(T const a, T const b) noexcept
 
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  all_of<::std::is_same<
-    typename ::std::decay<typename front<A...>::type>::type, A>...
-  >{},
+  all_of<::std::is_same<typename ::std::decay<T>::type, A>...>{},
   T
 >::type
 max(T const a, T const b, A&& ...args) noexcept
@@ -42,9 +40,7 @@ inline constexpr T min(T const a, T const b) noexcept
 
 template <typename T, typename ...A>
 inline constexpr typename ::std::enable_if<bool(sizeof...(A)) &&
-  all_of<::std::is_same<
-    typename ::std::decay<typename front<A...>::type>::type, A>...
-  >{},
+  all_of<::std::is_same<typename ::std::decay<T>::type, A>...>{},
   T
 >::type
 min(T const a, T const b, A&& ...args) noexcept
