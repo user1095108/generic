@@ -17,9 +17,9 @@ inline F cify(L&& l, R (*)(A...))
 
   struct S
   {
-    static R f(A... args)
+    static R f(A... args) noexcept(noexcept(l_(::std::declval<A>()...)))
     {
-      l_(::std::forward<A>(args)...);
+      return l_(::std::forward<A>(args)...);
     }
   };
 
