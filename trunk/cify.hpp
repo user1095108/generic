@@ -15,7 +15,7 @@ template <typename R, typename ...A> using return_type = R (*)(A...);
 }
 
 template <typename F, typename R, typename ...A>
-::std::unique_ptr<F> cify(R (*)(A...), F&& f)
+return_type<R, A...> cify(R (*)(A...), F&& f)
 {
   static F const f_(::std::forward<F>(f));
 
