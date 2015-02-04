@@ -14,7 +14,7 @@ template <typename R, typename ...A> using return_type = R (*)(A...);
 
 }
 
-template <typename F, typename R, typename ...A>
+template <typename F, int I = 0, typename R, typename ...A>
 return_type<R, A...> cify(R (*)(A...), F&& f)
 {
   static F const f_(::std::forward<F>(f));
