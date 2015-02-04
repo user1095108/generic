@@ -10,24 +10,28 @@ namespace generic
 namespace
 {
 
-template <typename R, typename ...A> using return_type = R (*)(A...);
-
-}
-
-template <typename F, int I = 0, typename R, typename ...A>
-return_type<R, A...> cify(R (*)(A...), F&& f)
+template <typename F, typename L, int I = 0, typename R, typename ...A>
+F cify(L&& l, R (*)(A...))
 {
-  static F const f_(::std::forward<F>(f));
+  static L const l_(::std::forward<L>(l));
 
   struct S
   {
     static R f(A... args)
     {
-      f_(::std::forward<A>(args)...);
+      l_(::std::forward<A>(args)...);
     }
   };
 
   return &S::f;
+}
+
+}
+
+template <typename F, typename L, int I = 0>
+F cify(L&& l)
+{
+  return cify<F>(::std::forward<L>(l), F());
 }
 
 }
