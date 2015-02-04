@@ -13,17 +13,17 @@ namespace
 template <typename F, int I, typename L, typename R, typename ...A>
 inline F cify(L&& l, R (*)(A...))
 {
-  static L const l_(::std::forward<L>(l));
+  static L const l(::std::forward<L>(l));
 
   struct S
   {
-    static R f(A... args) noexcept(noexcept(l_(::std::forward<A>(args)...)))
+    static R f(A... args) noexcept(noexcept(l(::std::forward<A>(args)...)))
     {
-      return l_(::std::forward<A>(args)...);
+      return l(::std::forward<A>(args)...);
     }
   };
 
-  return &S::f;
+  return S::f;
 }
 
 }
