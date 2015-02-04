@@ -11,7 +11,7 @@ namespace
 {
 
 template <typename F, int I, typename L, typename R, typename ...A>
-F cify(L&& l, R (*)(A...))
+inline F cify(L&& l, R (*)(A...))
 {
   static L const l_(::std::forward<L>(l));
 
@@ -29,7 +29,7 @@ F cify(L&& l, R (*)(A...))
 }
 
 template <typename F, int I = 0, typename L>
-F cify(L&& l)
+inline F cify(L&& l)
 {
   return cify<F, I>(::std::forward<L>(l), F());
 }
