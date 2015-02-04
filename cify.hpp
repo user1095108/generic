@@ -18,8 +18,6 @@ template <typename F, typename R, typename ...A>
 return_type<R, A...> cify(R (*)(A...), F&& f)
 {
   static F const f_(::std::forward<F>(f));
-  
-  //new (static_cast<void*>(&f_)) F(::std::forward<F>(f));
 
   struct S
   {
