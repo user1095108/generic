@@ -10,7 +10,7 @@ namespace generic
 namespace
 {
 
-template <typename F, typename L, int I = 0, typename R, typename ...A>
+template <typename F, int I, typename L, typename R, typename ...A>
 F cify(L&& l, R (*)(A...))
 {
   static L const l_(::std::forward<L>(l));
@@ -28,10 +28,10 @@ F cify(L&& l, R (*)(A...))
 
 }
 
-template <typename F, typename L, int I = 0>
+template <typename F, int I = 0, typename L>
 F cify(L&& l)
 {
-  return cify<F>(::std::forward<L>(l), F());
+  return cify<F, I>(::std::forward<L>(l), F());
 }
 
 }
