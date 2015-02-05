@@ -21,19 +21,14 @@ inline F cify(L&& l, R (*)(A...))
     l_.~L();
     new (static_cast<void*>(&l_)) L(::std::forward<L>(l));
   }
-  // else do nothing
-
-  full = true;
-
-  struct S
+  else
   {
-    static R f(A... args) noexcept(noexcept(l_(::std::forward<A>(args)...)))
-    {
-      return l_(::std::forward<A>(args)...);
-    }
-  };
+    full = true;
+  }
 
-  return &S::f;
+  return [](A... args) noexcept(noexcept(l_(::std::forward<A>(args)...))) {
+    return l_(::std::forward<A>(args)...);
+  };
 }
 
 }
