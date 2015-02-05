@@ -14,15 +14,6 @@ template <typename F, int I, typename L, typename R, typename ...A>
 inline F cify(L&& l, R (*)(A...))
 {
   static thread_local L l_(::std::forward<L>(l));
-
-  struct S
-  {
-    static R f(A... args) noexcept(noexcept(l_(::std::forward<A>(args)...)))
-    {
-      return l_(::std::forward<A>(args)...);
-    }
-  };
-
   static thread_local bool full;
 
   if (full)
@@ -34,7 +25,15 @@ inline F cify(L&& l, R (*)(A...))
 
   full = true;
 
-  return S::f;
+  struct S
+  {
+    static R f(A... args) noexcept(noexcept(l_(::std::forward<A>(args)...)))
+    {
+      return l_(::std::forward<A>(args)...);
+    }
+  };
+
+  return &S::f;
 }
 
 }
