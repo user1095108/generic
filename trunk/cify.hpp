@@ -13,19 +13,7 @@ namespace
 template <typename F, int I, typename L, typename R, typename ...A>
 inline F cify(L&& l, R (*)(A...))
 {
-  static bool full;
-
   static L l_(::std::forward<L>(l));
-
-  if (full)
-  {
-    l_.~L();
-
-    new (static_cast<void*>(&l_)) L(::std::forward<L>(l));
-  }
-  // else do nothing
-
-  full = true;
 
   struct S
   {
@@ -34,6 +22,17 @@ inline F cify(L&& l, R (*)(A...))
       return l_(::std::forward<A>(args)...);
     }
   };
+
+  static bool full;
+
+  if (full)
+  {
+    l_.~L();
+    new (static_cast<void*>(&l_)) L(::std::forward<L>(l));
+  }
+  // else do nothing
+
+  full = true;
 
   return S::f;
 }
