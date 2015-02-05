@@ -26,9 +26,15 @@ inline F cify(L&& l, R (*)(A...))
     full = true;
   }
 
-  return [](A... args) noexcept(noexcept(l_(::std::forward<A>(args)...))) {
-    return l_(::std::forward<A>(args)...);
+  struct S
+  {
+    static R f(A... args) noexcept(noexcept(l_(::std::forward<A>(args)...)))
+    {
+      return l_(::std::forward<A>(args)...);
+    }
   };
+
+  return &S::f;
 }
 
 }
