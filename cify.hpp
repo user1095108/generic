@@ -19,6 +19,7 @@ inline F cify(L&& l, R (*)(A...))
   if (full)
   {
     l_.~L();
+
     new (static_cast<void*>(&l_)) L(::std::forward<L>(l));
   }
   else
