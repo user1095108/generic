@@ -13,7 +13,7 @@ namespace
 template <typename F, int I, typename L, typename R, typename ...A>
 inline F cify(L&& l, R (*)(A...))
 {
-  static L l_(::std::forward<L>(l));
+  static thread_local L l_(::std::forward<L>(l));
 
   struct S
   {
@@ -23,7 +23,7 @@ inline F cify(L&& l, R (*)(A...))
     }
   };
 
-  static bool full;
+  static thread_local bool full;
 
   if (full)
   {
