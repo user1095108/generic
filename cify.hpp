@@ -10,6 +10,7 @@ namespace generic
 namespace
 {
 
+//////////////////////////////////////////////////////////////////////////////
 template <typename F, int I, typename L, typename R, typename ...A>
 inline F cify(L&& l, R (*)(A...))
 {
@@ -38,6 +39,7 @@ inline F cify(L&& l, R (*)(A...))
   return &S::f;
 }
 
+//////////////////////////////////////////////////////////////////////////////
 template <typename F, int I, typename L, typename R, typename ...A>
 inline F thread_local_cify(L&& l, R (*)(A...))
 {
@@ -68,12 +70,14 @@ inline F thread_local_cify(L&& l, R (*)(A...))
 
 }
 
+//////////////////////////////////////////////////////////////////////////////
 template <typename F, int I = 0, typename L>
 inline F cify(L&& l)
 {
   return cify<F, I>(::std::forward<L>(l), F());
 }
 
+//////////////////////////////////////////////////////////////////////////////
 template <typename F, int I = 0, typename L>
 inline F thread_local_cify(L&& l)
 {
