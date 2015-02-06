@@ -41,4 +41,6 @@ inline F cify(L&& l)
 
 }
 
+}
+
 #endif // GENERIC_CIFY_HPP
