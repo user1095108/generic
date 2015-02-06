@@ -27,17 +27,10 @@ inline F cify(L&& l, R (*)(A...))
     full = true;
   }
 
-  struct S
-  {
-    static R f(A... args) noexcept(noexcept(l_(::std::forward<A>(args)...)))
+  return [](A... args) noexcept(noexcept(l_(::std::forward<A>(args)...)))
     {
       return l_(::std::forward<A>(args)...);
-    }
-  };
-
-  return &S::f;
-}
-
+    };
 }
 
 template <typename F, int I = 0, typename L>
