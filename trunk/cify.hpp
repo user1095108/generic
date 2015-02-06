@@ -39,7 +39,7 @@ inline F cify(L&& l, R (*)(A...))
 }
 
 template <typename F, int I, typename L, typename R, typename ...A>
-inline F cify(L&& l, R (*)(A...))
+inline F thread_local_cify(L&& l, R (*)(A...))
 {
   static thread_local L l_(::std::forward<L>(l));
   static thread_local bool full;
@@ -77,7 +77,7 @@ inline F cify(L&& l)
 template <typename F, int I = 0, typename L>
 inline F thread_local_cify(L&& l)
 {
-  return cify<F, I>(::std::forward<L>(l), F());
+  return thread_local_cify<F, I>(::std::forward<L>(l), F());
 }
 
 }
