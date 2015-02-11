@@ -13,7 +13,7 @@ namespace
 //////////////////////////////////////////////////////////////////////////////
 template <typename F, int I, typename L, typename R, typename ...A>
 inline F cify(L&& l, R (*)(A...) noexcept(noexcept(
-  F{}(::std::declval<A>()...))))
+  ::std::declval<F>()(::std::declval<A>()...))))
 {
   static L l_(::std::forward<L>(l));
   static bool full;
@@ -43,7 +43,7 @@ inline F cify(L&& l, R (*)(A...) noexcept(noexcept(
 //////////////////////////////////////////////////////////////////////////////
 template <typename F, int I, typename L, typename R, typename ...A>
 inline F thread_local_cify(L&& l, R (*)(A...) noexcept(noexcept(
-  F{}(::std::declval<A>()...))))
+  ::std::declval<F>()(::std::declval<A>()...))))
 {
   static thread_local L l_(::std::forward<L>(l));
   static thread_local bool full;
