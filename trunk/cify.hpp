@@ -31,7 +31,8 @@ inline F cify(L&& l, R (*)(A...) noexcept(noexcept(
 
   struct S
   {
-    static R f(A... args) noexcept(noexcept(l_(::std::forward<A>(args)...)))
+    static R f(A... args) noexcept(noexcept(
+      ::std::declval<F>()(::std::forward<A>(args)...)))
     {
       return l_(::std::forward<A>(args)...);
     }
@@ -61,7 +62,8 @@ inline F thread_local_cify(L&& l, R (*)(A...) noexcept(noexcept(
 
   struct S
   {
-    static R f(A... args) noexcept(noexcept(l_(::std::forward<A>(args)...)))
+    static R f(A... args) noexcept(noexcept(
+      ::std::declval<F>()(::std::forward<A>(args)...)))
     {
       return l_(::std::forward<A>(args)...);
     }
