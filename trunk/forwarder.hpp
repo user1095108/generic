@@ -22,10 +22,8 @@ template<typename R, typename ...A, ::std::size_t N>
 class forwarder<R (A...), N>
 {
   template <typename U>
-  static R invoker_stub(void const* const ptr, A&&... args)
-    noexcept(noexcept(
-      (*static_cast<U const*>(ptr))(::std::forward<A>(args)...)
-    ))
+  static R invoker_stub(void const* const ptr, A&&... args) noexcept(noexcept(
+    (*static_cast<U const*>(ptr))(::std::forward<A>(args)...)))
   {
     return (*static_cast<U const*>(ptr))(::std::forward<A>(args)...);
   }
