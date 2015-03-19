@@ -455,52 +455,6 @@ public:
   }
 
   template <typename U>
-  typename ::std::enable_if<
-    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U
-  >::type
-  cget() const
-  {
-    return get<U>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U const&
-  >::type
-  cget() const
-  {
-    return get<U>();
-  }
-
-  template <typename U>
-  U& get()
-  {
-    if (contains<U>())
-    {
-      return *reinterpret_cast<U*>(&store_);
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
-  }
-
-  template <typename U>
-  U const& get() const
-  {
-    if (contains<U>()) 
-    {
-      return *reinterpret_cast<U const*>(&store_);
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
-  }
-
-  template <typename U>
   static typeid_t type_id() noexcept
   {
     return typeid_t(meta<U>());
@@ -631,12 +585,61 @@ private:
   }
 
 private:
+  template <typename U, typename ...V> friend U& get(some<V...>&);
+  template <typename U, typename ...V> friend U const& get(some<V...> const&);
+
   struct meta const* meta_{meta<void>()};
 
   typename ::std::aligned_storage<
     detail::some::max_type_size<T...>{}
   >::type store_;
 };
+
+template <typename U, typename ...T>
+U& get(some<T...>& s)
+{
+  if (s.contains<U>())
+  {
+    return *reinterpret_cast<U*>(&s.store_);
+  }
+  else
+  {
+    throw ::std::bad_cast();
+  }
+}
+
+template <typename U, typename ...T>
+U const& get(some<T...> const& s)
+{
+  if (s.contains<U>())
+  {
+    return *reinterpret_cast<U const*>(&s.store_);
+  }
+  else
+  {
+    throw ::std::bad_cast();
+  }
+}
+
+template <typename U, typename ...T>
+typename ::std::enable_if<
+  (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  U
+>::type
+cget(some<T...> const& v)
+{
+  return get<U>(v);
+}
+
+template <typename U, typename ...T>
+typename ::std::enable_if<
+  !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  U const&
+>::type
+cget(some<T...> const& s)
+{
+  return get<U const>(s);
+}
 
 #ifdef __GNUC__
 # pragma GCC diagnostic pop
