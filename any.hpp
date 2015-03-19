@@ -101,73 +101,6 @@ public: // queries
 
 public: // get
 
-  template <typename U>
-  U& get()
-#ifdef NDEBUG
-    noexcept
-#endif
-  {
-    using nonref = typename remove_cvr<U>::type;
-
-#ifndef NDEBUG
-    if (content && (type_id() ==
-      type_id<typename remove_cvr<U>::type>()))
-    {
-      return static_cast<any::holder<nonref>*>(content)->held;
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
-#else
-    return static_cast<any::holder<nonref>*>(content)->held;
-#endif // NDEBUG
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U const&
-  >::type
-  get() const noexcept(noexcept(::std::declval<any>().get<U const&>()))
-  {
-    using nonref = typename remove_cvr<U>::type;
-
-    return const_cast<any*>(this)->get<nonref const&>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    ::std::is_enum<U>{} || ::std::is_fundamental<U>{},
-    U
-  >::type
-  get() const noexcept(noexcept(::std::declval<any>().get<U>()))
-  {
-    using nonref = typename remove_cvr<U>::type;
-
-    return const_cast<any*>(this)->get<nonref const&>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U const&
-  >::type
-  cget() const noexcept(noexcept(::std::declval<any>().get<U const&>()))
-  {
-    return get<U const&>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U
-  >::type
-  cget() const noexcept(noexcept(::std::declval<any>().get<U>()))
-  {
-    return get<U>();
-  }
-
 private: // types
 
   template <typename T>
@@ -297,6 +230,14 @@ private: // representation
   template<typename ValueType>
   friend ValueType* unsafe_any_cast(any*) noexcept;
 
+#ifdef NDEBUG
+  template <typename U> friend U& get(any&) noexcept;
+  template <typename U> friend U const& get(any const&) noexcept;
+#else
+  template <typename U> friend U& get(any&);
+  template <typename U> friend U const& get(any const&);
+#endif // NDEBUG
+
   placeholder* content{};
 };
 
@@ -364,6 +305,74 @@ inline ValueType any_cast(any const& operand) noexcept(
   using nonref = typename any::remove_cvr<ValueType>::type;
 
   return any_cast<nonref const&>(const_cast<any&>(operand));
+}
+
+template <typename U>
+U& get(any& a)
+#ifdef NDEBUG
+  noexcept
+#endif
+{
+  using nonref = typename ::generic::any::remove_cvr<U>::type;
+
+#ifndef NDEBUG
+  if (a.content && (a.type_id() ==
+    a.type_id<typename any::remove_cvr<U>::type>()))
+  {
+    return static_cast<any::holder<nonref>*>(a.content)->held;
+  }
+  else
+  {
+    throw ::std::bad_cast();
+  }
+#else
+  return static_cast<any::holder<nonref>*>(content)->held;
+#endif // NDEBUG
+}
+
+template <typename U>
+U const& get(any const& a)
+#ifdef NDEBUG
+  noexcept
+#endif
+{
+  using nonref = typename ::generic::any::remove_cvr<U>::type;
+
+#ifndef NDEBUG
+  if (a.content && (a.type_id() ==
+    a.type_id<typename any::remove_cvr<U>::type>()))
+  {
+    return static_cast<any::holder<nonref const>*>(a.content)->held;
+  }
+  else
+  {
+    throw ::std::bad_cast();
+  }
+#else
+  return static_cast<any::holder<nonref>*>(content)->held;
+#endif // NDEBUG
+}
+
+template <typename U>
+typename ::std::enable_if<
+  !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  U const&
+>::type
+cget(any const& a) noexcept(
+  noexcept(get<U const&>(::std::declval<any const>())))
+{
+  return get<U const&>(a);
+}
+
+template <typename U>
+typename ::std::enable_if<
+  ::std::is_enum<U>{} || ::std::is_fundamental<U>{},
+  U
+>::type
+cget(any const& a) noexcept(
+  noexcept(get<U>(::std::declval<any const>())))
+{
+  return get<U>();
 }
 
 }
