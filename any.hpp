@@ -325,7 +325,7 @@ U& get(any& a)
     throw ::std::bad_cast();
   }
 #else
-  return static_cast<any::holder<nonref>*>(content)->held;
+  return static_cast<any::holder<nonref>*>(a.content)->held;
 #endif // NDEBUG
 }
 
@@ -347,7 +347,7 @@ U const& get(any const& a)
     throw ::std::bad_cast();
   }
 #else
-  return static_cast<any::holder<nonref>*>(content)->held;
+  return static_cast<any::holder<nonref>*>(a.content)->held;
 #endif // NDEBUG
 }
 
