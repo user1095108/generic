@@ -585,8 +585,13 @@ private:
   }
 
 private:
+#ifdef NDEBUG
+  template <typename U, typename ...V> friend U& get(some<V...>&) noexcept;
+  template <typename U, typename ...V> friend U const& get(some<V...> const&) noexcept;
+#else
   template <typename U, typename ...V> friend U& get(some<V...>&);
   template <typename U, typename ...V> friend U const& get(some<V...> const&);
+#endif // NDEBUG
 
   struct meta const* meta_{meta<void>()};
 
@@ -596,49 +601,67 @@ private:
 };
 
 template <typename U, typename ...T>
-U& get(some<T...>& s)
+inline U& get(some<T...>& s)
+#ifdef NDEBUG
+noexcept
+#endif // NDEBUG
 {
-  if (s.contains<U>())
+  using nonref = typename detail::some::remove_cvr<U>::type;
+
+#ifndef NDEBUG
+  if (s.contains<nonref>())
   {
-    return *reinterpret_cast<U*>(&s.store_);
+    return *reinterpret_cast<nonref*>(&s.store_);
   }
   else
   {
     throw ::std::bad_cast();
   }
+#else
+  return *reinterpret_cast<nonref*>(&s.store_);
+#endif // NDEBUG
 }
 
 template <typename U, typename ...T>
-U const& get(some<T...> const& s)
+inline U const& get(some<T...> const& s)
+#ifdef NDEBUG
+noexcept
+#endif // NDEBUG
 {
-  if (s.contains<U>())
+  using nonref = typename detail::some::remove_cvr<U>::type;
+
+#ifndef NDEBUG
+  if (s.contains<nonref>())
   {
-    return *reinterpret_cast<U const*>(&s.store_);
+    return *reinterpret_cast<nonref const*>(&s.store_);
   }
   else
   {
     throw ::std::bad_cast();
   }
+#else
+  return *reinterpret_cast<nonref const*>(&s.store_);
+#endif // NDEBUG
 }
 
 template <typename U, typename ...T>
-typename ::std::enable_if<
+inline typename ::std::enable_if<
   (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
   U
 >::type
-cget(some<T...> const& v)
+cget(some<T...> const& s) noexcept(noexcept(get<U>(s)))
 {
-  return get<U>(v);
+  return get<U>(s);
 }
 
 template <typename U, typename ...T>
-typename ::std::enable_if<
+inline typename ::std::enable_if<
   !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
   U const&
 >::type
-cget(some<T...> const& s)
+cget(some<T...> const& s) noexcept(noexcept(get<U>(s)))
 {
-  return get<U const>(s);
+  return get<U>(s);
 }
 
 #ifdef __GNUC__

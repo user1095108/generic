@@ -316,8 +316,7 @@ U& get(any& a)
   using nonref = typename ::generic::any::remove_cvr<U>::type;
 
 #ifndef NDEBUG
-  if (a.content && (a.type_id() ==
-    a.type_id<typename any::remove_cvr<U>::type>()))
+  if (a.content && (a.type_id() == a.type_id<nonref>()))
   {
     return static_cast<any::holder<nonref>*>(a.content)->held;
   }
@@ -339,8 +338,7 @@ U const& get(any const& a)
   using nonref = typename ::generic::any::remove_cvr<U>::type;
 
 #ifndef NDEBUG
-  if (a.content && (a.type_id() ==
-    a.type_id<typename any::remove_cvr<U>::type>()))
+  if (a.content && (a.type_id() == a.type_id<nonref>()))
   {
     return static_cast<any::holder<nonref const>*>(a.content)->held;
   }
