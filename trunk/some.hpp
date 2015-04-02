@@ -609,7 +609,7 @@ noexcept
   using nonref = typename detail::some::remove_cvr<U>::type;
 
 #ifndef NDEBUG
-  if (s.contains<nonref>())
+  if (s.template contains<nonref>())
   {
     return *reinterpret_cast<nonref*>(&s.store_);
   }
@@ -631,7 +631,7 @@ noexcept
   using nonref = typename detail::some::remove_cvr<U>::type;
 
 #ifndef NDEBUG
-  if (s.contains<nonref>())
+  if (s.template contains<nonref>())
   {
     return *reinterpret_cast<nonref const*>(&s.store_);
   }
