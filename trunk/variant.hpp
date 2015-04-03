@@ -216,7 +216,8 @@ struct is_copy_assignable<T,
   decltype(
     sizeof((typename T::reference(T::*)())(&T::back)),
     sizeof((typename T::reference(T::*)())(&T::front)),
-    sizeof((typename T::value_type*(T::*)())(&T::data))
+    sizeof((typename T::value_type*(T::*)())(&T::data)),
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_back))
   )
 > : is_copy_assignable<typename T::value_type>
 {
@@ -243,7 +244,8 @@ struct is_copy_constructible<T,
   decltype(
     sizeof((typename T::reference(T::*)())(&T::back)),
     sizeof((typename T::reference(T::*)())(&T::front)),
-    sizeof((typename T::value_type*(T::*)())(&T::data))
+    sizeof((typename T::value_type*(T::*)())(&T::data)),
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_back))
   )
 > : is_copy_constructible<typename T::value_type>
 {
