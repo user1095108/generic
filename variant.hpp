@@ -228,6 +228,18 @@ struct is_copy_assignable<T,
 template <typename T>
 struct is_copy_assignable<T,
   decltype(
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)),
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)),
+    sizeof(&T::pop_front)
+  )
+> : is_copy_assignable<typename T::value_type>
+{
+};
+
+
+template <typename T>
+struct is_copy_assignable<T,
+  decltype(
     sizeof(typename T::key_type),
     sizeof(typename T::mapped_type),
     sizeof(typename T::value_type)
@@ -250,6 +262,17 @@ struct is_copy_constructible<T,
     sizeof((typename T::value_type*(T::*)())(&T::data)),
     sizeof((void(T::*)(typename T::const_reference))(&T::push_back)),
     sizeof((void(T::*)(typename T::value_type&&))(&T::push_back))
+  )
+> : is_copy_constructible<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_copy_constructible<T,
+  decltype(
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)),
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)),
+    sizeof(&T::pop_front)
   )
 > : is_copy_constructible<typename T::value_type>
 {
