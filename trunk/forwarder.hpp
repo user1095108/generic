@@ -55,12 +55,8 @@ public:
 
     static_assert(sizeof(functor_type) <= sizeof(store_),
       "functor too large");
-    static_assert(::std::is_trivially_destructible<T>::value,
-      "functor not trivially destructible");
-    //static_assert(::std::is_trivially_copy_assignable<T>::value,
-    //  "functor not trivially copy assignable");
-    //static_assert(::std::is_trivially_copy_constructible<T>::value,
-    //  "functor not trivially copy constructible");
+//  static_assert(::std::is_trivially_copyable<T>{},
+//    "functor not trivially destructible");
 
     new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
 
