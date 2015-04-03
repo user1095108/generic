@@ -32,15 +32,9 @@ public:
 
   ~implstore() { get()->~U(); }
 
-  implstore(implstore const& other) :
-    implstore(other, nullptr)
-  {
-  }
+  implstore(implstore const& other) : implstore(other, nullptr) { }
 
-  implstore(implstore&& other) :
-    implstore(::std::move(other), nullptr)
-  {
-  }
+  implstore(implstore&& other) : implstore(::std::move(other), nullptr) { }
 
   template <::std::size_t M, typename K = U>
   implstore(implstore<U, M> const& other,
@@ -52,11 +46,17 @@ public:
   }
 
   template <::std::size_t M, typename K = U>
-  implstore(implstore<U, M>&& other, typename ::std::enable_if<
+  implstore(implstore<U, M>&& other,
+    typename ::std::enable_if<
       ::std::is_move_constructible<K>{}
     >::type* = nullptr)
   {
     new (static_cast<void*>(&store_)) U(::std::move(*other));
+  }
+
+  implstore& operator=(implstore const& rhs)
+  {
+    return operator=<N, U>(rhs);
   }
 
   template <::std::size_t M, typename K = U, typename =
@@ -70,6 +70,11 @@ public:
     **this = *rhs;
 
     return *this;
+  }
+
+  implstore& operator=(implstore&& rhs)
+  {
+    return operator=<N, U>(::std::move(rhs));
   }
 
   template <::std::size_t M, typename K = U, typename =
