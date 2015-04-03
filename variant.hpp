@@ -212,26 +212,22 @@ struct is_copy_assignable : ::std::is_copy_assignable<T>
 };
 
 template <typename T>
-struct is_copy_assignable<T, decltype(sizeof(&T::push_back))> :
-  is_copy_assignable<typename T::value_type>
+struct is_copy_assignable<T,
+  decltype(
+    sizeof((typename T::value_type*(T::*)())(&T::data))
+  )
+> : is_copy_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
-struct is_copy_assignable<T, decltype(sizeof(&T::insert))> :
-  is_copy_assignable<typename T::mapped_type>
-{
-};
-
-template <typename T, typename = ::std::size_t>
-struct is_move_assignable : ::std::is_move_assignable<T>
-{
-};
-
-template <typename T>
-struct is_move_assignable<T,
-  decltype(sizeof(typename T::value_type))
-> : is_move_assignable<typename T::value_type>
+struct is_copy_assignable<T,
+  decltype(
+    sizeof(typename T::key_type),
+    sizeof(typename T::mapped_type),
+    sizeof(typename T::value_type)
+  )
+> : is_copy_assignable<typename T::mapped_type>
 {
 };
 
@@ -242,8 +238,32 @@ struct is_copy_constructible : ::std::is_copy_constructible<T>
 
 template <typename T>
 struct is_copy_constructible<T,
-  decltype(sizeof(typename T::value_type))
+  decltype(
+    sizeof((typename T::value_type*(T::*)())(&T::data))
+  )
 > : is_copy_constructible<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_copy_constructible<T,
+  decltype(
+    sizeof(typename T::key_type),
+    sizeof(typename T::mapped_type),
+    sizeof(typename T::value_type)
+  )
+> : is_copy_constructible<typename T::mapped_type>
+{
+};
+
+template <typename T, typename = ::std::size_t>
+struct is_move_assignable : ::std::is_move_assignable<T>
+{
+};
+
+template <typename T>
+struct is_move_assignable<T, decltype(sizeof(typename T::value_type))> :
+  is_move_assignable<typename T::value_type>
 {
 };
 
