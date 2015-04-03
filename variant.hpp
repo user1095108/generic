@@ -214,6 +214,8 @@ struct is_copy_assignable : ::std::is_copy_assignable<T>
 template <typename T>
 struct is_copy_assignable<T,
   decltype(
+    sizeof((typename T::reference(T::*)())(&T::back)),
+    sizeof((typename T::reference(T::*)())(&T::front)),
     sizeof((typename T::value_type*(T::*)())(&T::data))
   )
 > : is_copy_assignable<typename T::value_type>
@@ -239,6 +241,8 @@ struct is_copy_constructible : ::std::is_copy_constructible<T>
 template <typename T>
 struct is_copy_constructible<T,
   decltype(
+    sizeof((typename T::reference(T::*)())(&T::back)),
+    sizeof((typename T::reference(T::*)())(&T::front)),
     sizeof((typename T::value_type*(T::*)())(&T::data))
   )
 > : is_copy_constructible<typename T::value_type>
