@@ -45,12 +45,12 @@ template <typename T>
 class scope_exit
 {
 public:
-  explicit scope_exit(T&& f) : f_(::std::forward<T>(f))
+  explicit scope_exit(T&& f) noexcept : f_(::std::forward<T>(f))
   {
     static_assert(noexcept(f_()), "throwing functors are unsupported");
   }
 
-  scope_exit(scope_exit&& other) : f_(::std::move(other.f_)) { }
+  scope_exit(scope_exit&& other) noexcept : f_(::std::move(other.f_)) { }
 
   ~scope_exit() noexcept { f_(); }
 
@@ -75,11 +75,11 @@ inline scope_exit<T> operator+(scope_exit_helper&&, T&& f)
 }
 
 #define SCOPE_EXIT(...) auto const CAT(scope_exit_, __LINE__)          \
-  (::detail::make_scope_exit([POP_LAST(__VA_ARGS__)]() mutable noexcept\
+  (::detail::make_scope_exit([POP_LAST(__VA_ARGS__)]() noexcept\
     { LAST(__VA_ARGS__); }))
 #define SCOPE_EXIT_ auto const CAT(scope_exit_, __LINE__) =            \
-  ::detail::scope_exit_helper()+[&]() mutable noexcept
+  ::detail::scope_exit_helper()+[&]() noexcept
 #define SCOPE_EXIT__(...) auto const CAT(scope_exit_, __LINE__) =      \
-  ::detail::scope_exit_helper()+[__VA_ARGS__]() mutable noexcept
+  ::detail::scope_exit_helper()+[__VA_ARGS__]() noexcept
 
 #endif // SCOPEEXIT_HPP
