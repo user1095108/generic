@@ -207,32 +207,72 @@ struct any_of<A> : bool_constant<A{}>
 };
 
 template <typename T, typename = ::std::size_t>
+struct is_vector : ::std::false_type
+{
+};
+
+template <typename T>
+struct is_vector<T,
+  decltype(
+    sizeof((typename T::reference(T::*)())(&T::back)) |
+    sizeof((typename T::reference(T::*)())(&T::front)) |
+    sizeof((typename T::value_type const*(T::*)() const)(&T::data)) |
+    sizeof((typename T::value_type*(T::*)())(&T::data)) |
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_back)) |
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
+    sizeof(&T::shrink_to_fit)
+  )
+> : ::std::true_type
+{
+};
+
+template <typename T, typename = ::std::size_t>
+struct is_list : ::std::false_type
+{
+};
+
+template <typename T>
+struct is_list<T,
+  decltype(
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)) |
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
+    sizeof(&T::pop_front)
+  )
+> : ::std::true_type
+{
+};
+
+template <typename T, typename = ::std::size_t>
+struct is_map : ::std::false_type
+{
+};
+
+template <typename T>
+struct is_map<T,
+  decltype(
+    sizeof(typename T::key_type) |
+    sizeof(typename T::mapped_type) |
+    sizeof(typename T::value_type)
+  )
+> : ::std::true_type
+{
+};
+
+template <typename T, typename = void>
 struct is_copy_assignable : ::std::is_copy_assignable<T>
 {
 };
 
 template <typename T>
 struct is_copy_assignable<T,
-  decltype(
-    sizeof((typename T::reference(T::*)())(&T::back)) |
-    sizeof((typename T::reference(T::*)())(&T::front)) |
-    sizeof((typename T::value_type const*(T::*)() const)(&T::data)) |
-    sizeof((typename T::value_type*(T::*)())(&T::data)) |
-    sizeof((void(T::*)(typename T::const_reference))(&T::push_back)) |
-    sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
-    sizeof(&T::shrink_to_fit)
-  )
+  typename ::std::enable_if<is_vector<T>{}>::type
 > : is_copy_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_assignable<T,
-  decltype(
-    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)) |
-    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
-    sizeof(&T::pop_front)
-  )
+  typename ::std::enable_if<is_list<T>{}>::type
 > : is_copy_assignable<typename T::value_type>
 {
 };
@@ -240,84 +280,52 @@ struct is_copy_assignable<T,
 
 template <typename T>
 struct is_copy_assignable<T,
-  decltype(
-    sizeof(typename T::key_type) |
-    sizeof(typename T::mapped_type) |
-    sizeof(typename T::value_type)
-  )
+  typename ::std::enable_if<is_map<T>{}>::type
 > : is_copy_assignable<typename T::mapped_type>
 {
 };
 
-template <typename T, typename = ::std::size_t>
+template <typename T, typename = void>
 struct is_copy_constructible : ::std::is_copy_constructible<T>
 {
 };
 
 template <typename T>
 struct is_copy_constructible<T,
-  decltype(
-    sizeof((typename T::reference(T::*)())(&T::back)) |
-    sizeof((typename T::reference(T::*)())(&T::front)) |
-    sizeof((typename T::value_type const*(T::*)() const)(&T::data)) |
-    sizeof((typename T::value_type*(T::*)())(&T::data)) |
-    sizeof((void(T::*)(typename T::const_reference))(&T::push_back)) |
-    sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
-    sizeof(&T::shrink_to_fit)
-  )
+  typename ::std::enable_if<is_vector<T>{}>::type
 > : is_copy_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_constructible<T,
-  decltype(
-    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)) |
-    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
-    sizeof(&T::pop_front)
-  )
+  typename ::std::enable_if<is_list<T>{}>::type
 > : is_copy_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_constructible<T,
-  decltype(
-    sizeof(typename T::key_type) |
-    sizeof(typename T::mapped_type) |
-    sizeof(typename T::value_type)
-  )
+  typename ::std::enable_if<is_map<T>{}>::type
 > : is_copy_constructible<typename T::mapped_type>
 {
 };
 
-template <typename T, typename = ::std::size_t>
+template <typename T, typename = void>
 struct is_move_assignable : ::std::is_move_assignable<T>
 {
 };
 
 template <typename T>
 struct is_move_assignable<T,
-  decltype(
-    sizeof((typename T::reference(T::*)())(&T::back)) |
-    sizeof((typename T::reference(T::*)())(&T::front)) |
-    sizeof((typename T::value_type const*(T::*)() const)(&T::data)) |
-    sizeof((typename T::value_type*(T::*)())(&T::data)) |
-    sizeof((void(T::*)(typename T::const_reference))(&T::push_back)) |
-    sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
-    sizeof(&T::shrink_to_fit)
-  )
+  typename ::std::enable_if<is_vector<T>{}>::type
 > : is_move_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_move_assignable<T,
-  decltype(
-    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)) |
-    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
-    sizeof(&T::pop_front)
-  )
+  typename ::std::enable_if<is_list<T>{}>::type
 > : is_move_assignable<typename T::value_type>
 {
 };
@@ -325,53 +333,33 @@ struct is_move_assignable<T,
 
 template <typename T>
 struct is_move_assignable<T,
-  decltype(
-    sizeof(typename T::key_type) |
-    sizeof(typename T::mapped_type) |
-    sizeof(typename T::value_type)
-  )
+  typename ::std::enable_if<is_map<T>{}>::type
 > : is_move_assignable<typename T::mapped_type>
 {
 };
 
-template <typename T, typename = ::std::size_t>
+template <typename T, typename = void>
 struct is_move_constructible : ::std::is_move_constructible<T>
 {
 };
 
 template <typename T>
 struct is_move_constructible<T,
-  decltype(
-    sizeof((typename T::reference(T::*)())(&T::back)) |
-    sizeof((typename T::reference(T::*)())(&T::front)) |
-    sizeof((typename T::value_type const*(T::*)() const)(&T::data)) |
-    sizeof((typename T::value_type*(T::*)())(&T::data)) |
-    sizeof((void(T::*)(typename T::const_reference))(&T::push_back)) |
-    sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
-    sizeof(&T::shrink_to_fit)
-  )
+  typename ::std::enable_if<is_vector<T>{}>::type
 > : is_move_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_move_constructible<T,
-  decltype(
-    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)) |
-    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
-    sizeof(&T::pop_front)
-  )
+  typename ::std::enable_if<is_list<T>{}>::type
 > : is_move_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_move_constructible<T,
-  decltype(
-    sizeof(typename T::key_type) |
-    sizeof(typename T::mapped_type) |
-    sizeof(typename T::value_type)
-  )
+  typename ::std::enable_if<is_map<T>{}>::type
 > : is_move_constructible<typename T::mapped_type>
 {
 };
