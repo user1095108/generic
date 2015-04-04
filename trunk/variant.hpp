@@ -187,22 +187,22 @@ template <bool B>
 using bool_constant = ::std::integral_constant<bool, B>;
 
 template <class A, class ...B>
-struct all_of : bool_constant<A::value && all_of<B...>::value>
+struct all_of : bool_constant<A{} && all_of<B...>{}>
 {
 };
 
 template <class A>
-struct all_of<A> : bool_constant<A::value>
+struct all_of<A> : bool_constant<A{}>
 {
 };
 
 template <class A, class ...B>
-struct any_of : bool_constant<A::value || any_of<B...>::value>
+struct any_of : bool_constant<A{} || any_of<B...>{}>
 {
 };
 
 template <class A>
-struct any_of<A> : bool_constant<A::value>
+struct any_of<A> : bool_constant<A{}>
 {
 };
 
@@ -297,20 +297,82 @@ struct is_move_assignable : ::std::is_move_assignable<T>
 };
 
 template <typename T>
-struct is_move_assignable<T, decltype(sizeof(typename T::value_type))> :
-  is_move_assignable<typename T::value_type>
+struct is_move_assignable<T,
+  decltype(
+    sizeof((typename T::reference(T::*)())(&T::back)) |
+    sizeof((typename T::reference(T::*)())(&T::front)) |
+    sizeof((typename T::value_type const*(T::*)() const)(&T::data)) |
+    sizeof((typename T::value_type*(T::*)())(&T::data)) |
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_back)) |
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
+    sizeof(&T::shrink_to_fit)
+  )
+> : is_move_assignable<typename T::value_type>
 {
 };
 
-template <typename T, typename = void>
+template <typename T>
+struct is_move_assignable<T,
+  decltype(
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)) |
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
+    sizeof(&T::pop_front)
+  )
+> : is_move_assignable<typename T::value_type>
+{
+};
+
+
+template <typename T>
+struct is_move_assignable<T,
+  decltype(
+    sizeof(typename T::key_type) |
+    sizeof(typename T::mapped_type) |
+    sizeof(typename T::value_type)
+  )
+> : is_move_assignable<typename T::mapped_type>
+{
+};
+
+template <typename T, typename = ::std::size_t>
 struct is_move_constructible : ::std::is_move_constructible<T>
 {
 };
 
 template <typename T>
 struct is_move_constructible<T,
-  decltype(void(sizeof(typename T::value_type)))
+  decltype(
+    sizeof((typename T::reference(T::*)())(&T::back)) |
+    sizeof((typename T::reference(T::*)())(&T::front)) |
+    sizeof((typename T::value_type const*(T::*)() const)(&T::data)) |
+    sizeof((typename T::value_type*(T::*)())(&T::data)) |
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_back)) |
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
+    sizeof(&T::shrink_to_fit)
+  )
 > : is_move_constructible<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_move_constructible<T,
+  decltype(
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)) |
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
+    sizeof(&T::pop_front)
+  )
+> : is_move_constructible<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_move_constructible<T,
+  decltype(
+    sizeof(typename T::key_type) |
+    sizeof(typename T::mapped_type) |
+    sizeof(typename T::value_type)
+  )
+> : is_move_constructible<typename T::mapped_type>
 {
 };
 
