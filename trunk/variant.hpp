@@ -320,6 +320,150 @@ struct is_move_or_copy_constructible :
 {
 };
 
+using deleter_type = void (*)(void*);
+using copier_type = void (*)(bool, deleter_type, void*, void const*);
+using mover_type = void (*)(bool, deleter_type, void*, void*);
+
+template <typename U>
+inline typename ::std::enable_if<
+  detail::variant::is_copy_constructible<U>{} &&
+  !detail::variant::is_copy_assignable<U>{}
+>::type
+copier_stub(bool const, deleter_type const deleter,
+  void* const dst_store, void const* const src_store)
+{
+  deleter(dst_store);
+
+  new (dst_store) U(*reinterpret_cast<U const*>(src_store));
+}
+
+template <typename U>
+inline typename ::std::enable_if<
+  detail::variant::is_copy_constructible<U>{} &&
+  detail::variant::is_copy_assignable<U>{}
+>::type
+copier_stub(bool const same_type, deleter_type const deleter,
+  void* const dst_store, void const* const src_store)
+{
+  if (same_type)
+  {
+    *reinterpret_cast<U*>(dst_store) =
+      *reinterpret_cast<U const*>(src_store);
+  }
+  else
+  {
+    deleter(dst_store);
+
+    new (dst_store) U(*reinterpret_cast<U const*>(src_store));
+  }
+}
+
+template <typename U>
+inline typename ::std::enable_if<
+  detail::variant::is_move_constructible<U>{} &&
+  !detail::variant::is_move_assignable<U>{}
+>::type
+mover_stub(bool const, deleter_type const deleter,
+  void* const dst_store, void* const src_store)
+{
+  deleter(dst_store);
+
+  new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
+}
+
+template <typename U>
+inline typename ::std::enable_if<
+  detail::variant::is_move_constructible<U>{} &&
+  detail::variant::is_move_assignable<U>{}
+>::type
+mover_stub(bool const same_type, deleter_type const deleter,
+  void* const dst_store, void* const src_store)
+{
+  if (same_type)
+  {
+    *reinterpret_cast<U*>(dst_store) =
+      ::std::move(*reinterpret_cast<U*>(src_store));
+  }
+  else
+  {
+    deleter(dst_store);
+
+    new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
+  }
+}
+
+template <class U>
+typename ::std::enable_if<
+  !detail::variant::is_copy_constructible<U>{}, copier_type
+>::type
+inline get_copier() noexcept
+{
+  return nullptr;
+}
+
+template <class U>
+typename ::std::enable_if<
+  detail::variant::is_copy_constructible<U>{}, copier_type
+>::type
+inline get_copier() noexcept
+{
+  return copier_stub<U>;
+}
+
+template <class U>
+typename ::std::enable_if<
+  !detail::variant::is_move_constructible<U>{}, mover_type
+>::type
+inline get_mover() noexcept
+{
+  return nullptr;
+}
+
+template <class U>
+typename ::std::enable_if<
+  detail::variant::is_move_constructible<U>{}, mover_type
+>::type
+inline get_mover() noexcept
+{
+  return mover_stub<U>;
+}
+
+template <class U>
+inline typename ::std::enable_if<
+  !::std::is_same<U, void>{}
+>::type
+deleter_stub(void* const store)
+{
+  reinterpret_cast<U*>(store)->~U();
+}
+
+template <class U>
+inline typename ::std::enable_if<
+  ::std::is_same<U, void>{}
+>::type
+deleter_stub(void* const) noexcept
+{
+}
+
+struct meta
+{
+  deleter_type deleter;
+  copier_type copier;
+  mover_type mover;
+};
+
+template <typename U>
+inline struct meta const* get_meta()
+{
+  static struct meta const m{
+    deleter_stub<U>,
+    get_copier<U>(),
+    get_mover<U>()
+  };
+
+  return &m;
+}
+
 }
 
 }
@@ -496,29 +640,6 @@ class variant
     return I == type_id_ ?
       os << get<U>() :
       stream_value<I + 1, OS, V...>(os);
-  }
-
-  using deleter_type = void (*)(void*);
-  using copier_type = void (*)(bool, deleter_type, void*, void const*);
-  using mover_type = void (*)(bool, deleter_type, void*, void*);
-
-  struct meta
-  {
-    deleter_type deleter;
-    copier_type copier;
-    mover_type mover;
-  };
-
-  template <typename U>
-  static struct meta const* meta()
-  {
-    static const struct meta m{
-      deleter_stub<U>,
-      get_copier<U>(),
-      get_mover<U>()
-    };
-
-    return &m;
   }
 
 public:
@@ -799,7 +920,7 @@ public:
 
       new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
-      meta_ = meta<user_type>();
+      meta_ = detail::variant::get_meta<user_type>();
 
       type_id_ = detail::variant::index_of<user_type, T...>{};
     }
@@ -842,7 +963,7 @@ public:
 
       new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
-      meta_ = meta<user_type>();
+      meta_ = detail::variant::get_meta<user_type>();
 
       type_id_ = detail::variant::index_of<user_type, T...>{};
     }
@@ -875,7 +996,7 @@ public:
 
     new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
 
-    meta_ = meta<user_type>();
+    meta_ = detail::variant::get_meta<user_type>();
 
     type_id_ = detail::variant::index_of<user_type, T...>{};
 
@@ -900,7 +1021,7 @@ public:
   { 
     meta_->deleter(store_);
 
-    meta_ = meta<void>();
+    meta_ = detail::variant::get_meta<void>();
 
     type_id_ = -1;
   }
@@ -1085,131 +1206,12 @@ private:
       v.stream_value<0, decltype(os), T...>(os);
   }
 
-  template <class U>
-  typename ::std::enable_if<
-    !detail::variant::is_copy_constructible<U>{}, copier_type
-  >::type
-  static get_copier() noexcept
-  {
-    return nullptr;
-  }
-
-  template <class U>
-  typename ::std::enable_if<
-    detail::variant::is_copy_constructible<U>{}, copier_type
-  >::type
-  static get_copier() noexcept
-  {
-    return copier_stub<U>;
-  }
-
-  template <class U>
-  typename ::std::enable_if<
-    !detail::variant::is_move_constructible<U>{}, mover_type
-  >::type
-  static get_mover() noexcept
-  {
-    return nullptr;
-  }
-
-  template <class U>
-  typename ::std::enable_if<
-    detail::variant::is_move_constructible<U>{}, mover_type
-  >::type
-  static get_mover() noexcept
-  {
-    return mover_stub<U>;
-  }
-
-  template <class U>
-  static typename ::std::enable_if<
-    !::std::is_same<U, void>{}
-  >::type
-  deleter_stub(void* const store)
-  {
-    reinterpret_cast<U*>(store)->~U();
-  }
-
-  template <class U>
-  static typename ::std::enable_if<
-    ::std::is_same<U, void>{}
-  >::type
-  deleter_stub(void* const) noexcept
-  {
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    detail::variant::is_copy_constructible<U>{} &&
-    !detail::variant::is_copy_assignable<U>{}
-  >::type
-  copier_stub(bool const, deleter_type const deleter,
-    void* const dst_store, void const* const src_store)
-  {
-    deleter(dst_store);
-
-    new (dst_store) U(*reinterpret_cast<U const*>(src_store));
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    detail::variant::is_copy_constructible<U>{} &&
-    detail::variant::is_copy_assignable<U>{}
-  >::type
-  copier_stub(bool const same_type, deleter_type const deleter,
-    void* const dst_store, void const* const src_store)
-  {
-    if (same_type)
-    {
-      *reinterpret_cast<U*>(dst_store) =
-        *reinterpret_cast<U const*>(src_store);
-    }
-    else
-    {
-      deleter(dst_store);
-
-      new (dst_store) U(*reinterpret_cast<U const*>(src_store));
-    }
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    detail::variant::is_move_constructible<U>{} &&
-    !detail::variant::is_move_assignable<U>{}
-  >::type
-  mover_stub(bool const, deleter_type const deleter,
-    void* const dst_store, void* const src_store)
-  {
-    deleter(dst_store);
-
-    new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    detail::variant::is_move_constructible<U>{} &&
-    detail::variant::is_move_assignable<U>{}
-  >::type
-  mover_stub(bool const same_type, deleter_type const deleter,
-    void* const dst_store, void* const src_store)
-  {
-    if (same_type)
-    {
-      *reinterpret_cast<U*>(dst_store) =
-        ::std::move(*reinterpret_cast<U*>(src_store));
-    }
-    else
-    {
-      deleter(dst_store);
-
-      new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
-    }
-  }
-
 private:
   int type_id_{-1};
 
-  struct meta const* meta_{meta<void>()};
+  struct detail::variant::meta const* meta_{
+    detail::variant::get_meta<void>()
+  };
 
   alignas(max_align_type) char store_[sizeof(max_size_type)];
 };
