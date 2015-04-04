@@ -325,7 +325,7 @@ using copier_type = void (*)(bool, deleter_type, void*, void const*);
 using mover_type = void (*)(bool, deleter_type, void*, void*);
 
 template <typename U>
-inline typename ::std::enable_if<
+typename ::std::enable_if<
   detail::variant::is_copy_constructible<U>{} &&
   !detail::variant::is_copy_assignable<U>{}
 >::type
@@ -338,7 +338,7 @@ copier_stub(bool const, deleter_type const deleter,
 }
 
 template <typename U>
-inline typename ::std::enable_if<
+typename ::std::enable_if<
   detail::variant::is_copy_constructible<U>{} &&
   detail::variant::is_copy_assignable<U>{}
 >::type
@@ -359,7 +359,7 @@ copier_stub(bool const same_type, deleter_type const deleter,
 }
 
 template <typename U>
-inline typename ::std::enable_if<
+typename ::std::enable_if<
   detail::variant::is_move_constructible<U>{} &&
   !detail::variant::is_move_assignable<U>{}
 >::type
@@ -372,7 +372,7 @@ mover_stub(bool const, deleter_type const deleter,
 }
 
 template <typename U>
-inline typename ::std::enable_if<
+typename ::std::enable_if<
   detail::variant::is_move_constructible<U>{} &&
   detail::variant::is_move_assignable<U>{}
 >::type
@@ -429,18 +429,14 @@ inline get_mover() noexcept
 }
 
 template <class U>
-inline typename ::std::enable_if<
-  !::std::is_same<U, void>{}
->::type
+typename ::std::enable_if<!::std::is_same<U, void>{}>::type
 deleter_stub(void* const store)
 {
   reinterpret_cast<U*>(store)->~U();
 }
 
 template <class U>
-inline typename ::std::enable_if<
-  ::std::is_same<U, void>{}
->::type
+typename ::std::enable_if<::std::is_same<U, void>{}>::type
 deleter_stub(void* const) noexcept
 {
 }
