@@ -277,7 +277,6 @@ struct is_copy_assignable<T,
 {
 };
 
-
 template <typename T>
 struct is_copy_assignable<T,
   typename ::std::enable_if<is_map<T>{}>::type
