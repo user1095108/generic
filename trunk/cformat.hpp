@@ -24,17 +24,6 @@ namespace generic
 {
 
 //////////////////////////////////////////////////////////////////////////////
-struct cformat_error : ::std::runtime_error
-{
-  cformat_error() : ::std::runtime_error(
-    ::std::string("formatting error: ") + ::std::strerror(errno))
-  {
-  }
-};
-
-typedef cformat_error wcformat_error;
-
-//////////////////////////////////////////////////////////////////////////////
 inline ::std::string cformat(char const* const format, ...)
 {
   va_list ap;
@@ -51,7 +40,7 @@ inline ::std::string cformat(char const* const format, ...)
 
     if (len < 0)
     {
-      throw cformat_error();
+      return {};
     }
     else if (len <= decltype(len)(sizeof(tmp)))
     {
@@ -94,7 +83,7 @@ cformat(S& r, char const* const format, ...)
 
     if (len < 0)
     {
-      throw cformat_error();
+      return {};
     }
     else if (len <= decltype(len)(sizeof(tmp)))
     {
@@ -142,20 +131,9 @@ inline ::std::wstring wcformat(wchar_t const* const format, ...)
   {
     va_end(ap);
 
-    throw wcformat_error();
+    return {};
   }
 }
-
-//////////////////////////////////////////////////////////////////////////////
-struct strftime_array_undefined : ::std::runtime_error
-{
-  strftime_array_undefined() :
-    ::std::runtime_error("::std::strftime() or wcsftime() returned zero")
-  {
-  }
-};
-
-typedef strftime_array_undefined wcsftime_array_undefined;
 
 //////////////////////////////////////////////////////////////////////////////
 template <::std::size_t buffer_size = 128>
@@ -170,13 +148,7 @@ inline ::std::string cstrftime(char const* const format,
   char s[buffer_size];
 #endif // _MSC_VER
 
-  if (!::std::strftime(s, buffer_size, format, time))
-  {
-    throw strftime_array_undefined();
-  }
-  // else do nothing
-
-  return s;
+  return ::std::strftime(s, buffer_size, format, time) ? s : ::std::string();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -192,13 +164,7 @@ inline ::std::wstring wcstrftime(wchar_t const* const format,
   wchar_t s[buffer_size];
 #endif // _MSC_VER
 
-  if (!wcsftime(s, buffer_size, format, time))
-  {
-    throw wcsftime_array_undefined();
-  }
-  // else do nothing
-
-  return s;
+  return wcsftime(s, buffer_size, format, time) ? s : ::std::wstring();
 }
 
 }

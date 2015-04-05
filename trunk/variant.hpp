@@ -478,14 +478,14 @@ inline get_mover() noexcept
 }
 
 template <class U>
-typename ::std::enable_if<!::std::is_same<U, void>{}>::type
+typename ::std::enable_if<!::std::is_void<U>{}>::type
 deleter_stub(void* const store)
 {
   reinterpret_cast<U*>(store)->~U();
 }
 
 template <class U>
-typename ::std::enable_if<::std::is_same<U, void>{}>::type
+typename ::std::enable_if<::std::is_void<U>{}>::type
 deleter_stub(void* const) noexcept
 {
 }
