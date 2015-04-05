@@ -169,7 +169,7 @@ struct is_copy_constructible<T,
 };
 
 template <typename T, typename = void>
-struct is_move_assignable : detail::some::is_move_assignable<T>
+struct is_move_assignable : ::std::is_move_assignable<T>
 {
 };
 
