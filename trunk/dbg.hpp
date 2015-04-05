@@ -2,6 +2,8 @@
 # define GENERIC_DBG_HPP
 # pragma once
 
+#include <ostream>
+
 #include <iostream>
 
 namespace generic
@@ -13,13 +15,15 @@ static decltype((::std::cout)) dbg(::std::cout);
 static struct
 {
   template <typename U>
-  decltype(auto) operator<<(U&&) const noexcept
+  decltype(auto) operator<<(
+    U&&
+  ) const noexcept
   {
     return *this;
   }
 
   decltype(auto) operator<<(
-    ::std::ostream& (*)(::std::ostream&)
+    ::std::ostream&(* const)(::std::ostream&)
   ) const noexcept
   {
     return *this;
