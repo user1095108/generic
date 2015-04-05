@@ -64,6 +64,174 @@ struct any_of<A> : bool_constant<A::value>
 {
 };
 
+using deleter_type = void (*)(void*);
+using copier_type = void (*)(bool, deleter_type, void*, void const*);
+using mover_type = void (*)(bool, deleter_type, void*, void*);
+
+template <class U>
+typename ::std::enable_if<
+  !::std::is_void<U>{}
+>::type
+deleter_stub(void* const store)
+{
+  reinterpret_cast<U*>(store)->~U();
+}
+
+template <class U>
+typename ::std::enable_if<
+  ::std::is_void<U>{}
+>::type
+deleter_stub(void* const)
+{
+}
+
+template <typename U>
+typename ::std::enable_if<
+  ::std::is_copy_constructible<U>{} &&
+  ::std::is_copy_assignable<U>{}
+>::type
+copier_stub(bool const same_type, deleter_type const deleter,
+  void* const dst_store, void const* const src_store)
+{
+  if (same_type)
+  {
+    *reinterpret_cast<U*>(dst_store) =
+      *reinterpret_cast<U const*>(src_store);
+  }
+  else
+  {
+    deleter(dst_store);
+
+    new (dst_store) U(*reinterpret_cast<U const*>(src_store));
+  }
+}
+
+template <typename U>
+typename ::std::enable_if<
+  ::std::is_copy_constructible<U>{} &&
+  !::std::is_copy_assignable<U>{}
+>::type
+copier_stub(bool const, deleter_type const deleter,
+  void* const dst_store, void const* const src_store)
+{
+  deleter(dst_store);
+
+  new (dst_store) U(*reinterpret_cast<U const*>(src_store));
+}
+
+template <typename U>
+typename ::std::enable_if<
+  ::std::is_move_constructible<U>{} &&
+  ::std::is_move_assignable<U>{}
+>::type
+mover_stub(bool const same_type, deleter_type const deleter,
+  void* const dst_store, void* const src_store)
+{
+  if (same_type)
+  {
+    *reinterpret_cast<U*>(dst_store) =
+      ::std::move(*reinterpret_cast<U*>(src_store));
+  }
+  else
+  {
+    deleter(dst_store);
+
+    new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
+  }
+}
+
+template <typename U>
+typename ::std::enable_if<
+  ::std::is_move_constructible<U>{} &&
+  !::std::is_move_assignable<U>{}
+>::type
+mover_stub(bool const, deleter_type const deleter,
+  void* const dst_store, void* const src_store)
+{
+  deleter(dst_store);
+
+  new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
+}
+
+template <class U>
+inline typename ::std::enable_if<
+  !::std::is_copy_constructible<U>{}, copier_type
+>::type
+get_copier() noexcept
+{
+  return nullptr;
+}
+
+template <class U>
+inline typename ::std::enable_if<
+  ::std::is_copy_constructible<U>{}, copier_type
+>::type
+get_copier() noexcept
+{
+  return copier_stub<U>;
+}
+
+template <class U>
+inline typename ::std::enable_if<
+  !::std::is_move_constructible<U>{}, mover_type
+>::type
+get_mover() noexcept
+{
+  return nullptr;
+}
+
+template <class U>
+inline typename ::std::enable_if<
+  ::std::is_move_constructible<U>{}, mover_type
+>::type
+get_mover() noexcept
+{
+  return mover_stub<U>;
+}
+
+struct meta
+{
+  deleter_type deleter;
+  copier_type copier;
+  mover_type mover;
+
+  ::std::size_t size;
+};
+
+template <typename U>
+inline typename ::std::enable_if<
+  !::std::is_void<U>{},
+  struct meta const*
+>::type
+get_meta()
+{
+  static struct meta const m{
+    deleter_stub<U>,
+    get_copier<U>(),
+    get_mover<U>(),
+    sizeof(U)
+  };
+
+  return &m;
+}
+
+template <typename U>
+inline typename ::std::enable_if<
+  ::std::is_void<U>{},
+  struct meta const*
+>::type
+get_meta()
+{
+  static struct meta const m{
+    deleter_stub<U>,
+    get_copier<U>(),
+    get_mover<U>(),
+    0
+  };
+
+  return &m;
+}
+
 }
 
 }
@@ -83,53 +251,6 @@ class some
 
   template <typename ...U>
   friend class some;
-
-  using deleter_type = void (*)(void*);
-  using copier_type = void (*)(bool, deleter_type, void*, void const*);
-  using mover_type = void (*)(bool, deleter_type, void*, void*);
-
-  struct meta
-  {
-    deleter_type deleter;
-    copier_type copier;
-    mover_type mover;
-
-    ::std::size_t size;
-  };
-
-  template <typename U>
-  static typename ::std::enable_if<
-    !::std::is_same<U, void>{},
-    struct meta const*
-  >::type
-  meta()
-  {
-    static struct meta const m{
-      deleter_stub<U>,
-      get_copier<U>(),
-      get_mover<U>(),
-      sizeof(U)
-    };
-
-    return &m;
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    ::std::is_same<U, void>{},
-    struct meta const*
-  >::type
-  meta()
-  {
-    static struct meta const m{
-      deleter_stub<U>,
-      get_copier<U>(),
-      get_mover<U>(),
-      0
-    };
-
-    return &m;
-  }
 
 public:
   using typeid_t = ::std::uintptr_t;
@@ -159,7 +280,9 @@ public:
       }
       else
       {
+#ifndef NDEBUG
         throw ::std::bad_typeid();
+#endif // NDEBUG
       }
     }
     // else do nothing
@@ -186,7 +309,9 @@ public:
       }
       else
       {
+#ifndef NDEBUG
         throw ::std::bad_typeid();
+#endif // NDEBUG
       }
     }
     // else do nothing
@@ -211,7 +336,9 @@ public:
       }
       else
       {
+#ifndef NDEBUG
         throw ::std::bad_typeid();
+#endif // NDEBUG
       }
     }
     // else do nothing
@@ -238,7 +365,9 @@ public:
       }
       else
       {
+#ifndef NDEBUG
         throw ::std::bad_typeid();
+#endif // NDEBUG
       }
     }
     // else do nothing
@@ -281,7 +410,7 @@ public:
     static_assert(sizeof(U) <= sizeof(store_), "");
     using user_type = typename detail::some::remove_cvr<U>::type;
 
-    if (meta<user_type>() == meta_)
+    if (detail::some::get_meta<user_type>() == meta_)
     {
       *reinterpret_cast<user_type*>(&store_) = u;
     }
@@ -291,7 +420,7 @@ public:
 
       new (static_cast<void*>(&store_)) user_type(::std::forward<U>(u));
 
-      meta_ = meta<user_type>();
+      meta_ = detail::some::get_meta<user_type>();
     }
 
     return *this;
@@ -320,7 +449,7 @@ public:
     static_assert(sizeof(U) <= sizeof(store_), "");
     using user_type = typename detail::some::remove_cvr<U>::type;
 
-    if (meta<user_type>() == meta_)
+    if (detail::some::get_meta<user_type>() == meta_)
     {
       *reinterpret_cast<user_type*>(store_) = ::std::move(u);
     }
@@ -330,7 +459,7 @@ public:
 
       new (static_cast<void*>(&store_)) user_type(::std::forward<U>(u));
 
-      meta_ = meta<user_type>();
+      meta_ = detail::some::get_meta<user_type>();
     }
 
     return *this;
@@ -362,12 +491,15 @@ public:
 
     new (static_cast<void*>(&store_)) user_type(::std::forward<U>(u));
 
-    meta_ = meta<user_type>();
+    meta_ = detail::some::get_meta<user_type>();
 
     return *this;
   }
 
-  explicit operator bool() const noexcept { return meta<void>() != meta_; }
+  explicit operator bool() const noexcept
+  {
+    return detail::some::get_meta<void>() != meta_;
+  }
 
   template <typename U>
   some& assign(U&& u)
@@ -378,21 +510,21 @@ public:
   template <typename U>
   bool contains() const noexcept
   {
-    return meta<U>() == meta_;
+    return detail::some::get_meta<U>() == meta_;
   }
 
   void clear()
   { 
     meta_->deleter(&store_);
 
-    meta_ = meta<void>();
+    meta_ = detail::some::get_meta<void>();
   }
 
   bool empty() const noexcept { return !*this; }
 
   void swap(some& other)
   {
-    if (meta<void>() == other.meta_)
+    if (detail::some::get_meta<void>() == other.meta_)
     {
       if (meta_->mover)
       {
@@ -406,7 +538,7 @@ public:
       }
       // else do nothing
     }
-    else if (meta<void>() == meta_)
+    else if (detail::some::get_meta<void>() == meta_)
     {
       if (other.meta_->mover)
       {
@@ -450,140 +582,21 @@ public:
     }
     else
     {
+#ifndef NDEBUG
       throw ::std::bad_typeid();
+#endif // NDEBUG
     }
   }
 
   template <typename U>
   static typeid_t type_id() noexcept
   {
-    return typeid_t(meta<U>());
+    return typeid_t(detail::some::get_meta<U>());
   }
 
   typeid_t type_id() const noexcept { return typeid_t(meta_); }
 
 private:
-  template <class U>
-  typename ::std::enable_if<
-    !::std::is_copy_constructible<U>{}, copier_type
-  >::type
-  static get_copier() noexcept
-  {
-    return nullptr;
-  }
-
-  template <class U>
-  typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{}, copier_type
-  >::type
-  static get_copier() noexcept
-  {
-    return copier_stub<U>;
-  }
-
-  template <class U>
-  typename ::std::enable_if<
-    !::std::is_move_constructible<U>{}, mover_type
-  >::type
-  static get_mover() noexcept
-  {
-    return nullptr;
-  }
-
-  template <class U>
-  typename ::std::enable_if<
-    ::std::is_move_constructible<U>{}, mover_type
-  >::type
-  static get_mover() noexcept
-  {
-    return mover_stub<U>;
-  }
-
-  template <class U>
-  static typename ::std::enable_if<
-    !::std::is_same<U, void>{}
-  >::type
-  deleter_stub(void* const store)
-  {
-    reinterpret_cast<U*>(store)->~U();
-  }
-
-  template <class U>
-  static typename ::std::enable_if<
-    ::std::is_same<U, void>{}
-  >::type
-  deleter_stub(void* const)
-  {
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{} &&
-    ::std::is_copy_assignable<U>{}
-  >::type
-  copier_stub(bool const same_type, deleter_type const deleter,
-    void* const dst_store, void const* const src_store)
-  {
-    if (same_type)
-    {
-      *reinterpret_cast<U*>(dst_store) =
-        *reinterpret_cast<U const*>(src_store);
-    }
-    else
-    {
-      deleter(dst_store);
-
-      new (dst_store) U(*reinterpret_cast<U const*>(src_store));
-    }
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    ::std::is_copy_constructible<U>{} &&
-    !::std::is_copy_assignable<U>{}
-  >::type
-  copier_stub(bool const, deleter_type const deleter,
-    void* const dst_store, void const* const src_store)
-  {
-    deleter(dst_store);
-
-    new (dst_store) U(*reinterpret_cast<U const*>(src_store));
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    ::std::is_move_constructible<U>{} &&
-    ::std::is_move_assignable<U>{}
-  >::type
-  mover_stub(bool const same_type, deleter_type const deleter,
-    void* const dst_store, void* const src_store)
-  {
-    if (same_type)
-    {
-      *reinterpret_cast<U*>(dst_store) =
-        ::std::move(*reinterpret_cast<U*>(src_store));
-    }
-    else
-    {
-      deleter(dst_store);
-
-      new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
-    }
-  }
-
-  template <typename U>
-  static typename ::std::enable_if<
-    ::std::is_move_constructible<U>{} &&
-    !::std::is_move_assignable<U>{}
-  >::type
-  mover_stub(bool const, deleter_type const deleter,
-    void* const dst_store, void* const src_store)
-  {
-    deleter(dst_store);
-
-    new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
-  }
-
 private:
 #ifdef NDEBUG
   template <typename U, typename ...V> friend U& get(some<V...>&) noexcept;
@@ -593,7 +606,7 @@ private:
   template <typename U, typename ...V> friend U const& get(some<V...> const&);
 #endif // NDEBUG
 
-  struct meta const* meta_{meta<void>()};
+  struct detail::some::meta const* meta_{detail::some::get_meta<void>()};
 
   typename ::std::aligned_storage<
     detail::some::max_type_size<T...>{}
