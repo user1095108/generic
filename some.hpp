@@ -64,6 +64,169 @@ struct any_of<A> : bool_constant<A::value>
 {
 };
 
+template <typename T, typename = ::std::size_t>
+struct is_vector : ::std::false_type
+{
+};
+
+template <typename T>
+struct is_vector<T,
+  decltype(
+    sizeof((typename T::reference(T::*)())(&T::back)) |
+    sizeof((typename T::reference(T::*)())(&T::front)) |
+    sizeof((typename T::value_type const*(T::*)() const)(&T::data)) |
+    sizeof((typename T::value_type*(T::*)())(&T::data)) |
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_back)) |
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
+    sizeof(&T::shrink_to_fit)
+  )
+> : ::std::true_type
+{
+};
+
+template <typename T, typename = ::std::size_t>
+struct is_list : ::std::false_type
+{
+};
+
+template <typename T>
+struct is_list<T,
+  decltype(
+    sizeof((void(T::*)(typename T::const_reference))(&T::push_front)) |
+    sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
+    sizeof(&T::pop_front)
+  )
+> : ::std::true_type
+{
+};
+
+template <typename T, typename = ::std::size_t>
+struct is_map : ::std::false_type
+{
+};
+
+template <typename T>
+struct is_map<T,
+  decltype(
+    sizeof(typename T::key_type) |
+    sizeof(typename T::mapped_type) |
+    sizeof(typename T::value_type)
+  )
+> : ::std::true_type
+{
+};
+
+template <typename T, typename = void>
+struct is_copy_assignable : ::std::is_copy_assignable<T>
+{
+};
+
+template <typename T>
+struct is_copy_assignable<T,
+  typename ::std::enable_if<is_vector<T>{}>::type
+> : is_copy_assignable<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_copy_assignable<T,
+  typename ::std::enable_if<is_list<T>{}>::type
+> : is_copy_assignable<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_copy_assignable<T,
+  typename ::std::enable_if<is_map<T>{}>::type
+> : is_copy_assignable<typename T::mapped_type>
+{
+};
+
+template <typename T, typename = void>
+struct is_copy_constructible : ::std::is_copy_constructible<T>
+{
+};
+
+template <typename T>
+struct is_copy_constructible<T,
+  typename ::std::enable_if<is_vector<T>{}>::type
+> : is_copy_constructible<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_copy_constructible<T,
+  typename ::std::enable_if<is_list<T>{}>::type
+> : is_copy_constructible<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_copy_constructible<T,
+  typename ::std::enable_if<is_map<T>{}>::type
+> : is_copy_constructible<typename T::mapped_type>
+{
+};
+
+template <typename T, typename = void>
+struct is_move_assignable : detail::some::is_move_assignable<T>
+{
+};
+
+template <typename T>
+struct is_move_assignable<T,
+  typename ::std::enable_if<is_vector<T>{}>::type
+> : is_move_assignable<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_move_assignable<T,
+  typename ::std::enable_if<is_list<T>{}>::type
+> : is_move_assignable<typename T::value_type>
+{
+};
+
+
+template <typename T>
+struct is_move_assignable<T,
+  typename ::std::enable_if<is_map<T>{}>::type
+> : is_move_assignable<typename T::mapped_type>
+{
+};
+
+template <typename T, typename = void>
+struct is_move_constructible : ::std::is_move_constructible<T>
+{
+};
+
+template <typename T>
+struct is_move_constructible<T,
+  typename ::std::enable_if<is_vector<T>{}>::type
+> : is_move_constructible<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_move_constructible<T,
+  typename ::std::enable_if<is_list<T>{}>::type
+> : is_move_constructible<typename T::value_type>
+{
+};
+
+template <typename T>
+struct is_move_constructible<T,
+  typename ::std::enable_if<is_map<T>{}>::type
+> : is_move_constructible<typename T::mapped_type>
+{
+};
+
+template <class A>
+struct is_move_or_copy_constructible :
+  bool_constant<is_copy_constructible<A>{} || is_move_constructible<A>{}>
+{
+};
+
 using deleter_type = void (*)(void*);
 using copier_type = void (*)(bool, deleter_type, void*, void const*);
 using mover_type = void (*)(bool, deleter_type, void*, void*);
@@ -87,8 +250,8 @@ deleter_stub(void* const)
 
 template <typename U>
 typename ::std::enable_if<
-  ::std::is_copy_constructible<U>{} &&
-  ::std::is_copy_assignable<U>{}
+  is_copy_constructible<U>{} &&
+  is_copy_assignable<U>{}
 >::type
 copier_stub(bool const same_type, deleter_type const deleter,
   void* const dst_store, void const* const src_store)
@@ -108,8 +271,8 @@ copier_stub(bool const same_type, deleter_type const deleter,
 
 template <typename U>
 typename ::std::enable_if<
-  ::std::is_copy_constructible<U>{} &&
-  !::std::is_copy_assignable<U>{}
+  is_copy_constructible<U>{} &&
+  !is_copy_assignable<U>{}
 >::type
 copier_stub(bool const, deleter_type const deleter,
   void* const dst_store, void const* const src_store)
@@ -121,8 +284,8 @@ copier_stub(bool const, deleter_type const deleter,
 
 template <typename U>
 typename ::std::enable_if<
-  ::std::is_move_constructible<U>{} &&
-  ::std::is_move_assignable<U>{}
+  is_move_constructible<U>{} &&
+  is_move_assignable<U>{}
 >::type
 mover_stub(bool const same_type, deleter_type const deleter,
   void* const dst_store, void* const src_store)
@@ -142,8 +305,8 @@ mover_stub(bool const same_type, deleter_type const deleter,
 
 template <typename U>
 typename ::std::enable_if<
-  ::std::is_move_constructible<U>{} &&
-  !::std::is_move_assignable<U>{}
+  is_move_constructible<U>{} &&
+  !is_move_assignable<U>{}
 >::type
 mover_stub(bool const, deleter_type const deleter,
   void* const dst_store, void* const src_store)
@@ -155,7 +318,7 @@ mover_stub(bool const, deleter_type const deleter,
 
 template <class U>
 inline typename ::std::enable_if<
-  !::std::is_copy_constructible<U>{}, copier_type
+  !is_copy_constructible<U>{}, copier_type
 >::type
 get_copier() noexcept
 {
@@ -164,7 +327,7 @@ get_copier() noexcept
 
 template <class U>
 inline typename ::std::enable_if<
-  ::std::is_copy_constructible<U>{}, copier_type
+  is_copy_constructible<U>{}, copier_type
 >::type
 get_copier() noexcept
 {
@@ -173,7 +336,7 @@ get_copier() noexcept
 
 template <class U>
 inline typename ::std::enable_if<
-  !::std::is_move_constructible<U>{}, mover_type
+  !is_move_constructible<U>{}, mover_type
 >::type
 get_mover() noexcept
 {
@@ -182,7 +345,7 @@ get_mover() noexcept
 
 template <class U>
 inline typename ::std::enable_if<
-  ::std::is_move_constructible<U>{}, mover_type
+  is_move_constructible<U>{}, mover_type
 >::type
 get_mover() noexcept
 {
@@ -397,7 +560,7 @@ public:
     !::std::is_array<
       typename detail::some::remove_cvr<U>::type
     >{} &&
-    ::std::is_copy_assignable<
+    detail::some::is_copy_assignable<
       typename detail::some::remove_cvr<U>::type
     >{} &&
     !::std::is_same<
@@ -433,10 +596,10 @@ public:
       typename detail::some::remove_cvr<U>::type
     >{} &&
     ::std::is_rvalue_reference<U&&>{} &&
-    !::std::is_copy_assignable<
+    !detail::some::is_copy_assignable<
       typename detail::some::remove_cvr<U>::type
     >{} &&
-    ::std::is_move_assignable<
+    detail::some::is_move_assignable<
       typename detail::some::remove_cvr<U>::type
     >{} &&
     !::std::is_same<
@@ -471,10 +634,10 @@ public:
     !::std::is_array<
       typename detail::some::remove_cvr<U>::type
     >{} &&
-    !::std::is_copy_assignable<
+    !detail::some::is_copy_assignable<
       typename detail::some::remove_cvr<U>::type
     >{} &&
-    !::std::is_move_assignable<
+    !detail::some::is_move_assignable<
       typename detail::some::remove_cvr<U>::type
     >{} &&
     !::std::is_same<
