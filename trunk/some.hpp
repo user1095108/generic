@@ -760,7 +760,6 @@ public:
   typeid_t type_id() const noexcept { return typeid_t(meta_); }
 
 private:
-private:
 #ifdef NDEBUG
   template <typename U, typename ...V> friend U& get(some<V...>&) noexcept;
   template <typename U, typename ...V> friend U const& get(some<V...> const&) noexcept;
