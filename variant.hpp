@@ -518,6 +518,95 @@ inline struct meta const* get_meta()
 # pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif // __GNUC__
 
+template <typename ...T> class variant;
+
+template <typename U, typename ...T>
+inline typename ::std::enable_if<
+  (-1 != detail::variant::index_of<U, T...>{}),
+  U&
+>::type
+get(variant<T...>& v)
+#ifdef NDEBUG
+noexcept
+#endif
+{
+#ifndef NDEBUG
+  if (v.template contains<U>())
+  {
+    return *reinterpret_cast<U*>(v.store_);
+  }
+  else
+  {
+    throw ::std::bad_typeid();
+  }
+#else
+  return *reinterpret_cast<U*>(v.store_);
+#endif // NDEBUG
+}
+
+template <typename U, typename ...T>
+inline typename ::std::enable_if<
+  (-1 != detail::variant::index_of<U, T...>{}),
+  U const&
+>::type
+get(variant<T...> const& v)
+#ifdef NDEBUG
+noexcept
+#endif
+{
+#ifndef NDEBUG
+  if (v.template contains<U>()) 
+  {
+    return *reinterpret_cast<U const*>(v.store_);
+  }
+  else
+  {
+    throw ::std::bad_typeid();
+  }
+#else
+  return *reinterpret_cast<U const*>(v.store_);
+#endif // NDEBUG
+}
+
+template <typename U, typename ...T>
+inline typename ::std::enable_if<
+  (-1 == detail::variant::index_of<U, T...>{}) &&
+  (-1 != detail::variant::compatible_index_of<U, T...>{}) &&
+  (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  U
+>::type
+get(variant<T...> const& v)
+#ifdef NDEBUG
+noexcept
+#endif
+{
+  static_assert(::std::is_same<
+    typename detail::variant::type_at<
+      detail::variant::compatible_index_of<U, T...>{}, T...>::type,
+    typename detail::variant::compatible_type<U, T...>::type>{},
+    "internal error");
+#ifndef NDEBUG
+  if (detail::variant::compatible_index_of<U, T...>{} == v.type_id_)
+  {
+    return U(
+      *reinterpret_cast<
+        typename detail::variant::compatible_type<U, T...>::type const*
+      >(v.store_)
+    );
+  }
+  else
+  {
+    throw ::std::bad_typeid();
+  }
+#else
+  return U(
+    *reinterpret_cast<
+      typename detail::variant::compatible_type<U, T...>::type const*
+    >(v.store_)
+  );
+#endif // NDEBUG
+}
+
 template <typename ...T>
 class variant
 {
@@ -541,6 +630,41 @@ class variant
   friend class variant;
 
   friend struct ::std::hash<variant<T...> >;
+
+  template <typename U, typename ...V>
+  friend typename ::std::enable_if<
+    (-1 != detail::variant::index_of<U, V...>{}),
+    U&
+  >::type
+  get(variant<V...>&)
+#ifdef NDEBUG
+  noexcept
+#endif // NDEBUG
+  ;
+
+  template <typename U, typename ...V>
+  friend typename ::std::enable_if<
+    (-1 != detail::variant::index_of<U, V...>{}),
+    U const&
+  >::type
+  get(variant<V...> const&)
+#ifdef NDEBUG
+  noexcept
+#endif // NDEBUG
+  ;
+
+  template <typename U, typename ...V>
+  friend typename ::std::enable_if<
+    (-1 == detail::variant::index_of<U, V...>{}) &&
+    (-1 != detail::variant::compatible_index_of<U, V...>{}) &&
+    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    U
+  >::type
+  get(variant<V...> const&)
+#ifdef NDEBUG
+  noexcept
+#endif // NDEBUG
+  ;
 
   template <int I, typename U>
   int convert_type_id() const noexcept
@@ -569,7 +693,7 @@ class variant
   get_hash() const
   {
     return I == type_id_ ?
-      ::std::hash<U>()(get<U>()) :
+      ::std::hash<U>()(::generic::get<U>(*this)) :
       throw ::std::bad_typeid();
   }
 
@@ -595,7 +719,7 @@ class variant
   get_hash() const
   {
     return I == type_id_ ?
-      ::std::hash<U>()(get<U>()) :
+      ::std::hash<U>()(::generic::get<U>(*this)) :
       get_hash<I + 1, V...>();
   }
 
@@ -615,7 +739,7 @@ class variant
   binary_relation(variant<A...> const& a) const
   {
     return I == type_id_ ?
-      R<U>()(get<U>(), a.template get<U>()) :
+      R<U>()(::generic::get<U>(*this), ::generic::get<U>(a)) :
       throw ::std::bad_typeid();
   }
 
@@ -641,7 +765,7 @@ class variant
   binary_relation(variant<A...> const& a) const
   {
     return I == type_id_ ?
-      R<U>()(get<U>(), a.template get<U>()) :
+      R<U>()(::generic::get<U>(*this), ::generic::get<U>(a)) :
       binary_relation<R, I + 1, V...>(a);
   }
 
@@ -660,7 +784,7 @@ class variant
   >::type
   stream_value(OS& os) const
   {
-    return I == type_id_ ? os << get<U>() : os;
+    return I == type_id_ ? os << ::generic::get<U>(*this) : os;
   }
 
   template <::std::size_t I, typename OS, typename U, typename ...V>
@@ -683,7 +807,7 @@ class variant
   stream_value(OS& os) const
   {
     return I == type_id_ ?
-      os << get<U>() :
+      os << ::generic::get<U>(*this) :
       stream_value<I + 1, OS, V...>(os);
   }
 
@@ -1138,102 +1262,6 @@ public:
   }
 
   template <typename U>
-  typename ::std::enable_if<
-    (-1 != detail::variant::index_of<U, T...>{}) &&
-    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U
-  >::type
-  cget() const
-  {
-    return get<U>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    (-1 == detail::variant::index_of<U, T...>{}) &&
-    (-1 != detail::variant::compatible_index_of<U, T...>{}) &&
-    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U
-  >::type
-  cget() const
-  {
-    return get<U>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    (-1 != detail::variant::index_of<U, T...>{}) &&
-    !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U const&
-  >::type
-  cget() const
-  {
-    return get<U>();
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    (-1 != detail::variant::index_of<U, T...>{}),
-    U&
-  >::type
-  get()
-  {
-    if (contains<U>())
-    {
-      return *reinterpret_cast<U*>(store_);
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    (-1 != detail::variant::index_of<U, T...>{}),
-    U const&
-  >::type
-  get() const
-  {
-    if (contains<U>()) 
-    {
-      return *reinterpret_cast<U const*>(store_);
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
-  }
-
-  template <typename U>
-  typename ::std::enable_if<
-    (-1 == detail::variant::index_of<U, T...>{}) &&
-    (-1 != detail::variant::compatible_index_of<U, T...>{}) &&
-    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
-    U
-  >::type
-  get() const
-  {
-    static_assert(::std::is_same<
-      typename detail::variant::type_at<
-        detail::variant::compatible_index_of<U, T...>{}, T...>::type,
-      typename detail::variant::compatible_type<U, T...>::type>{},
-      "internal error");
-    if (detail::variant::compatible_index_of<U, T...>{} == type_id_)
-    {
-      return U(
-        *reinterpret_cast<
-          typename detail::variant::compatible_type<U, T...>::type const*
-        >(store_)
-      );
-    }
-    else
-    {
-      throw ::std::bad_typeid();
-    }
-  }
-
-  template <typename U>
   static constexpr int type_id() noexcept
   {
     return detail::variant::index_of<U, T...>{};
@@ -1264,6 +1292,50 @@ private:
 #ifdef __GNUC__
 # pragma GCC diagnostic pop
 #endif // __GNUC__
+
+
+template <typename U, typename ...T>
+inline typename ::std::enable_if<
+  (-1 != detail::variant::index_of<U, T...>{}) &&
+  (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  U
+>::type
+cget(variant<T...> const& v)
+#ifdef NDEBUG
+noexcept
+#endif
+{
+  return get<U>(v);
+}
+
+template <typename U, typename ...T>
+inline typename ::std::enable_if<
+  (-1 == detail::variant::index_of<U, T...>{}) &&
+  (-1 != detail::variant::compatible_index_of<U, T...>{}) &&
+  (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  U
+>::type
+cget(variant<T...> const& v)
+#ifdef NDEBUG
+noexcept
+#endif
+{
+  return get<U>(v);
+}
+
+template <typename U, typename ...T>
+inline typename ::std::enable_if<
+  (-1 != detail::variant::index_of<U, T...>{}) &&
+  !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  U const&
+>::type
+cget(variant<T...> const& v)
+#ifdef NDEBUG
+noexcept
+#endif
+{
+  return get<U>(v);
+}
 
 }
 
