@@ -9,9 +9,7 @@
 namespace generic
 {
 
-#ifndef NDEBUG
-static decltype((::std::cout)) dbg(::std::cout);
-#else
+#ifdef NODEBUGMSGS
 static struct
 {
   template <typename U>
@@ -29,7 +27,8 @@ static struct
     return *this;
   }
 } dbg;
-
+#else
+static decltype((::std::cout)) dbg(::std::cout);
 #endif // NDEBUG
 
 }
