@@ -922,10 +922,12 @@ public:
 
         type_id_ = rhs.type_id_;
       }
+#ifndef NDEBUG
       else
       {
         throw ::std::bad_typeid();
       }
+#endif // NDEBUG
     }
     // else do nothing
 
@@ -949,7 +951,9 @@ public:
 
         if (-1 == converted_type_id)
         {
+#ifndef NDEBUG
           throw ::std::bad_typeid();
+#endif // NDEBUG
         }
         else
         {
@@ -961,10 +965,12 @@ public:
           type_id_ = converted_type_id;
         }
       }
+#ifndef NDEBUG
       else
       {
         throw ::std::bad_typeid();
       }
+#endif // NDEBUG
     }
     // else do nothing
 
@@ -988,10 +994,12 @@ public:
 
         type_id_ = rhs.type_id_;
       }
+#ifndef NDEBUG
       else
       {
         throw ::std::bad_typeid();
       }
+#endif // NDEBUG
     }
     // else do nothing
 
@@ -1013,7 +1021,9 @@ public:
 
         if (-1 == converted_type_id)
         {
+#ifndef NDEBUG
           throw ::std::bad_typeid();
+#endif // NDEBUG
         }
         else
         {
@@ -1025,10 +1035,12 @@ public:
           type_id_ = converted_type_id;
         }
       }
+#ifndef NDEBUG
       else
       {
         throw ::std::bad_typeid();
       }
+#endif // NDEBUG
     }
     // else do nothing
 
@@ -1255,10 +1267,12 @@ public:
       other = *this;
       *this = tmp;
     }
+#ifndef NDEBUG
     else
     {
       throw ::std::bad_typeid();
     }
+#endif // NDEBUG
   }
 
   template <typename U>
