@@ -74,7 +74,7 @@ public:
     return stub_(&store_, ::std::forward<A>(args)...);
   }
 
-  void reset() noexcept { stub_ = {}; }
+  void reset() noexcept { stub_ = nullptr; }
 };
 
 }
