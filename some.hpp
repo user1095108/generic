@@ -404,15 +404,10 @@ get_meta()
 # pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif // __GNUC__
 
-template <typename ...T>
+template <::std::size_t N>
 class some
 {
-  static_assert(!detail::some::any_of< ::std::is_reference<T>...>{},
-    "reference types are unsupported");
-  static_assert(!detail::some::any_of< ::std::is_void<T>...>{},
-    "void type is unsupported");
-
-  template <typename ...U>
+  template <::std::size_t M>
   friend class some;
 
 public:
@@ -453,8 +448,8 @@ public:
     return *this;
   }
 
-  template <typename ...U>
-  some& operator=(some<U...> const& rhs)
+  template <::std::size_t M>
+  some& operator=(some<M> const& rhs)
   {
     if (this != &rhs)
     {
@@ -509,8 +504,8 @@ public:
     return *this;
   }
 
-  template <typename ...U>
-  some& operator=(some<U...>&& rhs)
+  template <::std::size_t M>
+  some& operator=(some<M>&& rhs)
   {
     if (this != &rhs)
     {
@@ -761,22 +756,20 @@ public:
 
 private:
 #ifdef NDEBUG
-  template <typename U, typename ...V> friend U& get(some<V...>&) noexcept;
-  template <typename U, typename ...V> friend U const& get(some<V...> const&) noexcept;
+  template <typename U, ::std::size_t M> friend U& get(some<M>&) noexcept;
+  template <typename U, ::std::size_t M> friend U const& get(some<M> const&) noexcept;
 #else
-  template <typename U, typename ...V> friend U& get(some<V...>&);
-  template <typename U, typename ...V> friend U const& get(some<V...> const&);
+  template <typename U, ::std::size_t M> friend U& get(some<M>&);
+  template <typename U, ::std::size_t M> friend U const& get(some<M> const&);
 #endif // NDEBUG
 
   struct detail::some::meta const* meta_{detail::some::get_meta<void>()};
 
-  typename ::std::aligned_storage<
-    detail::some::max_type_size<T...>{}
-  >::type store_;
+  typename ::std::aligned_storage<N>::type store_;
 };
 
-template <typename U, typename ...T>
-inline U& get(some<T...>& s)
+template <typename U, ::std::size_t N>
+inline U& get(some<N>& s)
 #ifdef NDEBUG
 noexcept
 #endif // NDEBUG
@@ -797,8 +790,8 @@ noexcept
 #endif // NDEBUG
 }
 
-template <typename U, typename ...T>
-inline U const& get(some<T...> const& s)
+template <typename U, ::std::size_t N>
+inline U const& get(some<N> const& s)
 #ifdef NDEBUG
 noexcept
 #endif // NDEBUG
@@ -819,22 +812,22 @@ noexcept
 #endif // NDEBUG
 }
 
-template <typename U, typename ...T>
+template <typename U, ::std::size_t N>
 inline typename ::std::enable_if<
   (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
   U
 >::type
-cget(some<T...> const& s) noexcept(noexcept(get<U>(s)))
+cget(some<N> const& s) noexcept(noexcept(get<U>(s)))
 {
   return get<U>(s);
 }
 
-template <typename U, typename ...T>
+template <typename U, ::std::size_t N>
 inline typename ::std::enable_if<
   !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
   U const&
 >::type
-cget(some<T...> const& s) noexcept(noexcept(get<U>(s)))
+cget(some<N> const& s) noexcept(noexcept(get<U>(s)))
 {
   return get<U>(s);
 }
