@@ -42,9 +42,8 @@ namespace detail
 {
 
 template <typename T>
-class scope_exit
+struct scope_exit
 {
-public:
   explicit scope_exit(T&& f) noexcept : f_(::std::forward<T>(f))
   {
     static_assert(noexcept(f_()), "throwing functors are unsupported");
