@@ -50,8 +50,6 @@ public:
     static_assert(noexcept(f_()), "throwing functors are unsupported");
   }
 
-  scope_exit(scope_exit&& other) noexcept : f_(::std::move(other.f_)) { }
-
   ~scope_exit() noexcept { f_(); }
 
 private:
