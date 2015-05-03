@@ -32,7 +32,7 @@ inline constexpr ::std::size_t cstrlen(char const* const p) noexcept
 //////////////////////////////////////////////////////////////////////////////
 template <typename C>
 inline typename C::value_type join(C const& container,
-  typename C::value_type const sep)
+  typename C::value_type const sep) noexcept
 {
   if (container.size())
   {
@@ -56,7 +56,7 @@ inline typename C::value_type join(C const& container,
 //////////////////////////////////////////////////////////////////////////////
 template <typename C>
 inline typename C::value_type join(C const& container,
-  typename C::value_type::value_type const sep)
+  typename C::value_type::value_type const sep) noexcept
 {
   if (container.size())
   {
@@ -82,7 +82,7 @@ inline typename C::value_type join(C const& container,
 template<class CharT, class Traits, class Allocator>
 inline ::std::vector<::std::basic_string<CharT, Traits, Allocator> >
 split(::std::basic_string<CharT, Traits, Allocator> const& s,
-  CharT const delim)
+  CharT const delim) noexcept
 {
   ::std::stringstream ss(s);
 
@@ -100,7 +100,8 @@ split(::std::basic_string<CharT, Traits, Allocator> const& s,
 
 //////////////////////////////////////////////////////////////////////////////
 inline ::std::vector<::std::string>
-split(::std::string const& s, char const* const delims = "\f\n\r\t\v")
+split(::std::string const& s,
+  char const* const delims = "\f\n\r\t\v") noexcept
 {
   ::std::vector<typename ::std::decay<decltype(s)>::type> r;
 
@@ -140,7 +141,7 @@ split(::std::string const& s, char const* const delims = "\f\n\r\t\v")
 template<class CharT, class Traits, class Allocator>
 inline ::std::basic_string<CharT, Traits, Allocator>&
 ltrim(::std::basic_string<CharT, Traits, Allocator>& s,
-  CharT const* cs = " ")
+  CharT const* cs = " ") noexcept
 {
   s.erase(s.begin(),
     ::std::find_if(s.begin(), s.end(),
@@ -156,7 +157,7 @@ ltrim(::std::basic_string<CharT, Traits, Allocator>& s,
 template<class CharT, class Traits, class Allocator>
 inline ::std::basic_string<CharT, Traits, Allocator>&
 rtrim(::std::basic_string<CharT, Traits, Allocator>& s,
-  CharT const* cs = " ")
+  CharT const* cs = " ") noexcept
 {
   s.erase(::std::find_if(s.rbegin(), s.rend(),
       [cs](char const c) noexcept {
@@ -172,7 +173,7 @@ rtrim(::std::basic_string<CharT, Traits, Allocator>& s,
 template<class CharT, class Traits, class Allocator>
 inline ::std::basic_string<CharT, Traits, Allocator>&
 trim(::std::basic_string<CharT, Traits, Allocator>& s,
-  CharT const* cs = " ")
+  CharT const* cs = " ") noexcept
 {
   return ltrim(rtrim(s, cs), cs);
 }
