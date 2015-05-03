@@ -59,13 +59,13 @@ private:
 class scope_exit_helper { };
 
 template<typename T>
-inline scope_exit<T> make_scope_exit(T&& f)
+inline scope_exit<T> make_scope_exit(T&& f) noexcept
 {
   return scope_exit<T>(::std::forward<T>(f));
 }
 
 template<typename T>
-inline scope_exit<T> operator+(scope_exit_helper&&, T&& f)
+inline scope_exit<T> operator+(scope_exit_helper&&, T&& f) noexcept
 {
   return scope_exit<T>(::std::forward<T>(f));
 }
