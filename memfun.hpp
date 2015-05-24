@@ -2,8 +2,6 @@
 # define GENERIC_MEMFUN_HPP
 # pragma once
 
-#include <type_traits>
-
 #include <utility>
 
 #define MEM_FUN(f) decltype(&f),&f
