@@ -6,12 +6,10 @@
 
 #include <utility>
 
+#define MEM_FUN(f) decltype(&f),&f
+
 namespace generic
 {
-
-#ifndef MEMBER
-# define MEMBER(f) decltype(&f),&f
-#endif // MEMBER
 
 namespace detail
 {
