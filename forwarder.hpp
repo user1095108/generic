@@ -55,8 +55,8 @@ public:
 
     static_assert(sizeof(functor_type) <= sizeof(store_),
       "functor too large");
-//  static_assert(::std::is_trivially_copyable<T>{},
-//    "functor not trivially copyable");
+    static_assert(::std::is_trivially_copyable<T>{},
+      "functor not trivially copyable");
 
     new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
 
