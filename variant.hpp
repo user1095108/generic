@@ -1312,7 +1312,7 @@ public:
 private:
   template <typename charT, typename traits>
   friend ::std::basic_ostream<charT, traits>& operator<<(
-    ::std::basic_ostream<charT, traits>& os, variant const& v)
+    ::std::basic_ostream<charT, traits>& os, variant const& v) noexcept
   {
     return -1 == v.type_id_ ?
       os << "<empty variant>" :
