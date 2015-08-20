@@ -669,44 +669,52 @@ class variant
   template <int I, typename U>
   int convert_type_id() const noexcept
   {
-    return I == type_id_ ? type_id<U>() : -1;
+    return I == type_id_ ?
+      type_id<U>() :
+      -1;
   }
 
   template <int I, typename U, typename ...V>
   typename ::std::enable_if<bool(sizeof...(V)), int>::type
   convert_type_id() const noexcept
   {
-    return I == type_id_ ? type_id<U>() : convert_type_id<I + 1, V...>();
+    return I == type_id_ ?
+      type_id<U>() :
+      convert_type_id<I + 1, V...>();
   }
 
   template <int I, typename U>
-  typename ::std::enable_if<!detail::variant::is_hashable<U>{},
-    ::std::size_t>::type
-  get_hash() const
+  typename ::std::enable_if<
+    !detail::variant::is_hashable<U>{},
+    ::std::size_t
+  >::type
+  get_hash() const noexcept
   {
-    throw ::std::bad_typeid();
+    return 0;
   }
 
   template <int I, typename U>
-  typename ::std::enable_if<detail::variant::is_hashable<U>{},
-    ::std::size_t>::type
-  get_hash() const
+  typename ::std::enable_if<
+    detail::variant::is_hashable<U>{},
+    ::std::size_t
+  >::type
+  get_hash() const noexcept
   {
     return I == type_id_ ?
       ::std::hash<U>()(::generic::get<U>(*this)) :
-      throw ::std::bad_typeid();
+      0;
   }
 
   template <int I, typename U, typename ...V>
   typename ::std::enable_if<
     bool(sizeof...(V)) &&
     !detail::variant::is_hashable<U>{},
-    int
+    ::std::size_t
   >::type
-  get_hash() const
+  get_hash() const noexcept
   {
     return I == type_id_ ?
-      throw ::std::bad_typeid() :
+      0 :
       get_hash<I + 1, V...>();
   }
 
@@ -716,7 +724,7 @@ class variant
     detail::variant::is_hashable<U>{},
     int
   >::type
-  get_hash() const
+  get_hash() const noexcept
   {
     return I == type_id_ ?
       ::std::hash<U>()(::generic::get<U>(*this)) :
@@ -727,20 +735,20 @@ class variant
   typename ::std::enable_if<
     !detail::variant::is_comparable<R, U>{}, bool
   >::type
-  binary_relation(variant<A...> const&) const
+  binary_relation(variant<A...> const&) const noexcept
   {
-    throw ::std::bad_typeid();
+    return false;
   }
 
   template <template <typename> class R, int I, typename U, typename ...A>
   typename ::std::enable_if<
     detail::variant::is_comparable<R, U>{}, bool
   >::type
-  binary_relation(variant<A...> const& a) const
+  binary_relation(variant<A...> const& a) const noexcept
   {
     return I == type_id_ ?
       R<U>()(::generic::get<U>(*this), ::generic::get<U>(a)) :
-      throw ::std::bad_typeid();
+      false;
   }
 
   template <template <typename> class R, int I, typename U, typename ...V,
@@ -749,10 +757,10 @@ class variant
     bool(sizeof...(V)) &&
     !detail::variant::is_comparable<R, U>{}, bool
   >::type
-  binary_relation(variant<A...> const& a) const
+  binary_relation(variant<A...> const& a) const noexcept
   {
     return I == type_id_ ?
-      throw ::std::bad_typeid() :
+      false :
       binary_relation<R, I + 1, V...>(a);
   }
 
@@ -762,7 +770,7 @@ class variant
     bool(sizeof...(V)) &&
     detail::variant::is_comparable<R, U>{}, bool
   >::type
-  binary_relation(variant<A...> const& a) const
+  binary_relation(variant<A...> const& a) const noexcept
   {
     return I == type_id_ ?
       R<U>()(::generic::get<U>(*this), ::generic::get<U>(a)) :
@@ -771,40 +779,46 @@ class variant
 
   template <::std::size_t I, typename OS, typename U>
   typename ::std::enable_if<
-    !detail::variant::is_streamable<OS, U>{}, OS&
+    !detail::variant::is_streamable<OS, U>{},
+    OS&
   >::type
-  stream_value(OS&) const
+  stream_value(OS& os) const noexcept
   {
-    throw ::std::bad_typeid();
+    return os;
   }
 
   template <::std::size_t I, typename OS, typename U>
   typename ::std::enable_if<
-    detail::variant::is_streamable<OS, U>{}, OS&
+    detail::variant::is_streamable<OS, U>{},
+    OS&
   >::type
-  stream_value(OS& os) const
+  stream_value(OS& os) const noexcept
   {
-    return I == type_id_ ? os << ::generic::get<U>(*this) : os;
+    return I == type_id_ ?
+      os << ::generic::get<U>(*this) :
+      os;
   }
 
   template <::std::size_t I, typename OS, typename U, typename ...V>
   typename ::std::enable_if<
     !detail::variant::is_streamable<OS, U>{} &&
-    bool(sizeof...(V)), OS&
+    bool(sizeof...(V)),
+    OS&
   >::type
-  stream_value(OS& os) const
+  stream_value(OS& os) const noexcept
   {
     return I == type_id_ ?
-      throw ::std::bad_typeid() :
+      os :
       stream_value<I + 1, OS, V...>(os);
   }
 
   template <::std::size_t I, typename OS, typename U, typename ...V>
   typename ::std::enable_if<
     detail::variant::is_streamable<OS, U>{} &&
-    bool(sizeof...(V)), OS&
+    bool(sizeof...(V)),
+    OS&
   >::type
-  stream_value(OS& os) const
+  stream_value(OS& os) const noexcept
   {
     return I == type_id_ ?
       os << ::generic::get<U>(*this) :
@@ -906,6 +920,9 @@ public:
   }
 
   variant& operator=(variant const& rhs)
+#ifdef NDEBUG
+  noexcept
+#endif // NDEBUG
   {
     if (this != &rhs)
     {
@@ -936,6 +953,9 @@ public:
 
   template <typename ...U>
   variant& operator=(variant<U...> const& rhs)
+#ifdef NDEBUG
+  noexcept
+#endif // NDEBUG
   {
     if (this != &rhs)
     {
@@ -978,6 +998,9 @@ public:
   }
 
   variant& operator=(variant&& rhs)
+#ifdef NDEBUG
+  noexcept
+#endif // NDEBUG
   {
     if (this != &rhs)
     {
@@ -1008,6 +1031,9 @@ public:
 
   template <typename ...U>
   variant& operator=(variant<U...>&& rhs)
+#ifdef NDEBUG
+  noexcept
+#endif // NDEBUG
   {
     if (this != &rhs)
     {
@@ -1306,7 +1332,6 @@ private:
 #ifdef __GNUC__
 # pragma GCC diagnostic pop
 #endif // __GNUC__
-
 
 template <typename U, typename ...T>
 inline typename ::std::enable_if<
