@@ -39,6 +39,13 @@ class forwarder<R (A...), N>
   friend bool operator==(::std::nullptr_t,
     forwarder<T (U...), M> const&) noexcept;
 
+  template<typename T, typename ...U, ::std::size_t M>
+  friend bool operator!=(forwarder<T (U...), M> const&,
+    ::std::nullptr_t) noexcept;
+  template<typename T, typename ...U, ::std::size_t M>
+  friend bool operator!=(::std::nullptr_t,
+    forwarder<T (U...), M> const&) noexcept;
+
 public:
   forwarder() = default;
 
@@ -108,6 +115,20 @@ bool operator==(::std::nullptr_t const,
   forwarder<R (A...), N> const& f) noexcept
 {
   return f.stub_ == nullptr;
+}
+
+template<typename R, typename ...A, ::std::size_t N>
+bool operator!=(forwarder<R (A...), N> const& f,
+  ::std::nullptr_t const) noexcept
+{
+  return !operator==(f, nullptr);
+}
+
+template<typename R, typename ...A, ::std::size_t N>
+bool operator!=(::std::nullptr_t const,
+  forwarder<R (A...), N> const& f) noexcept
+{
+  return !operator==(f, nullptr);
 }
 
 }
