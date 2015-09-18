@@ -32,6 +32,13 @@ class forwarder<R (A...), N>
 
   typename ::std::aligned_storage<N>::type store_;
 
+  template<typename T, typename ...U, ::std::size_t M>
+  friend bool operator==(forwarder<T (U...), M> const&,
+    ::std::nullptr_t) noexcept;
+  template<typename T, typename ...U, ::std::size_t M>
+  friend bool operator==(::std::nullptr_t,
+    forwarder<T (U...), M> const&) noexcept;
+
 public:
   forwarder() = default;
 
@@ -79,13 +86,29 @@ public:
   }
 
   template <typename T>
-  void assign(T&& f) noexcept
+  void assign(T&& f) noexcept(noexcept(operator=(::std::forward<T>(f))))
   {
     operator=(::std::forward<T>(f));
   }
 
   void reset() noexcept { stub_ = nullptr; }
+
+  void swap(forwarder& other) noexcept { ::std::swap(*this, other); }
 };
+
+template<typename R, typename ...A, ::std::size_t N>
+bool operator==(forwarder<R (A...), N> const& f,
+  ::std::nullptr_t const) noexcept
+{
+  return f.stub_ == nullptr;
+}
+
+template<typename R, typename ...A, ::std::size_t N>
+bool operator==(::std::nullptr_t const,
+  forwarder<R (A...), N> const& f) noexcept
+{
+  return f.stub_ == nullptr;
+}
 
 }
 
