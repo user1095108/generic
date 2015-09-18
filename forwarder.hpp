@@ -38,7 +38,7 @@ public:
   forwarder(forwarder const&) = default;
 
   template<typename T>
-  forwarder(T&& f)
+  forwarder(T&& f) noexcept
   {
     operator=(::std::forward<T>(f));
   }
@@ -53,7 +53,7 @@ public:
       !::std::is_same<forwarder, typename ::std::decay<T>::type>{}
     >::type
   >
-  forwarder& operator=(T&& f)
+  forwarder& operator=(T&& f) noexcept
   {
     using functor_type = typename ::std::decay<T>::type;
 
@@ -79,7 +79,7 @@ public:
   }
 
   template <typename T>
-  void assign(T&& f)
+  void assign(T&& f) noexcept
   {
     operator=(::std::forward<T>(f));
   }
