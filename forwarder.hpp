@@ -15,7 +15,7 @@
 namespace generic
 {
 
-template<typename F, ::std::size_t N = 4 * sizeof(::std::uintptr_t)>
+template<typename F, ::std::size_t N = 4 * sizeof(void*)>
 class forwarder;
 
 template<typename R, typename ...A, ::std::size_t N>
@@ -37,7 +37,11 @@ public:
 
   forwarder(forwarder const&) = default;
 
-  template<typename T> forwarder(T&& f) { *this = ::std::forward<T>(f); }
+  template<typename T>
+  forwarder(T&& f)
+  {
+    operator=(::std::forward<T>(f));
+  }
 
   forwarder& operator=(forwarder const&) = default;
 
@@ -72,6 +76,12 @@ public:
   {
     //assert(stub_);
     return stub_(&store_, ::std::forward<A>(args)...);
+  }
+
+  template <typename T>
+  void assign(T&& f)
+  {
+    operator=(::std::forward<T>(f));
   }
 
   void reset() noexcept { stub_ = nullptr; }
