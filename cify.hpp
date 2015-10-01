@@ -29,7 +29,7 @@ inline F cify(L&& l, R (*)(A...) noexcept(noexcept(
     full = true;
   }
 
-  return +[](A... args) noexcept(noexcept(
+  return [](A... args) noexcept(noexcept(
       ::std::declval<F>()(::std::forward<A>(args)...)))
     {
       return l_(::std::forward<A>(args)...);
@@ -55,7 +55,7 @@ inline F thread_local_cify(L&& l, R (*)(A...) noexcept(noexcept(
     full = true;
   }
 
-  return +[](A... args) noexcept(noexcept(
+  return [](A... args) noexcept(noexcept(
       ::std::declval<F>()(::std::forward<A>(args)...)))
     {
       return l_(::std::forward<A>(args)...);
