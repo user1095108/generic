@@ -71,7 +71,7 @@ public:
 
     new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
 
-    stub_ = +[](void const* const ptr, A&&... args) noexcept(noexcept(
+    stub_ = [](void const* const ptr, A&&... args) noexcept(noexcept(
       (*static_cast<functor_type const*>(ptr))(::std::forward<A>(args)...)))
     {
       return (*static_cast<functor_type const*>(ptr))(
