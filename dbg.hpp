@@ -13,9 +13,7 @@ namespace generic
 static struct
 {
   template <typename U>
-  decltype(auto) operator<<(
-    U&&
-  ) const noexcept
+  decltype(auto) operator<<(U&&) const noexcept
   {
     return *this;
   }
