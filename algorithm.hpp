@@ -20,24 +20,6 @@ constexpr inline T const& max(T const& a, T const& b) noexcept
   return a > b ? a : b;
 }
 
-template <typename T, typename ...A>
-constexpr inline typename ::std::enable_if<
-  bool(sizeof...(A)) &&
-  all_of<
-    ::std::is_same<
-      typename ::std::decay<T>::type,
-      typename ::std::decay<A>::type
-    >...
-  >{},
-  T
->::type
-max(T const a, T const b, A&& ...args) noexcept
-{
-  return a > b ?
-    max(a, ::std::forward<A>(args)...) :
-    max(b, ::std::forward<A>(args)...);
-}
-
 template <typename T>
 constexpr inline T const& min(T const& a, T const& b) noexcept
 {
@@ -55,7 +37,25 @@ constexpr inline typename ::std::enable_if<
   >{},
   T
 >::type
-min(T const a, T const b, A&& ...args) noexcept
+max(T const& a, T const& b, A&& ...args) noexcept
+{
+  return a > b ?
+    max(a, ::std::forward<A>(args)...) :
+    max(b, ::std::forward<A>(args)...);
+}
+
+template <typename T, typename ...A>
+constexpr inline typename ::std::enable_if<
+  bool(sizeof...(A)) &&
+  all_of<
+    ::std::is_same<
+      typename ::std::decay<T>::type,
+      typename ::std::decay<A>::type
+    >...
+  >{},
+  T
+>::type
+min(T const& a, T const& b, A&& ...args) noexcept
 {
   return a < b ?
     min(a, ::std::forward<A>(args)...) :
