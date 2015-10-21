@@ -100,16 +100,6 @@ public:
     return reinterpret_cast<U*>(&store_);
   }
 
-  U const* get() const noexcept
-  {
-    return reinterpret_cast<U const*>(&store_);
-  }
-
-  U* get() noexcept
-  {
-    return reinterpret_cast<U*>(&store_);
-  }
-
   U const& operator*() const noexcept
   {
     return *reinterpret_cast<U const*>(&store_);
@@ -118,6 +108,16 @@ public:
   U& operator*() noexcept
   {
     return *reinterpret_cast<U*>(&store_);
+  }
+
+  U const* get() const noexcept
+  {
+    return reinterpret_cast<U const*>(&store_);
+  }
+
+  U* get() noexcept
+  {
+    return reinterpret_cast<U*>(&store_);
   }
 
 private:
