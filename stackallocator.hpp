@@ -80,8 +80,8 @@ private:
 
   bool pointer_in_buffer(char* const p) noexcept
   {
-    return (reinterpret_cast<char*>(&buf_) <= p) &&
-      (p <= reinterpret_cast<char*>(&buf_) + N);
+    return ::std::less_equal<void*>()(&buf_, p) &&
+      ::std::less<void*>()(p, &buf_ + 1);
   }
 
 private:
