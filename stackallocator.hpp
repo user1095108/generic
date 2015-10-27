@@ -25,9 +25,6 @@ public:
 
   char* allocate(::std::size_t n)
   {
-    assert(pointer_in_buffer(ptr_) &&
-      "stack_allocator has outlived stack_store");
-
     n = align(n);
 
     if (::std::greater_equal<void*>()(&buf_ + 1, ptr_ + n))
@@ -46,9 +43,6 @@ public:
 
   void deallocate(char* const p, ::std::size_t n) noexcept
   {
-    assert(pointer_in_buffer(ptr_) &&
-      "stack_allocator has outlived stack_store");
-
     if (pointer_in_buffer(p))
     {
       if (p + align(n) == ptr_)
