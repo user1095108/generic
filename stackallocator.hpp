@@ -30,7 +30,7 @@ public:
 
     n = align(n);
 
-    if (::std::greater_equal<void*>(&buf_ + 1, ptr_ + n))
+    if (::std::greater_equal<void*>()(&buf_ + 1, ptr_ + n))
     {
       auto const r(ptr_);
 
