@@ -30,9 +30,9 @@ public:
 
     n = align(n);
 
-    if (reinterpret_cast<char*>(&buf_) + N >= ptr_ + n)
+    if (::std::greater_equal<void*>(&buf_ + 1, ptr_ + n))
     {
-      auto r(ptr_);
+      auto const r(ptr_);
 
       ptr_ += n;
 
