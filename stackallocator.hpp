@@ -69,8 +69,10 @@ public:
   }
 
 private:
+  // assume that alignment is a power of 2
   static constexpr ::std::size_t align(::std::size_t const n) noexcept
   {
+    static_assert(!(alignment % 2), "alignment must be a power of 2");
     return (n + (alignment - 1)) & -alignment;
   }
 
