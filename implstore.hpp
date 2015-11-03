@@ -16,6 +16,8 @@ namespace generic
 template <class U, ::std::size_t N = 64>
 class implstore
 {
+  typename ::std::aligned_storage<N>::type store_;
+
 public:
   static constexpr ::std::size_t const buffer_size = N;
 
@@ -27,7 +29,7 @@ public:
   implstore(A&& ...args)
   {
     static_assert(sizeof(store_) >= sizeof(U), "impl too large");
-    new (static_cast<void*>(&store_)) U(::std::forward<A>(args)...);
+    ::new (static_cast<void*>(&store_)) U(::std::forward<A>(args)...);
   }
 
   ~implstore() { get()->~U(); }
@@ -42,7 +44,7 @@ public:
       ::std::is_copy_constructible<K>{}
     >::type* = nullptr)
   {
-    new (static_cast<void*>(&store_)) U(*other);
+    ::new (static_cast<void*>(&store_)) U(*other);
   }
 
   template <::std::size_t M, typename K = U>
@@ -51,7 +53,7 @@ public:
       ::std::is_move_constructible<K>{}
     >::type* = nullptr)
   {
-    new (static_cast<void*>(&store_)) U(::std::move(*other));
+    ::new (static_cast<void*>(&store_)) U(::std::move(*other));
   }
 
   implstore& operator=(implstore const& rhs)
@@ -119,9 +121,6 @@ public:
   {
     return reinterpret_cast<U*>(&store_);
   }
-
-private:
-  typename ::std::aligned_storage<N>::type store_;
 };
 
 }
