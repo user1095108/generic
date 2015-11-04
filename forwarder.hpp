@@ -11,8 +11,6 @@
 
 #include <utility>
 
-#include "meta.hpp"
-
 namespace generic
 {
 
