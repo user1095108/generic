@@ -39,6 +39,9 @@ class forwarder<R (A...), N>
     forwarder<T (U...), M> const&) noexcept;
 
 public:
+  using result_type	= R;
+
+public:
   forwarder() = default;
 
   forwarder(forwarder const&) = default;
@@ -100,6 +103,18 @@ public:
   void reset() noexcept { stub_ = nullptr; }
 
   void swap(forwarder& other) noexcept { ::std::swap(*this, other); }
+
+  template <typename T>
+  T* target() noexcept
+  {
+    return reinterpret_cast<T*>(&store_);
+  }
+
+  template <typename T> 
+  T const* target() const noexcept
+  {
+    return reinterpret_cast<T const*>(&store_);
+  }
 };
 
 template<typename R, typename ...A, ::std::size_t N>
