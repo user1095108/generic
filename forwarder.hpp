@@ -14,11 +14,29 @@
 namespace generic
 {
 
+template <typename ...A>
+struct forwarder_argument_types
+{
+};
+
+template <typename A>
+struct forwarder_argument_types<A>
+{
+  using argument_type = A;
+};
+
+template <typename A, typename B>
+struct forwarder_argument_types<A, B>
+{
+  using first_argument_type = A;
+  using second_argument_type = B;
+};
+
 template<typename F, ::std::size_t N = 4 * sizeof(void*)>
 class forwarder;
 
 template<typename R, typename ...A, ::std::size_t N>
-class forwarder<R (A...), N>
+class forwarder<R (A...), N> : public forwarder_argument_types<A...>
 {
   R (*stub_)(void const*, A&&...){};
 
