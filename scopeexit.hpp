@@ -1,6 +1,6 @@
-#pragma once
-#ifndef SCOPEEXIT_HPP
-# define SCOPEEXIT_HPP
+#ifndef GENERIC_SCOPEEXIT_HPP
+# define GENERIC_SCOPEEXIT_HPP
+# pragma once
 
 #include <utility>
 
@@ -79,4 +79,4 @@ inline scope_exit<T> operator+(scope_exit_helper&&, T&& f) noexcept
 #define SCOPE_EXIT__(...) auto const CAT(scope_exit_, __LINE__) = \
   ::detail::scope_exit_helper()+[__VA_ARGS__]() noexcept
 
-#endif // SCOPEEXIT_HPP
+#endif // GENERIC_SCOPEEXIT_HPP
