@@ -83,7 +83,7 @@ class light_ptr
   public:
     template <typename U>
     typename ::std::enable_if<!::std::is_void<U>{}>::type
-    dec_ref(U* const ptr)
+    dec_ref(U* const ptr) noexcept
     {
       if (detail::counter_type(1) ==
         counter_.fetch_sub(detail::counter_type(1),
@@ -98,7 +98,7 @@ class light_ptr
 
     template <typename U>
     typename ::std::enable_if<::std::is_void<U>{}>::type
-    dec_ref(U* const ptr)
+    dec_ref(U* const ptr) noexcept
     {
       if (detail::counter_type(1) ==
         counter_.fetch_sub(detail::counter_type(1),
@@ -121,15 +121,8 @@ class light_ptr
   {
     typename ::std::decay<D>::type const d_;
 
-  public:
-    explicit counter(detail::counter_type const c, D&& d) :
-      counter_base(c, invoker),
-      d_(::std::forward<D>(d))
-    {
-    }
-
-  private:
-    static void invoker(counter_base* const ptr, element_type* const e)
+    static void invoker(counter_base* const ptr,
+      element_type* const e) noexcept
     {
       auto const c(static_cast<counter<D>*>(ptr));
 
@@ -139,6 +132,13 @@ class light_ptr
       // delete from a static member function
       delete c;
     }
+
+  public:
+    explicit counter(detail::counter_type const c, D&& d) noexcept :
+      counter_base(c, invoker),
+      d_(::std::forward<D>(d))
+    {
+    }
   };
 
 private:
@@ -146,7 +146,7 @@ private:
 
   counter_base* counter_{};
 
-  element_type* ptr_{};
+  element_type* ptr_;
 
 public:
   light_ptr() = default;
@@ -167,7 +167,7 @@ public:
 
   light_ptr(light_ptr&& other) noexcept { *this = ::std::move(other); }
 
-  ~light_ptr()
+  ~light_ptr() noexcept
   {
     if (counter_)
     {
@@ -176,7 +176,7 @@ public:
     // else do nothing
   }
 
-  light_ptr& operator=(light_ptr const& rhs)
+  light_ptr& operator=(light_ptr const& rhs) noexcept
   {
     if (*this != rhs)
     {
@@ -205,7 +205,6 @@ public:
     rhs.counter_ = nullptr;
 
     ptr_ = rhs.ptr_;
-    rhs.ptr_ = nullptr;
 
     return *this;
   }
@@ -227,11 +226,11 @@ public:
     return !operator==(rhs);
   }
 
-  bool operator==(::std::nullptr_t const) const noexcept { return !ptr_; }
+  bool operator==(::std::nullptr_t const) const noexcept { return !counter_; }
 
-  bool operator!=(::std::nullptr_t const) const noexcept { return ptr_; }
+  bool operator!=(::std::nullptr_t const) const noexcept { return counter_; }
 
-  explicit operator bool() const noexcept { return ptr_; }
+  explicit operator bool() const noexcept { return counter_; }
 
   typename detail::ref_type<T>::type
   operator*() const noexcept
@@ -251,9 +250,9 @@ public:
 
   element_type* get() const noexcept { return ptr_; }
 
-  void reset() { reset(nullptr); }
+  void reset() noexcept { reset(nullptr); }
 
-  void reset(::std::nullptr_t const)
+  void reset(::std::nullptr_t const) noexcept
   {
     if (counter_)
     {
@@ -262,21 +261,22 @@ public:
       counter_ = {};
     }
     // else do nothing
-
-    ptr_ = {};
   }
 
   template <typename U>
-  void reset(U* const p)
+  void reset(U* const p) noexcept
   {
-    reset(p, [](element_type* const p) {
-      ::std::default_delete<typename deletion_type<T, U>::type>()(
-        static_cast<U*>(p));
-    });
+    reset(p,
+      [](element_type* const p) noexcept {
+        ::std::default_delete<typename deletion_type<T, U>::type>()(
+          static_cast<U*>(p)
+        );
+      }
+    );
   }
 
   template <typename U, typename D>
-  void reset(U* const p, D&& d)
+  void reset(U* const p, D&& d) noexcept
   {
     if (counter_)
     {
@@ -323,8 +323,7 @@ namespace std
   {
     size_t operator()(::generic::light_ptr<T> const& l) const noexcept
     {
-      return hash<typename ::generic::light_ptr<T>::element_type*>()(
-        l.counter_);
+      return hash<typename ::generic::light_ptr<T>::element_type*>()(l.ptr_);
     }
   };
 }
