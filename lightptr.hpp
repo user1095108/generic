@@ -17,24 +17,31 @@ namespace generic
 
 namespace detail
 {
-  using counter_type = unsigned;
 
-  using atomic_type = ::std::atomic<counter_type>;
+namespace light_ptr
+{
 
-  template <typename T>
-  using deleter_type = void (*)(T*);
+using counter_type = unsigned;
 
-  template <typename U>
-  struct ref_type
-  {
-    using type = U&;
-  };
+using atomic_type = ::std::atomic<counter_type>;
 
-  template <>
-  struct ref_type<void>
-  {
-    using type = void;
-  };
+template <typename T>
+using deleter_type = void (*)(T*);
+
+template <typename U>
+struct ref_type
+{
+  using type = U&;
+};
+
+template <>
+struct ref_type<void>
+{
+  using type = void;
+};
+
+}
+
 }
 
 template <typename T>
@@ -60,7 +67,7 @@ class light_ptr
 
   using element_type = typename ::std::remove_extent<T>::type;
 
-  using deleter_type = detail::deleter_type<element_type>;
+  using deleter_type = detail::light_ptr::deleter_type<element_type>;
 
   class counter_base
   {
@@ -68,12 +75,12 @@ class light_ptr
 
     using invoker_type = void (*)(counter_base*, element_type*);
 
-    detail::atomic_type counter_{};
+    detail::light_ptr::atomic_type counter_{};
 
     invoker_type const invoker_;
 
   protected:
-    explicit counter_base(detail::counter_type const c,
+    explicit counter_base(detail::light_ptr::counter_type const c,
       invoker_type const invoker) noexcept :
       counter_(c),
       invoker_(invoker)
@@ -85,8 +92,8 @@ class light_ptr
     typename ::std::enable_if<!::std::is_void<U>{}>::type
     dec_ref(U* const ptr) noexcept
     {
-      if (detail::counter_type(1) ==
-        counter_.fetch_sub(detail::counter_type(1),
+      if (detail::light_ptr::counter_type(1) ==
+        counter_.fetch_sub(detail::light_ptr::counter_type(1),
           ::std::memory_order_relaxed))
       {
         using type_must_be_complete = char[sizeof(U) ? 1 : -1];
@@ -100,8 +107,8 @@ class light_ptr
     typename ::std::enable_if<::std::is_void<U>{}>::type
     dec_ref(U* const ptr) noexcept
     {
-      if (detail::counter_type(1) ==
-        counter_.fetch_sub(detail::counter_type(1),
+      if (detail::light_ptr::counter_type(1) ==
+        counter_.fetch_sub(detail::light_ptr::counter_type(1),
           ::std::memory_order_relaxed))
       {
         invoker_(this, ptr);
@@ -111,7 +118,7 @@ class light_ptr
 
     void inc_ref() noexcept
     {
-      counter_.fetch_add(detail::counter_type(1),
+      counter_.fetch_add(detail::light_ptr::counter_type(1),
         ::std::memory_order_relaxed);
     }
   };
@@ -134,7 +141,8 @@ class light_ptr
     }
 
   public:
-    explicit counter(detail::counter_type const c, D&& d) noexcept :
+    explicit counter(detail::light_ptr::counter_type const c,
+      D&& d) noexcept :
       counter_base(c, invoker),
       d_(::std::forward<D>(d))
     {
@@ -232,7 +240,7 @@ public:
 
   explicit operator bool() const noexcept { return counter_; }
 
-  typename detail::ref_type<T>::type
+  typename detail::light_ptr::ref_type<T>::type
   operator*() const noexcept
   {
     return *reinterpret_cast<T*>(ptr_);
@@ -242,7 +250,7 @@ public:
 
   template <typename U = T, typename =
     typename ::std::enable_if<::std::is_array<U>{}>::type>
-  typename detail::ref_type<element_type>::type operator[](
+  typename detail::light_ptr::ref_type<element_type>::type operator[](
     ::std::size_t const i) const noexcept
   {
     return ptr_[i];
@@ -284,7 +292,9 @@ public:
     }
     // else do nothing
 
-    counter_ = new counter<D>(detail::counter_type(1), ::std::forward<D>(d));
+    counter_ = new counter<D>(detail::light_ptr::counter_type(1),
+      ::std::forward<D>(d)
+    );
 
     ptr_ = p;
   }
@@ -297,14 +307,14 @@ public:
 
   bool unique() const noexcept
   {
-    return detail::counter_type(1) == use_count();
+    return detail::light_ptr::counter_type(1) == use_count();
   }
 
-  detail::counter_type use_count() const noexcept
+  detail::light_ptr::counter_type use_count() const noexcept
   {
     return counter_ ?
       counter_->counter_.load(::std::memory_order_relaxed) :
-      detail::counter_type{};
+      detail::light_ptr::counter_type{};
   }
 };
 
