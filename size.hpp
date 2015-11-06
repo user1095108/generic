@@ -7,13 +7,13 @@ namespace generic
 
 // size
 template <typename T, ::std::size_t N>
-inline constexpr decltype(N) size(T const (&)[N]) noexcept
+constexpr inline decltype(N) size(T const (&)[N]) noexcept
 {
   return N;
 }
 
 template <typename T, ::std::size_t M, ::std::size_t N>
-inline constexpr decltype(N) size(T const (&array)[M][N]) noexcept
+constexpr inline decltype(N) size(T const (&array)[M][N]) noexcept
 {
   return M * size(*array);
 }
