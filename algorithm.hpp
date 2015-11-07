@@ -1,5 +1,5 @@
-#ifndef ALGORITHM_HPP
-# define ALGORUTHM_HPP
+#ifndef GENERIC_ALGORITHM_HPP
+# define GENERIC_ALGORITHM_HPP
 # pragma once
 
 #include <cstddef>
@@ -86,4 +86,4 @@ minmax(A&& ...args) noexcept
 
 }
 
-#endif // ALGORITHM_HPP
+#endif // GENERIC_ALGORITHM_HPP
