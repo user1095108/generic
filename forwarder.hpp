@@ -69,10 +69,14 @@ public:
 
   forwarder(forwarder const&) = default;
 
-  template<typename T>
+  template<typename T,
+    typename = typename ::std::enable_if<
+      !::std::is_same<forwarder, typename ::std::decay<T>::type>{}
+    >::type
+  >
   forwarder(T&& f) noexcept
   {
-    operator=(::std::forward<T>(f));
+    assign(::std::forward<T>(f));
   }
 
   forwarder& operator=(forwarder const&) = default;
@@ -87,23 +91,7 @@ public:
   >
   forwarder& operator=(T&& f) noexcept
   {
-    using functor_type = typename ::std::decay<T>::type;
-
-    static_assert(sizeof(functor_type) <= sizeof(store_),
-      "functor too large");
-    static_assert(::std::is_trivially_copyable<T>{},
-      "functor not trivially copyable");
-
-    ::new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
-
-    stub_ = [](void const* const ptr, A&&... args) noexcept(noexcept(
-        (*static_cast<functor_type const*>(ptr))(::std::forward<A>(args)...))
-      ) -> R
-      {
-        return (*static_cast<functor_type const*>(ptr))(
-          ::std::forward<A>(args)...
-        );
-      };
+    assign(::std::forward<T>(f));
 
     return *this;
   }
@@ -118,9 +106,25 @@ public:
   }
 
   template <typename T>
-  void assign(T&& f) noexcept(noexcept(operator=(::std::forward<T>(f))))
+  void assign(T&& f) noexcept
   {
-    operator=(::std::forward<T>(f));
+    using functor_type = typename ::std::decay<T>::type;
+
+//  static_assert(sizeof(functor_type) <= sizeof(store_),
+//    "functor too large");
+    static_assert(::std::is_trivially_copyable<T>{},
+      "functor not trivially copyable");
+
+    ::new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
+
+    stub_ = [](void const* const ptr, A&&... args) noexcept(noexcept(
+        (*static_cast<functor_type const*>(ptr))(::std::forward<A>(args)...))
+      ) -> R
+      {
+        return (*static_cast<functor_type const*>(ptr))(
+          ::std::forward<A>(args)...
+        );
+      };
   }
 
   void reset() noexcept { stub_ = nullptr; }
