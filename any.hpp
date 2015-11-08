@@ -30,10 +30,14 @@ public:
   template <typename T>
   static typeid_t type_id() noexcept
   {
+#if defined(__GNUC__)
+    label: return typeid_t(&&label);
+#else
     //static struct tmp { tmp() noexcept { } } const type_id;
     static char const type_id;
 
     return typeid_t(&type_id);
+#endif // __GNUC__
   }
 
   any() = default;

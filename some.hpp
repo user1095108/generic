@@ -549,6 +549,25 @@ public:
     *this = ::std::forward<U>(f);
   }
 
+  explicit operator bool() const noexcept
+  {
+    return detail::some::get_meta<void>() != meta_;
+  }
+
+  template <typename U,
+    typename = typename ::std::enable_if<
+      !::std::is_same<
+        typename ::std::decay<U>::type, some
+      >{}
+    >::type
+  >
+  some& operator=(U&& u)
+  {
+    assign(::std::forward<U>(u));
+
+    return *this;
+  }
+
   // copy assignment possible
   template <typename U>
   typename ::std::enable_if<
@@ -557,13 +576,10 @@ public:
     >{} &&
     detail::some::is_copy_assignable<
       typename detail::some::remove_cvr<U>::type
-    >{} &&
-    !::std::is_same<
-      typename ::std::decay<U>::type, some
     >{},
     some&
   >::type
-  operator=(U&& u)
+  assign(U&& u)
   {
     static_assert(sizeof(U) <= sizeof(store_), "");
     using user_type = typename detail::some::remove_cvr<U>::type;
@@ -596,13 +612,10 @@ public:
     >{} &&
     detail::some::is_move_assignable<
       typename detail::some::remove_cvr<U>::type
-    >{} &&
-    !::std::is_same<
-      typename ::std::decay<U>::type, some
     >{},
     some&
   >::type
-  operator=(U&& u)
+  assign(U&& u)
   {
     static_assert(sizeof(U) <= sizeof(store_), "");
     using user_type = typename detail::some::remove_cvr<U>::type;
@@ -634,13 +647,10 @@ public:
     >{} &&
     !detail::some::is_move_assignable<
       typename detail::some::remove_cvr<U>::type
-    >{} &&
-    !::std::is_same<
-      typename ::std::decay<U>::type, some
     >{},
     some&
   >::type
-  operator=(U&& u)
+  assign(U&& u)
   {
     static_assert(sizeof(U) <= sizeof(store_), "");
     using user_type = typename detail::some::remove_cvr<U>::type;
@@ -652,23 +662,6 @@ public:
     meta_ = detail::some::get_meta<user_type>();
 
     return *this;
-  }
-
-  explicit operator bool() const noexcept
-  {
-    return detail::some::get_meta<void>() != meta_;
-  }
-
-  template <typename U>
-  some& assign(U&& u)
-  {
-    return operator=(::std::forward<U>(u));
-  }
-
-  template <typename U>
-  bool contains() const noexcept
-  {
-    return detail::some::get_meta<U>() == meta_;
   }
 
   void clear()
@@ -755,6 +748,8 @@ public:
   typeid_t type_id() const noexcept { return typeid_t(meta_); }
 
 private:
+  template <typename U, ::std::size_t M> friend bool contains(some<M> const&) noexcept;
+
 #ifdef NDEBUG
   template <typename U, ::std::size_t M> friend U& get(some<M>&) noexcept;
   template <typename U, ::std::size_t M> friend U const& get(some<M> const&) noexcept;
@@ -769,6 +764,12 @@ private:
 };
 
 template <typename U, ::std::size_t N>
+inline bool contains(some<N> const& s) noexcept
+{
+  return detail::some::get_meta<U>() == s.meta_;
+}
+
+template <typename U, ::std::size_t N>
 inline U& get(some<N>& s)
 #ifdef NDEBUG
 noexcept
@@ -777,7 +778,7 @@ noexcept
   using nonref = typename detail::some::remove_cvr<U>::type;
 
 #ifndef NDEBUG
-  if (s.template contains<nonref>())
+  if (contains<nonref>(s))
   {
     return *reinterpret_cast<nonref*>(&s.store_);
   }
@@ -799,7 +800,7 @@ noexcept
   using nonref = typename detail::some::remove_cvr<U>::type;
 
 #ifndef NDEBUG
-  if (s.template contains<nonref>())
+  if (contains<nonref>(s))
   {
     return *reinterpret_cast<nonref const*>(&s.store_);
   }
