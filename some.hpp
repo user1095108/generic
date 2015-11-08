@@ -317,7 +317,7 @@ mover_stub(bool const, deleter_type const deleter,
 }
 
 template <class U>
-inline typename ::std::enable_if<
+constexpr inline typename ::std::enable_if<
   !is_copy_constructible<U>{}, copier_type
 >::type
 get_copier() noexcept
@@ -326,7 +326,7 @@ get_copier() noexcept
 }
 
 template <class U>
-inline typename ::std::enable_if<
+constexpr inline typename ::std::enable_if<
   is_copy_constructible<U>{}, copier_type
 >::type
 get_copier() noexcept
@@ -335,7 +335,7 @@ get_copier() noexcept
 }
 
 template <class U>
-inline typename ::std::enable_if<
+constexpr inline typename ::std::enable_if<
   !is_move_constructible<U>{}, mover_type
 >::type
 get_mover() noexcept
@@ -344,7 +344,7 @@ get_mover() noexcept
 }
 
 template <class U>
-inline typename ::std::enable_if<
+constexpr inline typename ::std::enable_if<
   is_move_constructible<U>{}, mover_type
 >::type
 get_mover() noexcept
@@ -369,9 +369,9 @@ inline typename ::std::enable_if<
 get_meta()
 {
   static struct meta const m{
-    deleter_stub<U>,
     get_copier<U>(),
     get_mover<U>(),
+    deleter_stub<U>,
     sizeof(U)
   };
 
@@ -386,9 +386,9 @@ inline typename ::std::enable_if<
 get_meta()
 {
   static struct meta const m{
-    deleter_stub<U>,
     get_copier<U>(),
     get_mover<U>(),
+    deleter_stub<U>,
     0
   };
 
