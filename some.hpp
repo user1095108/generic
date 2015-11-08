@@ -354,9 +354,9 @@ get_mover() noexcept
 
 struct meta
 {
-  deleter_type deleter;
   copier_type copier;
   mover_type mover;
+  deleter_type deleter;
 
   ::std::size_t size;
 };
