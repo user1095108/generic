@@ -28,15 +28,12 @@ public:
   using typeid_t = ::std::uintptr_t;
 
   template <typename T>
-  struct S
-  {
-    static constexpr char const c{};
-  };
+  static constexpr char const c{};
 
   template <typename T>
   static constexpr typeid_t type_id() noexcept
   {
-    return typeid_t(&S<T>::c);
+    return typeid_t(&c<T>);
   }
 
   any() = default;
