@@ -28,16 +28,15 @@ public:
   using typeid_t = ::std::uintptr_t;
 
   template <typename T>
-  static typeid_t type_id() noexcept
+  struct S
   {
-#if defined(__GNUC__)
-    label: return typeid_t(&&label);
-#else
-    //static struct tmp { tmp() noexcept { } } const type_id;
-    static char const type_id;
+    static constexpr char c{};
+  };
 
-    return typeid_t(&type_id);
-#endif // __GNUC__
+  template <typename T>
+  static constexpr typeid_t type_id() noexcept
+  {
+    return typeid_t(&S<T>::c);
   }
 
   any() = default;
