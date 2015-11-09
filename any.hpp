@@ -30,7 +30,7 @@ public:
   template <typename T>
   static typeid_t type_id() noexcept
   {
-    static char c;
+    static char const c{};
 
     return typeid_t(&c);
   }
