@@ -30,7 +30,7 @@ public:
   template <typename T>
   struct S
   {
-    static constexpr char c{};
+    static constexpr char const c{};
   };
 
   template <typename T>
