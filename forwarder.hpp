@@ -110,8 +110,8 @@ public:
   {
     using functor_type = typename ::std::decay<T>::type;
 
-//  static_assert(sizeof(functor_type) <= sizeof(store_),
-//    "functor too large");
+    static_assert(sizeof(functor_type) <= sizeof(store_),
+      "functor too large");
     static_assert(::std::is_trivially_copyable<T>{},
       "functor not trivially copyable");
 
