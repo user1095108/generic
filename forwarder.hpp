@@ -17,6 +17,9 @@ namespace generic
 namespace detail
 {
 
+namespace forwarder
+{
+
 template <typename ...A>
 struct argument_types
 {
@@ -37,11 +40,13 @@ struct argument_types<A, B>
 
 }
 
+}
+
 template<typename F, ::std::size_t N = 4 * sizeof(void*)>
 class forwarder;
 
 template<typename R, typename ...A, ::std::size_t N>
-class forwarder<R (A...), N> : public detail::argument_types<A...>
+class forwarder<R (A...), N> : public detail::forwarder::argument_types<A...>
 {
   R (*stub_)(void const*, A&&...){};
 
