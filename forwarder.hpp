@@ -88,14 +88,15 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  template<typename T, typename ...U,
+  template <
+    typename T,
     typename = typename ::std::enable_if<
       !::std::is_same<forwarder, typename ::std::decay<T>::type>{}
     >::type
   >
-  forwarder(T&& t, U&& ...u) noexcept
+  forwarder& operator=(T&& f) noexcept
   {
-    assign(::std::forward<T>(t), ::std::forward<U>(u)...);
+    assign(::std::forward<T>(f));
 
     return *this;
   }
