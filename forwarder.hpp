@@ -74,14 +74,14 @@ public:
 
   forwarder(forwarder const&) = default;
 
-  template<typename T,
+  template<typename T, typename ...U,
     typename = typename ::std::enable_if<
       !::std::is_same<forwarder, typename ::std::decay<T>::type>{}
     >::type
   >
-  forwarder(T&& f) noexcept
+  forwarder(T&& t, U&& ...u) noexcept
   {
-    assign(::std::forward<T>(f));
+    assign(::std::forward<T>(t), ::std::forward<U>(u)...);
   }
 
   forwarder& operator=(forwarder const&) = default;
@@ -130,6 +130,50 @@ public:
           ::std::forward<A>(args)...
         );
       };
+  }
+
+  template <class C>
+  void assign(C* const object_ptr,
+    R (C::* const method_ptr)(A...)) noexcept
+  {
+    assign([object_ptr, method_ptr](A&&... args) noexcept(
+      (object_ptr->*method_ptr)(::std::declval<A>()...)) {
+        return (object_ptr->*method_ptr)(::std::forward<A>(args)...);
+      }
+    );
+  }
+
+  template <class C>
+  void assign(C* const object_ptr,
+    R (C::* const method_ptr)(A...) const) noexcept
+  {
+    assign([object_ptr, method_ptr](A&&... args) noexcept(
+      (object_ptr->*method_ptr)(::std::declval<A>()...)) {
+        return (object_ptr->*method_ptr)(::std::forward<A>(args)...);
+      }
+    );
+  }
+
+  template <class C>
+  void assign(C& object,
+    R (C::* const method_ptr)(A...)) noexcept
+  {
+    assign([&object, method_ptr](A&&... args) noexcept(
+      (object.*method_ptr)(::std::declval<A>()...)) {
+        return (object.*method_ptr)(::std::forward<A>(args)...);
+      }
+    );
+  }
+
+  template <class C>
+  void assign(C const& object,
+    R (C::* const method_ptr)(A...) const) noexcept
+  {
+    assign([&object, method_ptr](A&&... args) noexcept(
+      (object.*method_ptr)(::std::declval<A>()...)) {
+        return (object.*method_ptr)(::std::forward<A>(args)...);
+      }
+    );
   }
 
   void reset() noexcept { stub_ = nullptr; }
