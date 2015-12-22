@@ -15,3 +15,5 @@ auto recurse(F&& f)
 }
 
 }
+
+#endif // GENERIC_RECURSE_HPP
