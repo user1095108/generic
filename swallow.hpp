@@ -5,13 +5,7 @@
 namespace generic
 {
 
-struct swallow
-{
-  template <typename ...T>
-  swallow(T&& ...) noexcept
-  {
-  }
-};
+struct swallow { template <typename ...T> swallow(T&& ...) noexcept { } };
 
 }
 
