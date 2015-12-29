@@ -171,7 +171,7 @@ public:
     reset(p, ::std::forward<D>(d));
   }
 
-  light_ptr(light_ptr const& other) { *this = other; }
+  light_ptr(light_ptr const& other) noexcept { *this = other; }
 
   light_ptr(light_ptr&& other) noexcept { *this = ::std::move(other); }
 
@@ -272,7 +272,7 @@ public:
   }
 
   template <typename U>
-  void reset(U* const p) noexcept
+  void reset(U* const p)
   {
     reset(p,
       [](element_type* const p) noexcept {
@@ -284,7 +284,7 @@ public:
   }
 
   template <typename U, typename D>
-  void reset(U* const p, D&& d) noexcept
+  void reset(U* const p, D&& d)
   {
     if (counter_)
     {
@@ -292,9 +292,12 @@ public:
     }
     // else do nothing
 
-    counter_ = new counter<D>(detail::light_ptr::counter_type(1),
-      ::std::forward<D>(d)
-    );
+    counter_ = p ?
+      new counter<D>(
+        detail::light_ptr::counter_type(1),
+        ::std::forward<D>(d)
+      ) :
+      nullptr;
 
     ptr_ = p;
   }
