@@ -266,9 +266,11 @@ public:
     {
       counter_->dec_ref(ptr_);
 
-      counter_ = {};
+      counter_ = nullptr;
     }
     // else do nothing
+
+    ptr_ = nullptr;
   }
 
   template <typename U>
