@@ -73,7 +73,7 @@ class light_ptr
   {
     friend class light_ptr;
 
-    using invoker_type = void (*)(counter_base*, element_type*);
+    using invoker_type = void (*)(counter_base*, element_type*) noexcept;
 
     detail::light_ptr::atomic_type counter_{};
 
@@ -128,7 +128,7 @@ class light_ptr
   {
     typename ::std::decay<D>::type const d_;
 
-    static void invoker(counter_base* const ptr,
+    static void invoked(counter_base* const ptr,
       element_type* const e) noexcept
     {
       auto const c(static_cast<counter<D>*>(ptr));
@@ -143,7 +143,7 @@ class light_ptr
   public:
     explicit counter(detail::light_ptr::counter_type const c,
       D&& d) noexcept :
-      counter_base(c, invoker),
+      counter_base(c, invoked),
       d_(::std::forward<D>(d))
     {
     }
