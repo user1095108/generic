@@ -269,8 +269,6 @@ public:
       counter_ = nullptr;
     }
     // else do nothing
-
-    ptr_ = nullptr;
   }
 
   template <typename U>
