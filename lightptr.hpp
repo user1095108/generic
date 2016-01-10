@@ -217,7 +217,12 @@ public:
     return *this;
   }
 
-  light_ptr& operator=(::std::nullptr_t const) noexcept { reset(); }
+  light_ptr& operator=(::std::nullptr_t const) noexcept
+  {
+    reset();
+
+    return *this;
+  }
 
   bool operator<(light_ptr const& rhs) const noexcept
   {
