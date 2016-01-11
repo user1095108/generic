@@ -71,6 +71,8 @@ public: // modifiers
   any& operator=(any const& rhs)
   {
     return content == rhs.content ? *this : *this = any(rhs);
+
+    return *this;
   }
 
   any& operator=(any&& rhs) noexcept { swap(rhs); return *this; }
