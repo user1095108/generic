@@ -26,7 +26,7 @@ public:
   template <typename ...A, typename =
     typename ::std::enable_if<::std::is_constructible<U, A...>{}>::type
   >
-  implstore(A&& ...args)
+  explicit implstore(A&& ...args)
   {
     static_assert(sizeof(store_) >= sizeof(U), "impl too large");
     ::new (static_cast<void*>(&store_)) U(::std::forward<A>(args)...);
