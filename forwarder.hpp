@@ -42,13 +42,15 @@ struct argument_types<A, B>
 
 }
 
-template<typename F, ::std::size_t N = 4 * sizeof(void*)>
+constexpr auto const default_size = 4 * sizeof(void*);
+
+template<typename F, bool NE = false, ::std::size_t N = default_size>
 class forwarder;
 
-template<typename R, typename ...A, ::std::size_t N>
-class forwarder<R (A...), N> : public detail::forwarder::argument_types<A...>
+template<typename R, typename ...A, bool NE, ::std::size_t N>
+class forwarder<R (A...), NE, N> : public detail::forwarder::argument_types<A...>
 {
-  R (*stub_)(void const*, A&&...){};
+  R (*stub_)(void const*, A&&...) noexcept(NE) {};
 
   typename ::std::aligned_storage<N>::type store_;
 
