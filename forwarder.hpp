@@ -69,7 +69,7 @@ class forwarder<R (A...), NE, N> : public detail::forwarder::argument_types<A...
     forwarder<T (U...), M> const&) noexcept;
 
 public:
-  using result_type	= R;
+  using result_type = R;
 
 public:
   forwarder() = default;
