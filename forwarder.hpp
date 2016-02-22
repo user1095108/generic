@@ -42,9 +42,9 @@ struct argument_types<A, B>
 
 }
 
-constexpr auto const default_size = 4 * sizeof(void*);
+constexpr auto const default_forwarder_size = 4 * sizeof(void*);
 
-template<typename F, bool NE = false, ::std::size_t N = default_size>
+template<typename F, bool NE = false, ::std::size_t N = default_forwarder_size>
 class forwarder;
 
 template<typename R, typename ...A, bool NE, ::std::size_t N>
