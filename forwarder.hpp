@@ -42,12 +42,21 @@ struct argument_types<A, B>
 
 }
 
+constexpr auto const default_forwarder_noexcept =
+#if __cpp_exceptions
+false;
+#else
+true;
+#endif // __cpp_exceptions
+
 constexpr auto const default_forwarder_size = 4 * sizeof(void*);
 
-template<typename F, bool NE = false, ::std::size_t N = default_forwarder_size>
+template <typename F,
+  bool NE = default_forwarder_noexcept,
+  ::std::size_t N = default_forwarder_size>
 class forwarder;
 
-template<typename R, typename ...A, bool NE, ::std::size_t N>
+template <typename R, typename ...A, bool NE, ::std::size_t N>
 class forwarder<R (A...), NE, N> : public detail::forwarder::argument_types<A...>
 {
   R (*stub_)(void const*, A&&...) noexcept(NE) {};
