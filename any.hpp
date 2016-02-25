@@ -27,13 +27,21 @@ public:
 
   using typeid_t = ::std::uintptr_t;
 
+#if defined(__GNUC__)
   template <typename T>
   static typeid_t type_id() noexcept
   {
-    static char const c{};
-
-    return typeid_t(&c);
+    return typeid_t(type_id<T>);
   }
+#else
+  template <typename T>
+  static typeid_t type_id() noexcept
+  {
+    static char const type_id{};
+
+    return typeid_t(&type_id);
+  }
+#endif // __GNUC__
 
   any() = default;
 
