@@ -622,7 +622,7 @@ public:
 
     if (detail::some::get_meta<user_type>() == meta_)
     {
-      *reinterpret_cast<user_type*>(store_) = ::std::move(u);
+      *reinterpret_cast<user_type*>(&store_) = ::std::move(u);
     }
     else
     {
