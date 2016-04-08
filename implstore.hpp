@@ -16,7 +16,7 @@ namespace generic
 template <class U, ::std::size_t N = 64>
 class implstore
 {
-  typename ::std::aligned_storage<N>::type store_;
+  typename ::std::aligned_storage_t<N> store_;
 
 public:
   static constexpr ::std::size_t const buffer_size = N;

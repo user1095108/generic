@@ -83,7 +83,7 @@ private:
   }
 
 private:
-  typename ::std::aligned_storage<N>::type buf_;
+  typename ::std::aligned_storage_t<N> buf_;
 
   char* ptr_{reinterpret_cast<char*>(&buf_)};
 
