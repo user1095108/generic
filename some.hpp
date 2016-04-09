@@ -22,9 +22,9 @@ namespace some
 {
 
 template <typename T>
-using remove_cvr = ::std::remove_cv<
+using remove_cvr_t = typename ::std::remove_cv<
   typename ::std::remove_reference<T>::type
->;
+>::type;
 
 template <typename A, typename ...B>
 struct max_type_size : ::std::conditional<
@@ -537,7 +537,7 @@ public:
     typename U,
     typename = typename ::std::enable_if<
       !::std::is_array<
-        typename detail::some::remove_cvr<U>::type
+        typename detail::some::remove_cvr_t<U>
       >{} &&
       !::std::is_same<
         typename ::std::decay<U>::type, some
@@ -571,18 +571,14 @@ public:
   // copy assignment possible
   template <typename U>
   typename ::std::enable_if<
-    !::std::is_array<
-      typename detail::some::remove_cvr<U>::type
-    >{} &&
-    detail::some::is_copy_assignable<
-      typename detail::some::remove_cvr<U>::type
-    >{},
+    !::std::is_array<detail::some::remove_cvr_t<U> >{} &&
+    detail::some::is_copy_assignable<detail::some::remove_cvr_t<U> >{},
     some&
   >::type
   assign(U&& u)
   {
-    static_assert(sizeof(U) <= sizeof(store_), "");
-    using user_type = typename detail::some::remove_cvr<U>::type;
+    using user_type = ::std::decay_t<U>;
+    static_assert(sizeof(user_type) <= sizeof(store_), "");
 
     if (detail::some::get_meta<user_type>() == meta_)
     {
@@ -603,22 +599,16 @@ public:
   // move assignment possible
   template <typename U>
   typename ::std::enable_if<
-    !::std::is_array<
-      typename detail::some::remove_cvr<U>::type
-    >{} &&
+    !::std::is_array<detail::some::remove_cvr_t<U> >{} &&
     ::std::is_rvalue_reference<U&&>{} &&
-    !detail::some::is_copy_assignable<
-      typename detail::some::remove_cvr<U>::type
-    >{} &&
-    detail::some::is_move_assignable<
-      typename detail::some::remove_cvr<U>::type
-    >{},
+    !detail::some::is_copy_assignable<detail::some::remove_cvr_t<U> >{} &&
+    detail::some::is_move_assignable<detail::some::remove_cvr_t<U> >{},
     some&
   >::type
   assign(U&& u)
   {
-    static_assert(sizeof(U) <= sizeof(store_), "");
-    using user_type = typename detail::some::remove_cvr<U>::type;
+    using user_type = ::std::decay_t<U>;
+    static_assert(sizeof(user_type) <= sizeof(store_), "");
 
     if (detail::some::get_meta<user_type>() == meta_)
     {
@@ -639,21 +629,15 @@ public:
   // assignment not possible
   template <typename U>
   typename ::std::enable_if<
-    !::std::is_array<
-      typename detail::some::remove_cvr<U>::type
-    >{} &&
-    !detail::some::is_copy_assignable<
-      typename detail::some::remove_cvr<U>::type
-    >{} &&
-    !detail::some::is_move_assignable<
-      typename detail::some::remove_cvr<U>::type
-    >{},
+    !::std::is_array<detail::some::remove_cvr_t<U> >{} &&
+    !detail::some::is_copy_assignable<detail::some::remove_cvr_t<U> >{} &&
+    !detail::some::is_move_assignable<detail::some::remove_cvr_t<U> >{},
     some&
   >::type
   assign(U&& u)
   {
-    static_assert(sizeof(U) <= sizeof(store_), "");
-    using user_type = typename detail::some::remove_cvr<U>::type;
+    using user_type = ::std::decay_t<U>;
+    static_assert(sizeof(user_type) <= sizeof(store_), "");
 
     clear();
 
@@ -775,7 +759,7 @@ inline U& get(some<N>& s)
 noexcept
 #endif // NDEBUG
 {
-  using nonref = typename detail::some::remove_cvr<U>::type;
+  using nonref = detail::some::remove_cvr_t<U>;
 
 #ifndef NDEBUG
   if (contains<nonref>(s))
@@ -797,7 +781,7 @@ inline U const& get(some<N> const& s)
 noexcept
 #endif // NDEBUG
 {
-  using nonref = typename detail::some::remove_cvr<U>::type;
+  using nonref = detail::some::remove_cvr_t<U>;
 
 #ifndef NDEBUG
   if (contains<nonref>(s))
