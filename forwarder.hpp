@@ -61,7 +61,7 @@ class forwarder<R (A...), NE, N> : public detail::forwarder::argument_types<A...
 {
   R (*stub_)(void const*, A&&...) noexcept(NE) {};
 
-  typename ::std::aligned_storage<N>::type store_;
+  typename ::std::aligned_storage_t<N> store_;
 
   template<typename T, typename ...U, ::std::size_t M>
   friend bool operator==(forwarder<T (U...), M> const&,
