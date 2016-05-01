@@ -12,7 +12,7 @@ int main(int, char*[])
     }
   );
 
-  (a | a | a | a)(0);
+  (a | a | a | a | a | a)(0);
 
   return 0;
 }
