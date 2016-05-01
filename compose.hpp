@@ -74,8 +74,7 @@ inline auto compose(
   )
 )
 {
-  return composer<F1, F2, R2, A1...>(
-    ::std::forward<F1>(f1),
+  return composer<F1, F2, R2, A1...>(::std::forward<F1>(f1),
     ::std::forward<F2>(f2)
   );
 }
