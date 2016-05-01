@@ -2,8 +2,6 @@
 # define COMPOSE_HPP
 # pragma once
 
-#include <type_traits>
-
 #include <utility>
 
 namespace
@@ -39,7 +37,7 @@ constexpr auto extract_signature(F const&) noexcept ->
   return extract_signature(&F::operator());
 }
 
-template <typename F1, typename F2, typename R2, typename ...A1>
+template <typename F1, typename F2, typename ...A1>
 class composer
 {
   F1 const f1_;
@@ -52,7 +50,7 @@ public:
   {
   }
 
-  R2 operator()(A1&& ...args) const noexcept(
+  auto operator()(A1&& ...args) const noexcept(
     noexcept(f2_(f1_(::std::forward<A1>(args)...)))
   )
   {
@@ -68,13 +66,13 @@ inline auto compose(
   F1&& f1, signature<R1, A1...> const,
   F2&& f2, signature<R2, A2...> const) noexcept(
   noexcept(
-    composer<F1, F2, R2, A1...>(::std::forward<F1>(f1),
+    composer<F1, F2, A1...>(::std::forward<F1>(f1),
       ::std::forward<F2>(f2)
     )
   )
 )
 {
-  return composer<F1, F2, R2, A1...>(::std::forward<F1>(f1),
+  return composer<F1, F2, A1...>(::std::forward<F1>(f1),
     ::std::forward<F2>(f2)
   );
 }
