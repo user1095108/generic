@@ -39,7 +39,7 @@ constexpr auto extract_signature(F const&) noexcept ->
   return extract_signature(&F::operator());
 }
 
-template <typename F1, typename F2, bool A2Size, typename ...A1>
+template <typename F1, typename F2, bool, typename ...A1>
 class composer;
 
 template <typename F1, typename F2, typename ...A1>
