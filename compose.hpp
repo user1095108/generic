@@ -77,12 +77,10 @@ public:
   }
 
   auto operator()(A1&& ...args) const noexcept(
-    noexcept(f2_()) || noexcept(f1_(::std::forward<A1>(args)...))
+    noexcept(f1_(::std::forward<A1>(args)...), f2_())
   )
   {
-    f1_(::std::forward<A1>(args)...);
-
-    return f2_();
+    return f1_(::std::forward<A1>(args)...), f2_();
   }
 };
 
