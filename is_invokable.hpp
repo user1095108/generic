@@ -9,13 +9,12 @@ namespace
 {
 
 template <typename F, typename ...A>
-auto f(int) -> decltype(
-  (void)::std::declval<F>()(::std::declval<A>()...),
-  ::std::integral_constant<bool, true>{}
+auto f(int) -> decltype((void)::std::declval<F>()(::std::declval<A>()...),
+  ::std::true_type{}
 );
 
 template <typename F, typename ...A>
-auto f(long) -> ::std::integral_constant<bool, false>;
+auto f(long) -> ::std::false_type;
 
 }
 
