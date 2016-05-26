@@ -84,6 +84,21 @@ minmax(A&& ...args) noexcept
   };
 }
 
+template<typename T, typename U, typename V>
+constexpr inline ::std::enable_if_t<
+  ::std::is_same<T, U>{} &&
+  ::std::is_same<U, V>{},
+  T const&
+>
+clamp(T const& v, U const& lo, V const& hi) noexcept
+{
+  return v < lo ?
+    lo :
+    v > hi ?
+      hi :
+      v;
+}
+
 }
 
 #endif // GENERIC_ALGORITHM_HPP
