@@ -4,8 +4,6 @@
 
 #include <algorithm>
 
-#include <type_traits>
-
 namespace generic
 {
 
@@ -15,8 +13,9 @@ namespace
 // contains
 //////////////////////////////////////////////////////////////////////////////
 template <class Container>
-auto contains(Container const& c,
-  typename Container::key_type const& key, int) noexcept ->
+inline auto contains(Container const& c,
+  typename Container::key_type const& key, int) noexcept(
+    noexcept(c.end(), c.find(key)) ->
   decltype(c.find(key), true)
 {
   return c.end() != c.find(key);
@@ -24,21 +23,23 @@ auto contains(Container const& c,
 
 //////////////////////////////////////////////////////////////////////////////
 template <class Container>
-auto contains(Container const& c,
+inline auto contains(Container const& c,
   typename Container::value_type const& key, long) noexcept(
-    noexcept(::std::find(c.begin(), c.end, key))
+    noexcept(c.end(), ::std::find(c.begin(), c.end, key))
 )
 {
-  auto const end(c.end());
+  auto const cend(c.cend());
 
-  return end != ::std::find(c.begin(), end, key);
+  return cend != ::std::find(c.cbegin(), cend, key);
 }
 
 }
 
 //////////////////////////////////////////////////////////////////////////////
 template <class Container, typename T>
-auto contains(Container const& c, T const& key) noexcept
+inline auto contains(Container const& c, T const& key) noexcept(
+  noexcept(contains(c, key, 0))
+)
 {
   return contains(c, key, 0);
 }
