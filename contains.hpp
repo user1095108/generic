@@ -15,7 +15,7 @@ namespace
 template <class Container>
 inline auto contains(Container const& c,
   typename Container::key_type const& key, int) noexcept(
-    noexcept(c.end(), c.find(key)) ->
+    noexcept(c.end(), c.find(key))) ->
   decltype(c.find(key), true)
 {
   return c.end() != c.find(key);
@@ -25,7 +25,7 @@ inline auto contains(Container const& c,
 template <class Container>
 inline auto contains(Container const& c,
   typename Container::value_type const& key, long) noexcept(
-    noexcept(c.end(), ::std::find(c.begin(), c.end, key))
+    noexcept(c.end(), ::std::find(c.begin(), c.end(), key))
 )
 {
   auto const cend(c.cend());
