@@ -2,20 +2,30 @@
 # define GENERIC_CONTAINS_HPP
 # pragma once
 
+#include <algorithm>
+
 #include <type_traits>
 
 namespace generic
 {
 
+namespace
+{
+
 // contains
 //////////////////////////////////////////////////////////////////////////////
 template <class Container>
-inline ::std::enable_if_t<
-  !::std::is_member_function_pointer<&Container::find>,
-  bool
->
-contains(Container const& c,
-  typename Container::key_type const& key) noexcept(
+auto contains(Container const& c,
+  typename Container::key_type const& key, int) noexcept ->
+  decltype(c.find(key), true)
+{
+  return c.end() != c.find(key);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+template <class Container>
+auto contains(Container const& c,
+  typename Container::value_type const& key, long) noexcept(
     noexcept(::std::find(c.begin(), c.end, key))
 )
 {
@@ -24,16 +34,13 @@ contains(Container const& c,
   return end != ::std::find(c.begin(), end, key);
 }
 
+}
+
 //////////////////////////////////////////////////////////////////////////////
-template <class Container>
-inline ::std::enable_if_t<
-  ::std::is_member_function_pointer<&Container::find>,
-  bool
->
-contains(Container const& c,
-  typename Container::key_type const& key) noexcept
+template <class Container, typename T>
+auto contains(Container const& c, T const& key) noexcept
 {
-  return c.end() != c.find(key);
+  return contains(c, key, 0);
 }
 
 }
