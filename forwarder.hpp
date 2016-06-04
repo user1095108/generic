@@ -7,6 +7,8 @@
 // ::std::size_t
 #include <cstddef>
 
+#include <functional>
+
 #include <type_traits>
 
 #include <utility>
@@ -133,11 +135,18 @@ public:
 
     ::new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
 
-    stub_ = [](void const* const ptr, A&&... args) noexcept(noexcept(
-        (*static_cast<functor_type const*>(ptr))(::std::forward<A>(args)...))
+    stub_ = [](void const* const ptr, A&&... args) noexcept(
+        noexcept(
+          ::std::invoke(*static_cast<functor_type const*>(ptr),
+            ::std::forward<A>(args)...
+          )
+        )
       ) -> R
       {
-        return (*static_cast<functor_type const*>(ptr))(
+//      return (*static_cast<functor_type const*>(ptr))(
+//        ::std::forward<A>(args)...
+//      );
+        return ::std::invoke(*static_cast<functor_type const*>(ptr),
           ::std::forward<A>(args)...
         );
       };
