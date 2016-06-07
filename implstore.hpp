@@ -23,11 +23,10 @@ public:
 
   using value_type = U;
 
-  template <typename ...A, typename =
-    typename ::std::enable_if<::std::is_constructible<U, A...>{}>::type
-  >
+  template <typename ...A>
   explicit implstore(A&& ...args)
   {
+    static_assert(::std::is_constructible<U, A...>{}, "cannot construct U");
     static_assert(sizeof(store_) >= sizeof(U), "impl too large");
     ::new (static_cast<void*>(&store_)) U(::std::forward<A>(args)...);
   }
@@ -40,18 +39,14 @@ public:
 
   template <::std::size_t M, typename K = U>
   implstore(implstore<U, M> const& other,
-    typename ::std::enable_if<
-      ::std::is_copy_constructible<K>{}
-    >::type* = nullptr)
+    ::std::enable_if_t<::std::is_copy_constructible<K>{}>* = {})
   {
     ::new (static_cast<void*>(&store_)) U(*other);
   }
 
   template <::std::size_t M, typename K = U>
   implstore(implstore<U, M>&& other,
-    typename ::std::enable_if<
-      ::std::is_move_constructible<K>{}
-    >::type* = nullptr)
+    ::std::enable_if_t<::std::is_move_constructible<K>{}>* = nullptr)
   {
     ::new (static_cast<void*>(&store_)) U(::std::move(*other));
   }
