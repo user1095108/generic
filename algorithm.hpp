@@ -31,8 +31,8 @@ constexpr inline ::std::enable_if_t<
   bool(sizeof...(A)) &&
   all_of<
     ::std::is_same<
-      typename ::std::decay<T>::type,
-      typename ::std::decay<A>::type
+      typename ::std::decay_t<T>,
+      typename ::std::decay_t<A>
     >...
   >{},
   T
@@ -49,8 +49,8 @@ constexpr inline ::std::enable_if_t<
   bool(sizeof...(A)) &&
   all_of<
     ::std::is_same<
-      typename ::std::decay<T>::type,
-      typename ::std::decay<A>::type
+      typename ::std::decay_t<T>,
+      typename ::std::decay_t<A>
     >...
   >{},
   T
@@ -63,17 +63,17 @@ min(T const& a, T const& b, A&& ...args) noexcept
 }
 
 template <typename ...A>
-constexpr inline typename ::std::enable_if_t<
+constexpr inline ::std::enable_if_t<
   bool(sizeof...(A)) &&
   all_of<
     ::std::is_same<
-      typename ::std::decay<typename front<A...>::type>::type,
-      typename ::std::decay<A>::type
+      typename ::std::decay_t<typename front<A...>::type>,
+      typename ::std::decay_t<A>
     >...
   >{},
   ::std::pair<
-    typename ::std::decay<typename front<A...>::type>::type,
-    typename ::std::decay<typename front<A...>::type>::type
+    typename ::std::decay_t<typename front<A...>::type>,
+    typename ::std::decay_t<typename front<A...>::type>
   >
 >
 minmax(A&& ...args) noexcept

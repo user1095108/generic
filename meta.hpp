@@ -26,6 +26,9 @@ struct front
   using type = A;
 };
 
+template <typename ...A>
+using front_t = typename front<A...>::type
+
 template <typename A, typename ...B>
 struct back : back<B...>
 {
@@ -37,8 +40,14 @@ struct back<A>
   using type = A;
 };
 
+template <typename ...A>
+using back_t = typename back<A...>::type;
+
 template <class A, class ...B>
-struct all_of : ::std::integral_constant<bool, A{} && all_of<B...>{}>
+struct all_of : ::std::integral_constant<bool,
+  A{} &&
+  all_of<B...>{}
+>
 {
 };
 
@@ -46,6 +55,20 @@ template <class A>
 struct all_of<A> : ::std::integral_constant<bool, A{}>
 {
 };
+
+template <class A, class ...B>
+struct any_of : ::std::integral_constant<bool,
+  A{} ||
+  any_of<B...>{}
+>
+{
+};
+
+template <class A>
+struct any_of<A> : ::std::integral_constant<bool, A{}>
+{
+};
+
 
 }
 
