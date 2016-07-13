@@ -17,7 +17,7 @@ namespace generic
 template <typename T>
 constexpr inline T const& max(T const& a, T const& b) noexcept
 {
-  return a > b ? a : b;
+  return b < a ? a : b;
 }
 
 template <typename T>
@@ -39,7 +39,7 @@ constexpr inline ::std::enable_if_t<
 >
 max(T const& a, T const& b, A&& ...args) noexcept
 {
-  return a > b ?
+  return b < a ?
     max(a, ::std::forward<A>(args)...) :
     max(b, ::std::forward<A>(args)...);
 }
