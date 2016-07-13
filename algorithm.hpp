@@ -94,7 +94,7 @@ clamp(T const& v, U const& lo, V const& hi) noexcept
 {
   return v < lo ?
     lo :
-    v > hi ?
+    hi < v ?
       hi :
       v;
 }
