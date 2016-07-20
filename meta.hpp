@@ -27,7 +27,7 @@ struct front
 };
 
 template <typename ...A>
-using front_t = typename front<A...>::type
+using front_t = typename front<A...>::type;
 
 template <typename A, typename ...B>
 struct back : back<B...>
