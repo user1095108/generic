@@ -177,19 +177,22 @@ namespace std
   template <class T, class Alloc> class vector;
 }
 
-template <class Key, class T, class Compare = ::std::less<Key> >
+template <class Key, class T, ::std::size_t N = 256,
+  class Compare = ::std::less<Key>
+>
 using stack_map = ::std::map<Key, T, Compare,
-  ::generic::stack_allocator<::std::pair<Key const, T>, 256> >;
+  ::generic::stack_allocator<::std::pair<Key const, T>, N> >;
 
+template <::std::size_t N = 128>
 using stack_string = ::std::basic_string<char, ::std::char_traits<char>,
-  ::generic::stack_allocator<char, 128> >;
+  ::generic::stack_allocator<char, N> >;
 
-template <class Key, class T, class Hash = ::std::hash<Key>,
-  class Pred = ::std::equal_to<Key> >
+template <class Key, class T, ::std::size_t N = 256,
+  class Hash = ::std::hash<Key>, class Pred = ::std::equal_to<Key> >
 using stack_unordered_map = ::std::unordered_map<Key, T, Hash, Pred,
-  ::generic::stack_allocator<::std::pair<Key const, T>, 256> >;
+  ::generic::stack_allocator<::std::pair<Key const, T>, N> >;
 
-template <typename T>
-using stack_vector = ::std::vector<T, ::generic::stack_allocator<T, 256> >;
+template <typename T, ::std::size_t N = 256>
+using stack_vector = ::std::vector<T, ::generic::stack_allocator<T, N> >;
 
 #endif // STACKALLOCATOR_HPP
