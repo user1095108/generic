@@ -116,6 +116,11 @@ public:
     return stub_(&store_, ::std::forward<A>(args)...);
   }
 
+  void assign(::std::nullptr_t)
+  {
+    reset();
+  }
+
   template <typename T>
   void assign(T&& f) noexcept
   {
@@ -132,9 +137,7 @@ public:
         noexcept(
 #if __cplusplus <= 201402L
         (
-          *static_cast<functor_type*>(ptr))(
-            ::std::forward<A>(args)...
-          )
+          *static_cast<functor_type*>(ptr))(::std::forward<A>(args)...)
 #else
           ::std::invoke(*static_cast<functor_type*>(ptr),
             ::std::forward<A>(args)...
@@ -144,9 +147,7 @@ public:
       ) -> R
       {
 #if __cplusplus <= 201402L
-        return (*static_cast<functor_type*>(ptr))(
-          ::std::forward<A>(args)...
-        );
+        return (*static_cast<functor_type*>(ptr))(::std::forward<A>(args)...);
 #else
         return ::std::invoke(*static_cast<functor_type*>(ptr),
           ::std::forward<A>(args)...
