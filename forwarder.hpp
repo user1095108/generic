@@ -88,8 +88,8 @@ public:
   forwarder(forwarder const&) = default;
 
   template<typename T,
-    typename = typename ::std::enable_if_t<
-      !::std::is_same<forwarder, typename ::std::decay<T>::type>{}
+    typename = ::std::enable_if_t<
+      !::std::is_same<forwarder, ::std::decay_t<T>>{}
     >
   >
   forwarder(T&& t) noexcept
@@ -101,13 +101,12 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  template <
-    typename T,
-    typename = typename ::std::enable_if<
-      !::std::is_same<forwarder, typename ::std::decay<T>::type>{}
-    >::type
+  template <typename T,
+    typename = ::std::enable_if_t<
+      !::std::is_same<forwarder, ::std::decay_t<T>>{}
+    >
   >
-  forwarder& operator=(T&& f) noexcept
+  auto& operator=(T&& f) noexcept
   {
     assign(::std::forward<T>(f));
 
@@ -126,7 +125,7 @@ public:
   template <typename T>
   void assign(T&& f) noexcept
   {
-    using functor_type = typename ::std::decay<T>::type;
+    using functor_type = ::std::remove_reference_t<T>;
 
     static_assert(sizeof(functor_type) <= sizeof(store_),
       "functor too large");
@@ -157,13 +156,13 @@ public:
   void swap(forwarder& other) noexcept { ::std::swap(*this, other); }
 
   template <typename T>
-  T* target() noexcept
+  auto target() noexcept
   {
     return reinterpret_cast<T*>(&store_);
   }
 
   template <typename T> 
-  T const* target() const noexcept
+  auto target() const noexcept
   {
     return reinterpret_cast<T const*>(&store_);
   }
