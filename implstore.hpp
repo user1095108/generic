@@ -56,10 +56,8 @@ public:
     return operator=<N, U>(rhs);
   }
 
-  template <::std::size_t M, typename K = U, typename =
-    typename ::std::enable_if<
-      ::std::is_copy_assignable<K>{}
-    >::type
+  template <::std::size_t M, typename K = U,
+    typename = ::std::enable_if_t<::std::is_copy_assignable<K>{}>
   >
   implstore& operator=(implstore<U, M> const& rhs)
   {
@@ -74,10 +72,8 @@ public:
     return operator=<N, U>(::std::move(rhs));
   }
 
-  template <::std::size_t M, typename K = U, typename =
-    typename ::std::enable_if<
-      ::std::is_move_assignable<K>{}
-    >::type
+  template <::std::size_t M, typename K = U,
+    typename = ::std::enable_if_t<::std::is_move_assignable<K>{}>
   >
   implstore& operator=(implstore<U, M>&& rhs)
   {
@@ -87,34 +83,34 @@ public:
     return *this;
   }
 
-  U const* operator->() const noexcept
-  {
-    return reinterpret_cast<U const*>(&store_);
-  }
-
-  U* operator->() noexcept
+  auto operator->() noexcept
   {
     return reinterpret_cast<U*>(&store_);
   }
 
-  U const& operator*() const noexcept
+  auto operator->() const noexcept
   {
-    return *reinterpret_cast<U const*>(&store_);
+    return reinterpret_cast<U const*>(&store_);
   }
 
-  U& operator*() noexcept
+  auto& operator*() noexcept
   {
     return *reinterpret_cast<U*>(&store_);
   }
 
-  U const* get() const noexcept
+  auto& operator*() const noexcept
   {
-    return reinterpret_cast<U const*>(&store_);
+    return *reinterpret_cast<U const*>(&store_);
   }
 
-  U* get() noexcept
+  auto get() noexcept
   {
     return reinterpret_cast<U*>(&store_);
+  }
+
+  auto get() const noexcept
+  {
+    return reinterpret_cast<U const*>(&store_);
   }
 };
 
