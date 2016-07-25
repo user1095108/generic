@@ -139,7 +139,7 @@ public:
 //      return (*static_cast<functor_type const*>(ptr))(
 //        ::std::forward<A>(args)...
 //      );
-        return ::std::invoke(*static_cast<functor_type const*>(ptr),
+        return ::std::invoke(*static_cast<functor_type*>(ptr),
           ::std::forward<A>(args)...
         );
       };
