@@ -87,11 +87,9 @@ public:
 
   forwarder(forwarder const&) = default;
 
-  template<typename T,
-    typename = ::std::enable_if_t<
-      !::std::is_same<forwarder, ::std::decay_t<T>>{}
-    >
-  >
+  forwarder(forwarder&&) = default;
+
+  template<typename T>
   forwarder(T&& t) noexcept
   {
     assign(::std::forward<T>(t));
@@ -101,11 +99,7 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  template <typename T,
-    typename = ::std::enable_if_t<
-      !::std::is_same<forwarder, ::std::decay_t<T>>{}
-    >
-  >
+  template <typename T>
   auto& operator=(T&& f) noexcept
   {
     assign(::std::forward<T>(f));
