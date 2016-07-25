@@ -119,7 +119,7 @@ public:
   template <typename T>
   void assign(T&& f) noexcept
   {
-    using functor_type = ::std::remove_reference_t<T>;
+    using functor_type = ::std::add_const_t<::std::remove_reference_t<T>>;
 
     static_assert(sizeof(functor_type) <= sizeof(store_),
       "functor too large");
@@ -130,18 +130,28 @@ public:
 
     stub_ = [](void const* const ptr, A&&... args) noexcept(
         noexcept(
-          ::std::invoke(*static_cast<functor_type const*>(ptr),
+#if __cplusplus <= 201402L
+        (
+          *static_cast<functor_type*>(ptr))(
             ::std::forward<A>(args)...
           )
+#else
+          ::std::invoke(*static_cast<functor_type*>(ptr),
+            ::std::forward<A>(args)...
+          )
+#endif // __cplusplus
         )
       ) -> R
       {
-//      return (*static_cast<functor_type const*>(ptr))(
-//        ::std::forward<A>(args)...
-//      );
+#if __cplusplus <= 201402L
+        return (*static_cast<functor_type*>(ptr))(
+          ::std::forward<A>(args)...
+        );
+#else
         return ::std::invoke(*static_cast<functor_type*>(ptr),
           ::std::forward<A>(args)...
         );
+#endif // __cplusplus
       };
   }
 
