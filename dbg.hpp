@@ -13,14 +13,12 @@ namespace generic
 static struct
 {
   template <typename U>
-  decltype(auto) operator<<(U&&) const noexcept
+  auto& operator<<(U&&) const noexcept
   {
     return *this;
   }
 
-  decltype(auto) operator<<(
-    ::std::ostream&(* const)(::std::ostream&)
-  ) const noexcept
+  auto& operator<<(::std::ostream&(* const)(::std::ostream&)) const noexcept
   {
     return *this;
   }
