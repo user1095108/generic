@@ -26,7 +26,7 @@ static struct
   }
 } dbg;
 #else
-static decltype((::std::cout)) dbg(::std::cout);
+static constexpr auto& dbg(::std::cout);
 #endif // NDEBUG
 
 }
