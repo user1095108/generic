@@ -6,14 +6,10 @@
 
 #if defined(_MSC_VER)
 # include <malloc.h>
-#else
-# include <alloca.h>
-#endif
-
-#if defined(_MSC_VER)
 # define ALLOCA _malloca
 #else
+# include <alloca.h>
 # define ALLOCA alloca
-#endif
+#endif //
 
 #endif // GENERIC_ALLOCA_HPP
