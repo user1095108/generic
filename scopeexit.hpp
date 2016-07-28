@@ -9,8 +9,13 @@
 #define NARGS(...) NARGS_SEQ(__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
 
 /* This will let macros expand before concating them */
-#define PRIMITIVE_CAT(x, y) x ## y
-#define CAT(x, y) PRIMITIVE_CAT(x, y)
+#ifndef PRIMITIVE_CAT
+# define PRIMITIVE_CAT(x, y) x ## y
+#endif // PRIMITIVE_CAT
+
+#ifndef CAT
+# define CAT(x, y) PRIMITIVE_CAT(x, y)
+#endif // CAT
 
 /* This will pop the last argument off */
 #define POP_LAST(...) CAT(POP_LAST_, NARGS(__VA_ARGS__))(__VA_ARGS__)
