@@ -2,8 +2,6 @@
 # define GENERIC_ALLOCA_HPP
 # pragma once
 
-#include <cstddef> // ::std::size_t
-
 #if defined(_MSC_VER)
 # include <malloc.h>
 # define ALLOCA _alloca
