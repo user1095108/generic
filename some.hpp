@@ -174,24 +174,21 @@ struct is_move_assignable : ::std::is_move_assignable<T>
 };
 
 template <typename T>
-struct is_move_assignable<T,
-  typename ::std::enable_if<is_vector<T>{}>::type
-> : is_move_assignable<typename T::value_type>
+struct is_move_assignable<T, ::std::enable_if_t<is_vector<T>{}> > :
+  is_move_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
-struct is_move_assignable<T,
-  typename ::std::enable_if<is_list<T>{}>::type
-> : is_move_assignable<typename T::value_type>
+struct is_move_assignable<T, ::std::enable_if_t<is_list<T>{}> > :
+  is_move_assignable<typename T::value_type>
 {
 };
 
 
 template <typename T>
-struct is_move_assignable<T,
-  typename ::std::enable_if<is_map<T>{}>::type
-> : is_move_assignable<typename T::mapped_type>
+struct is_move_assignable<T, ::std::enable_if_t<is_map<T>{}> > :
+  is_move_assignable<typename T::mapped_type>
 {
 };
 
@@ -201,23 +198,20 @@ struct is_move_constructible : ::std::is_move_constructible<T>
 };
 
 template <typename T>
-struct is_move_constructible<T,
-  typename ::std::enable_if<is_vector<T>{}>::type
-> : is_move_constructible<typename T::value_type>
+struct is_move_constructible<T, ::std::enable_if_t<is_vector<T>{}> > :
+  is_move_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
-struct is_move_constructible<T,
-  typename ::std::enable_if<is_list<T>{}>::type
-> : is_move_constructible<typename T::value_type>
+struct is_move_constructible<T, ::std::enable_if_t<is_list<T>{}> > :
+  is_move_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
-struct is_move_constructible<T,
-  typename ::std::enable_if<is_map<T>{}>::type
-> : is_move_constructible<typename T::mapped_type>
+struct is_move_constructible<T, ::std::enable_if<is_map<T>{}> > :
+  is_move_constructible<typename T::mapped_type>
 {
 };
 
