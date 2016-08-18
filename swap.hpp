@@ -102,6 +102,35 @@ swap(T const v) noexcept
   return v;
 }
 
+#else
+
+namespace
+{
+
+template<class T, ::std::size_t ...I>
+constexpr inline T swap_impl(T v, ::std::index_sequence<I...> const) noexcept
+{
+  return (
+    (
+      ((v >> (I * ::std::numeric_limits<char>::digits)) & ::std::uint8_t(~0))
+      <<
+      ((sizeof(T) - 1 - I) * ::std::numeric_limits<char>::digits)
+    ) | ...
+  );
+};
+
+}
+
+template <typename T>
+constexpr inline ::std::enable_if_t<
+  ::std::is_integral<T>{},
+  T
+>
+swap(T const v) noexcept
+{
+  return swap_impl<T>(v, ::std::make_index_sequence<sizeof(T)>{});
+}
+
 #endif
 
 #if defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN || \
