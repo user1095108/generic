@@ -39,17 +39,20 @@ public:
     return *this;
   }
 
-  operator ::std::string const& () const
-  {
-    return url_;
-  }
+  operator ::std::string const& () const noexcept;
 
   void assign(::std::string);
 
   bool is_valid() const noexcept;
 
-  ::std::string const& to_string() const;
+  ::std::string const& to_string() const noexcept;
 };
+
+//////////////////////////////////////////////////////////////////////////////
+inline url::operator ::std::string const& () const
+{
+  return url_;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 inline void url::assign(::std::string u)
@@ -94,7 +97,7 @@ inline bool url::is_valid() const noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline ::std::string const& to_string() const
+inline ::std::string const& to_string() const noexcept
 {
   return *this;
 }
