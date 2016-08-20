@@ -11,9 +11,9 @@
 namespace generic
 {
 
-class url
+class uri
 {
-  ::std::string url_;
+  ::std::string uri_;
 
   ::std::pair<::std::string::size_type, ::std::string::size_type> scheme_;
   ::std::pair<::std::string::size_type, ::std::string::size_type> authority_;
@@ -23,7 +23,7 @@ class url
 
 public:
   template <typename A>
-  explicit url(A&& a)
+  explicit uri(A&& a)
   {
     assign(::std::forward<A>(a));
   }
@@ -52,60 +52,60 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////
-inline url::operator ::std::string const& () const noexcept
+inline uri::operator ::std::string const& () const noexcept
 {
-  return url_;
+  return uri_;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto url::scheme() const
+inline auto uri::scheme() const
 {
   return is_valid() ?
-    ::std::string(url_, scheme_.first, scheme_.second) :
+    ::std::string(uri_, scheme_.first, scheme_.second) :
     ::std::string();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto url::authority() const
+inline auto uri::authority() const
 {
   return is_valid() ?
-    ::std::string(url_, authority_.first, authority_.second) :
+    ::std::string(uri_, authority_.first, authority_.second) :
     ::std::string();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto url::path() const
+inline auto uri::path() const
 {
   return is_valid() ?
-    ::std::string(url_, path_.first, path_.second) :
+    ::std::string(uri_, path_.first, path_.second) :
     ::std::string();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto url::query() const
+inline auto uri::query() const
 {
   return is_valid() ?
-    ::std::string(url_, query_.first, query_.second) :
+    ::std::string(uri_, query_.first, query_.second) :
     ::std::string();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto url::fragment() const
+inline auto uri::fragment() const
 {
   return is_valid() ?
-    ::std::string(url_, fragment_.first, fragment_.second) :
+    ::std::string(uri_, fragment_.first, fragment_.second) :
     ::std::string();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline void url::assign(::std::string u)
+inline void uri::assign(::std::string u)
 {
   //rfc3986
   static ::std::regex const ex{
     R"(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)"
   };
 
-  // extract url info
+  // extract uri info
   ::std::cmatch what;
 
   auto const c_str(u.c_str());
@@ -118,23 +118,23 @@ inline void url::assign(::std::string u)
     query_ = {what[7].first - c_str, what[7].second - what[7].first};
     fragment_ = {what[9].first - c_str, what[9].second - what[9].first};
 
-    url_ = ::std::move(u);
+    uri_ = ::std::move(u);
   }
   else
   {
-    url_.clear();
-    url_.shrink_to_fit();
+    uri_.clear();
+    uri_.shrink_to_fit();
   }
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline bool url::is_valid() const noexcept
+inline bool uri::is_valid() const noexcept
 {
-  return url_.size();
+  return uri_.size();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline ::std::string const& url::to_string() const noexcept
+inline ::std::string const& uri::to_string() const noexcept
 {
   return *this;
 }
