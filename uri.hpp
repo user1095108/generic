@@ -21,8 +21,6 @@ class url
   ::std::pair<::std::string::size_type, ::std::string::size_type> query_;
   ::std::pair<::std::string::size_type, ::std::string::size_type> fragment_;
 
-  bool valid_{};
-
 public:
   template <typename A>
   explicit url(A&& a)
@@ -102,16 +100,17 @@ inline auto url::fragment() const
 //////////////////////////////////////////////////////////////////////////////
 inline void url::assign(::std::string u)
 {
-  // extract url info
-  ::std::regex ex(
+  //rfc3986
+  static ::std::regex const ex{
     R"(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)"
-  );
+  };
 
+  // extract url info
   ::std::cmatch what;
 
   auto const c_str(u.c_str());
 
-  if ((valid_ = ::std::regex_match(c_str, what, ex)))
+  if (::std::regex_match(c_str, what, ex))
   {
     scheme_ = {what[2].first - c_str, what[2].second - what[2].first};
     authority_ = {what[4].first - c_str, what[4].second - what[4].first};
@@ -131,7 +130,7 @@ inline void url::assign(::std::string u)
 //////////////////////////////////////////////////////////////////////////////
 inline bool url::is_valid() const noexcept
 {
-  return valid_;
+  return url_.size();
 }
 
 //////////////////////////////////////////////////////////////////////////////
