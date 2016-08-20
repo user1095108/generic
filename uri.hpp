@@ -1,5 +1,5 @@
-#ifndef GENERIC_URL_HPP
-# define GENERIC_URL_HPP
+#ifndef GENERIC_URI_HPP
+# define GENERIC_URI_HPP
 # pragma once
 
 #include <regex>
@@ -141,4 +141,4 @@ inline ::std::string const& uri::to_string() const noexcept
 
 }
 
-#endif // GENERIC_URL_HPP
+#endif // GENERIC_URI_HPP
