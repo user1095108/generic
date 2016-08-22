@@ -36,7 +36,11 @@ public:
     return *this;
   }
 
+  bool is_valid() const noexcept;
+
   operator ::std::string const& () const noexcept;
+
+  ::std::string const& to_string() const noexcept;
 
   auto scheme() const;
   auto authority() const;
@@ -45,16 +49,24 @@ public:
   auto fragment() const;
 
   void assign(::std::string);
-
-  bool is_valid() const noexcept;
-
-  ::std::string const& to_string() const noexcept;
 };
+
+//////////////////////////////////////////////////////////////////////////////
+inline bool uri::is_valid() const noexcept
+{
+  return uri_.size();
+}
 
 //////////////////////////////////////////////////////////////////////////////
 inline uri::operator ::std::string const& () const noexcept
 {
   return uri_;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+inline ::std::string const& uri::to_string() const noexcept
+{
+  return *this;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -125,18 +137,6 @@ inline void uri::assign(::std::string u)
     uri_.clear();
     uri_.shrink_to_fit();
   }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-inline bool uri::is_valid() const noexcept
-{
-  return uri_.size();
-}
-
-//////////////////////////////////////////////////////////////////////////////
-inline ::std::string const& uri::to_string() const noexcept
-{
-  return *this;
 }
 
 }
