@@ -142,17 +142,14 @@ auto make_many_impl(::std::index_sequence<Is...>, Types&& ...a) noexcept(
 }
 
 template <typename ...Types>
-auto make_many(Types&& ...a) noexcept(
+auto make_many(Types ...a) noexcept(
   noexcept(
-    detail::many::make_many_impl(::std::index_sequence_for<Types...>{},
-      ::std::forward<Types>(a)...
-    )
+    detail::many::make_many_impl(::std::index_sequence_for<Types...>{}, a...)
   )
 )
 {
   return detail::many::make_many_impl(::std::index_sequence_for<Types...>{},
-    ::std::forward<Types>(a)...
-  );
+    a...);
 }
 
 }
