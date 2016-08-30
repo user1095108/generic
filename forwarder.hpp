@@ -89,12 +89,7 @@ public:
 
   forwarder(forwarder&&) = default;
 
-  // we don't want to do the job of copy and move constructors
-  template <typename T,
-    typename = ::std::enable_if_t<
-      !::std::is_same<forwarder, ::std::decay_t<T>>{}
-    >
-  >
+  template <typename T>
   forwarder(T&& t) noexcept
   {
     assign(::std::forward<T>(t));
@@ -104,12 +99,7 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  // we don't want to do the job of copy and move assignment operators
-  template <typename T,
-    typename = ::std::enable_if_t<
-      !::std::is_same<forwarder, ::std::decay_t<T>>{}
-    >
-  >
+  template <typename T>
   auto& operator=(T&& f) noexcept
   {
     assign(::std::forward<T>(f));
