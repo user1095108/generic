@@ -54,16 +54,17 @@ true;
 constexpr auto const default_forwarder_size = 4 * sizeof(void*);
 
 template <typename F,
-  bool NE = default_forwarder_noexcept,
-  ::std::size_t N = default_forwarder_size>
+  ::std::size_t N = default_forwarder_size,
+  bool NE = default_forwarder_noexcept
+>
 class forwarder;
 
-template <typename R, typename ...A, bool NE, ::std::size_t N>
-class forwarder<R (A...), NE, N> : public detail::forwarder::argument_types<A...>
+template <typename R, typename ...A, ::std::size_t N, bool NE>
+class forwarder<R (A...), N, NE> : public detail::forwarder::argument_types<A...>
 {
   R (*stub_)(void const*, A&&...) noexcept(NE) {};
 
-  typename ::std::aligned_storage_t<N> store_;
+  ::std::aligned_storage_t<N> store_;
 
   template<typename T, typename ...U, ::std::size_t M>
   friend bool operator==(forwarder<T (U...), M> const&,
@@ -137,14 +138,14 @@ public:
         noexcept(
         (
 #if __cplusplus <= 201402L
-          *static_cast<functor_type const*>(ptr))(
+          *static_cast<functor_type const*>(ptr)(
             ::std::forward<A>(args)...)
 #else
           ::std::invoke(*static_cast<functor_type const*>(ptr),
             ::std::forward<A>(args)...)
 #endif // __cplusplus
         )
-      ) -> R
+      )) -> R
       {
 #if __cplusplus <= 201402L
         return (*static_cast<functor_type const*>(ptr))(
