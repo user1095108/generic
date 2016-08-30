@@ -116,7 +116,7 @@ public:
     return stub_(&store_, ::std::forward<A>(args)...);
   }
 
-  void assign(::std::nullptr_t)
+  void assign(::std::nullptr_t) noexcept
   {
     reset();
   }
