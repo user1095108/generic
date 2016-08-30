@@ -60,21 +60,21 @@ struct many_holder
 
   template <typename U = T>
   ::std::enable_if_t<!::std::is_reference<U>{}>
-  set(U& u) noexcept(noexcept(::std::declval<U&>() = u))
+  set(U const& u) noexcept(noexcept(::std::declval<U&>() = u))
   {
     value = u;
   }
 
   template <typename U = T>
   ::std::enable_if_t<!::std::is_reference<U>{}>
-  set(U&& u) noexcept(noexcept(::std::declval<U&>() = u))
+  set(U&& u) noexcept(noexcept(::std::declval<U&>() = ::std::move(u)))
   {
-    value = u;
+    value = ::std::move(u);
   }
 
   template <typename U = T>
   ::std::enable_if_t<::std::is_reference<U>{}>
-  set(U& u) noexcept
+  set(U u) noexcept
   {
     value = &u;
   }
