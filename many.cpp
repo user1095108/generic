@@ -1,8 +1,12 @@
+#include <iostream>
+
 #include "many.hpp"
 
 int main()
 {
-  ::generic::many<int, int, int> t;
+  auto t(::generic::make_many(1, 2, 3));
 
-  return ::std::get<0>(t);
+  ::std::cout << ::std::get<2>(t) << ::std::endl;
+
+  return 0;
 }
