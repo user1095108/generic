@@ -149,21 +149,22 @@ namespace std
 {
 
 template <typename ...Types>
-struct tuple_size<::generic::many<Types...>> :
-  ::std::integral_constant<size_t, sizeof...(Types)> 
+class tuple_size<::generic::many<Types...>> :
+  public ::std::integral_constant<size_t, sizeof...(Types)>
 {
 };
 
 template <size_t I, class ...Types>
-struct tuple_element<I, ::generic::many<Types...>>
+class tuple_element<I, ::generic::many<Types...>>
 {
+public:
   using type = tuple_element_t<I, tuple<Types...>>;
 };
 
 template <size_t I, typename ...Types> 
 auto& get(::generic::many<Types...>& m) noexcept
 {
-  return ::generic::detail::many::get(m);
+  return ::generic::detail::many::get<I>(m);
 }
 
 template <size_t I, typename ...Types> 
@@ -173,7 +174,7 @@ auto& get(::generic::many<Types...> const& m) noexcept
 }
 
 template<size_t I, typename ...Types> 
-auto&& get(::generic::many<Types...>&& m) noexcept
+auto& get(::generic::many<Types...>&& m) noexcept
 {
   // m is now a lvalue
   return ::generic::detail::many::get<I>(m);
