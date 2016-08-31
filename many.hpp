@@ -25,7 +25,8 @@ template<std::size_t I,
       TupleValue::Reference :
       TupleValue::Scalar
 >
-struct tuple_base {
+struct tuple_base
+{
   T value;
 
   tuple_base() = default;
@@ -83,13 +84,13 @@ auto& get(tuple_base<I, T, TupleValue::Reference> const& obj)
 }
 
 template <::std::size_t I, class T>
-auto& get(tuple_base<I, T, TupleValue::Class>& obj)
+auto get(tuple_base<I, T, TupleValue::Class>& obj) -> T&
 {
   return obj;
 }
 
 template <::std::size_t I, class T>
-auto& get(tuple_base<I, T, TupleValue::Class> const& obj)
+auto get(tuple_base<I, T, TupleValue::Class> const& obj) -> T const&
 {
   return obj;
 }
