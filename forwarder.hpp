@@ -135,17 +135,18 @@ public:
     ::new (static_cast<void*>(&store_)) functor_type(::std::forward<T>(f));
 
     stub_ = [](void const* const ptr, A&&... args) noexcept(
-        noexcept(
-        (
+          noexcept(
+          (
 #if __cplusplus <= 201402L
-          *static_cast<functor_type const*>(ptr)(
-            ::std::forward<A>(args)...)
+            *static_cast<functor_type const*>(ptr)(
+              ::std::forward<A>(args)...)
 #else
-          ::std::invoke(*static_cast<functor_type const*>(ptr),
-            ::std::forward<A>(args)...)
+            ::std::invoke(*static_cast<functor_type const*>(ptr),
+              ::std::forward<A>(args)...)
 #endif // __cplusplus
+          )
         )
-      )) -> R
+      ) -> R
       {
 #if __cplusplus <= 201402L
         return (*static_cast<functor_type const*>(ptr))(
