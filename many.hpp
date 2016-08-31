@@ -20,7 +20,7 @@ struct many_holder
 {
   ::std::conditional_t<::std::is_reference<T>{},
     ::std::add_pointer_t<::std::remove_reference_t<T>>,
-    ::std::remove_cv_t<T>
+    T
   > value;
 
   template <typename U = T>
