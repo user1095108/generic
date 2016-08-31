@@ -15,65 +15,106 @@ namespace detail
 namespace many
 {
 
-template <::std::size_t I, typename T>
-struct many_holder
-{
-  ::std::conditional_t<::std::is_reference<T>{},
-    ::std::add_pointer_t<::std::remove_reference_t<T>>,
-    T
-  > value;
+enum TupleValue { Scalar, Reference, Class };
 
-  template <typename U = T>
-  ::std::enable_if_t<!::std::is_reference<U>{}, U&>
-  get() noexcept
-  {
-    return value;
-  }
+template<std::size_t I,
+  class T,
+  TupleValue = ::std::is_class<T>{} ?
+    TupleValue::Class :
+    ::std::is_reference<T>{} ?
+      TupleValue::Reference :
+      TupleValue::Scalar
+>
+struct tuple_base {
+  T value;
 
-  template <typename U = T>
-  ::std::enable_if_t<!::std::is_reference<U>{}, U const&>
-  get() const noexcept
-  {
-    return value;
-  }
+  tuple_base() = default;
 
-  template <typename U = T>
-  ::std::enable_if_t<::std::is_reference<U>{}, U>
-  get() const noexcept
+  template <typename A>
+  constexpr tuple_base(A&& value) : value{::std::forward<A>(value)}
   {
-    return *value;
-  }
-
-  template <typename A, typename U = T>
-  ::std::enable_if_t<!::std::is_reference<U>{}>
-  set(A const& u) noexcept(noexcept(::std::declval<U&>() = u))
-  {
-    value = u;
-  }
-
-  template <typename A, typename U = T>
-  ::std::enable_if_t<!::std::is_reference<U>{}>
-  set(A&& u) noexcept(noexcept(::std::declval<U&>() = ::std::move(u)))
-  {
-    value = ::std::move(u);
-  }
-
-  template <typename A, typename U = T>
-  ::std::enable_if_t<::std::is_reference<U>{}>
-  set(A&& u) noexcept
-  {
-    // convert to a reference to handle reference wrappers
-    value = &T(u);
   }
 };
 
-template <typename, typename ...>
+template<std::size_t I, class T>
+struct tuple_base<I, T, TupleValue::Reference>
+{
+  ::std::add_pointer_t<::std::remove_reference_t<T>> value;
+
+  tuple_base() = delete;
+
+  constexpr tuple_base(T value) : value{&value}
+  {
+  }
+
+  tuple_base(tuple_base&&) = default;
+  tuple_base(tuple_base const&) = default;
+  tuple_base& operator=(tuple_base&&) = default;
+  tuple_base& operator=(tuple_base const&) = default;
+};
+
+template<std::size_t I, class T>
+struct tuple_base<I, T, TupleValue::Class> : T
+{
+  tuple_base() = default;
+
+  template <typename A>
+  constexpr tuple_base(A&& value) : T{::std::forward<A>(value)}
+  {
+  }
+};
+
+template <::std::size_t I, class T>
+auto& get(tuple_base<I, T, TupleValue::Scalar>& obj)
+{
+  return obj.value;
+}
+
+template <::std::size_t I, class T>
+auto& get(tuple_base<I, T, TupleValue::Scalar> const& obj)
+{
+  return obj.value;
+}
+
+template <::std::size_t I, class T>
+auto& get(tuple_base<I, T, TupleValue::Reference> const& obj)
+{
+  return *obj.value;
+}
+
+template <::std::size_t I, class T>
+auto& get(tuple_base<I, T, TupleValue::Class>& obj)
+{
+  return obj;
+}
+
+template <::std::size_t I, class T>
+auto& get(tuple_base<I, T, TupleValue::Class> const& obj)
+{
+  return obj;
+}
+
+template <typename ...>
 struct many_impl;
 
 template <::std::size_t... Is, typename ...Types>
 struct many_impl<::std::index_sequence<Is...>, Types...> :
-  many_holder<Is, Types>...
+  tuple_base<Is, Types>...
 {
+  many_impl() = default;
+  ~many_impl() = default;
+  many_impl(many_impl&&) = default;
+  many_impl(many_impl const&) = default;
+  many_impl& operator=(many_impl&&) = default;
+  many_impl& operator=(many_impl const&) = default;
+
+#if !__cpp_aggregate_bases
+  template<typename ...U>
+  constexpr many_impl(U&& ...u) :
+    tuple_base<Is, Types>{::std::forward<U>(u)}...
+  {
+  }
+#endif
 };
 
 }
@@ -86,63 +127,20 @@ struct many : detail::many::many_impl<
   Types...
 >
 {
+  many() = default;
+  ~many() = default;
+  many(many&&) = default;
+  many(many const&) = default;
+  many& operator=(many&&) = default;
+  many& operator=(many const&) = default;
+
+#if !__cpp_aggregate_bases
+  template<class... U>
+  constexpr many(U&& ...u) : many::many_impl{::std::forward<U>(u)...}
+  {
+  }
+#endif
 };
-
-namespace detail
-{
-
-namespace many
-{
-
-template <typename ...Types, typename ...A, ::std::size_t ...Is>
-auto create_many_impl(::std::index_sequence<Is...>, A&& ...a) noexcept(
-  noexcept(
-    (
-      static_cast<
-        ::generic::detail::many::many_holder<Is,
-          ::std::tuple_element_t<Is, ::generic::many<Types...>>
-        >&
-      >(::std::declval<::generic::many<Types...>&>()).set(
-        ::std::forward<A>(a)
-      ),
-      ...
-    )
-  )
-)
-{
-  ::generic::many<Types...> m;
-
-  (
-    static_cast<
-      ::generic::detail::many::many_holder<Is,
-        ::std::tuple_element_t<Is, ::generic::many<Types...>>
-      >&
-    >(m).set(::std::forward<A>(a)),
-    ...
-  );
-
-  return m;
-}
-
-}
-
-}
-
-template <typename ...Types, typename ...A>
-auto create_many(A&& ...a) noexcept(
-  noexcept(
-    detail::many::create_many_impl<Types...>(
-      ::std::index_sequence_for<Types...>{},
-      ::std::forward<A>(a)...
-    )
-  )
-)
-{
-  return detail::many::create_many_impl<Types...>(
-    ::std::index_sequence_for<Types...>{},
-    ::std::forward<A>(a)...
-  );
-}
 
 }
 
@@ -151,44 +149,33 @@ namespace std
 
 template <typename ...Types>
 struct tuple_size<::generic::many<Types...>> :
-  ::std::integral_constant<::std::size_t, sizeof...(Types)> 
+  ::std::integral_constant<size_t, sizeof...(Types)> 
 {
 };
 
-template <::std::size_t I, class... Types>
+template <size_t I, class ...Types>
 struct tuple_element<I, ::generic::many<Types...>>
 {
-  using type = tuple_element_t<I, ::std::tuple<Types...>>;
+  using type = tuple_element_t<I, tuple<Types...>>;
 };
 
-template<::std::size_t I, typename... Types> 
+template <size_t I, typename ...Types> 
 auto& get(::generic::many<Types...>& m) noexcept
 {
-  return static_cast<
-    ::generic::detail::many::many_holder<I,
-      ::std::tuple_element_t<I, ::generic::many<Types...>>
-    >&
-  >(m).get();
+  return ::generic::detail::many::get(m);
 }
 
-template<size_t I, typename... Types> 
+template <size_t I, typename ...Types> 
 auto& get(::generic::many<Types...> const& m) noexcept
 {
-  return static_cast<
-    ::generic::detail::many::many_holder<I,
-      ::std::tuple_element_t<I, ::generic::many<Types...>>
-    >const&
-  >(m).get();
+  return ::generic::detail::many::get<I>(m);
 }
 
-template<::std::size_t I, typename... Types> 
+template<size_t I, typename ...Types> 
 auto&& get(::generic::many<Types...>&& m) noexcept
 {
-  return static_cast<
-    ::generic::detail::many::many_holder<I,
-      ::std::tuple_element_t<I, ::generic::many<Types...>>
-    >&&
-  >(m).get();
+  // m is now a lvalue
+  return ::generic::detail::many::get<I>(m);
 }
 
 }
