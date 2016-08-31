@@ -20,7 +20,7 @@ struct many_holder
 {
   ::std::conditional_t<::std::is_reference<T>{},
     ::std::add_pointer_t<::std::remove_reference_t<T>>,
-    T
+    ::std::remove_cv_t<T>
   > value;
 
   template <typename U = T>
@@ -38,45 +38,32 @@ struct many_holder
   }
 
   template <typename U = T>
-  ::std::enable_if_t<!::std::is_reference<U>{}, U const&&>
+  ::std::enable_if_t<::std::is_reference<U>{}, U>
   get() const noexcept
   {
-    return value;
-  }
-
-  template <typename U = T>
-  ::std::enable_if_t<::std::is_reference<U>{}, U&>
-  get() noexcept
-  {
     return *value;
   }
 
-  template <typename U = T>
-  ::std::enable_if_t<::std::is_reference<U>{}, U&&>
-  get() noexcept
-  {
-    return *value;
-  }
-
-  template <typename U = T>
+  template <typename A, typename U = T>
   ::std::enable_if_t<!::std::is_reference<U>{}>
-  set(U const& u) noexcept(noexcept(::std::declval<U&>() = u))
+  set(A const& u) noexcept(noexcept(::std::declval<U&>() = u))
   {
     value = u;
   }
 
-  template <typename U = T>
+  template <typename A, typename U = T>
   ::std::enable_if_t<!::std::is_reference<U>{}>
-  set(U&& u) noexcept(noexcept(::std::declval<U&>() = ::std::move(u)))
+  set(A&& u) noexcept(noexcept(::std::declval<U&>() = ::std::move(u)))
   {
     value = ::std::move(u);
   }
 
-  template <typename U = T>
+  template <typename A, typename U = T>
   ::std::enable_if_t<::std::is_reference<U>{}>
-  set(U u) noexcept
+  set(A&& u) noexcept
   {
-    value = &u;
+    // convert to a reference to handle reference wrappers
+    value = &T(u);
   }
 };
 
@@ -107,8 +94,8 @@ namespace detail
 namespace many
 {
 
-template <typename ...Types, ::std::size_t ...Is>
-auto make_many_impl(::std::index_sequence<Is...>, Types&& ...a) noexcept(
+template <typename ...Types, typename ...A, ::std::size_t ...Is>
+auto create_many_impl(::std::index_sequence<Is...>, A&& ...a) noexcept(
   noexcept(
     (
       static_cast<
@@ -116,7 +103,7 @@ auto make_many_impl(::std::index_sequence<Is...>, Types&& ...a) noexcept(
           ::std::tuple_element_t<Is, ::generic::many<Types...>>
         >&
       >(::std::declval<::generic::many<Types...>&>()).set(
-        ::std::forward<Types>(a)
+        ::std::forward<A>(a)
       ),
       ...
     )
@@ -130,7 +117,7 @@ auto make_many_impl(::std::index_sequence<Is...>, Types&& ...a) noexcept(
       ::generic::detail::many::many_holder<Is,
         ::std::tuple_element_t<Is, ::generic::many<Types...>>
       >&
-    >(m).set(::std::forward<Types>(a)),
+    >(m).set(::std::forward<A>(a)),
     ...
   );
 
@@ -141,15 +128,20 @@ auto make_many_impl(::std::index_sequence<Is...>, Types&& ...a) noexcept(
 
 }
 
-template <typename ...Types>
-auto make_many(Types ...a) noexcept(
+template <typename ...Types, typename ...A>
+auto create_many(A&& ...a) noexcept(
   noexcept(
-    detail::many::make_many_impl(::std::index_sequence_for<Types...>{}, a...)
+    detail::many::create_many_impl<Types...>(
+      ::std::index_sequence_for<Types...>{},
+      ::std::forward<A>(a)...
+    )
   )
 )
 {
-  return detail::many::make_many_impl(::std::index_sequence_for<Types...>{},
-    a...);
+  return detail::many::create_many_impl<Types...>(
+    ::std::index_sequence_for<Types...>{},
+    ::std::forward<A>(a)...
+  );
 }
 
 }
