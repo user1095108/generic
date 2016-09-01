@@ -22,37 +22,37 @@ namespace some
 {
 
 template <typename T>
-using remove_cvr_t = typename ::std::remove_cv<
-  typename ::std::remove_reference<T>::type
+using remove_cvr_t = typename std::remove_cv<
+  typename std::remove_reference<T>::type
 >::type;
 
 template <typename A, typename ...B>
-struct max_type_size : ::std::conditional<
+struct max_type_size : std::conditional<
   (sizeof(A) > max_type_size<B...>{}),
-  ::std::integral_constant<::std::size_t, sizeof(A)>,
+  std::integral_constant<std::size_t, sizeof(A)>,
   max_type_size<B...>
 >::type
 {
 };
 
 template <typename A, typename B>
-struct max_type_size<A, B> : ::std::conditional<
+struct max_type_size<A, B> : std::conditional<
   (sizeof(A) > sizeof(B)),
-  ::std::integral_constant<::std::size_t, sizeof(A)>,
-  ::std::integral_constant<::std::size_t, sizeof(B)>
+  std::integral_constant<std::size_t, sizeof(A)>,
+  std::integral_constant<std::size_t, sizeof(B)>
 >::type
 {
 };
 
 template <typename A>
-struct max_type_size<A> : ::std::integral_constant<
-  ::std::size_t, sizeof(A)
+struct max_type_size<A> : std::integral_constant<
+  std::size_t, sizeof(A)
 >::type
 {
 };
 
 template <bool B>
-using bool_constant = ::std::integral_constant<bool, B>;
+using bool_constant = std::integral_constant<bool, B>;
 
 template <class A, class ...B>
 struct any_of : bool_constant<A::value || any_of<B...>::value>
@@ -64,8 +64,8 @@ struct any_of<A> : bool_constant<A::value>
 {
 };
 
-template <typename T, typename = ::std::size_t>
-struct is_vector : ::std::false_type
+template <typename T, typename = std::size_t>
+struct is_vector : std::false_type
 {
 };
 
@@ -80,12 +80,12 @@ struct is_vector<T,
     sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
     sizeof(&T::shrink_to_fit)
   )
-> : ::std::true_type
+> : std::true_type
 {
 };
 
-template <typename T, typename = ::std::size_t>
-struct is_list : ::std::false_type
+template <typename T, typename = std::size_t>
+struct is_list : std::false_type
 {
 };
 
@@ -96,12 +96,12 @@ struct is_list<T,
     sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
     sizeof(&T::pop_front)
   )
-> : ::std::true_type
+> : std::true_type
 {
 };
 
-template <typename T, typename = ::std::size_t>
-struct is_map : ::std::false_type
+template <typename T, typename = std::size_t>
+struct is_map : std::false_type
 {
 };
 
@@ -112,105 +112,105 @@ struct is_map<T,
     sizeof(typename T::mapped_type) |
     sizeof(typename T::value_type)
   )
-> : ::std::true_type
+> : std::true_type
 {
 };
 
 template <typename T, typename = void>
-struct is_copy_assignable : ::std::is_copy_assignable<T>
+struct is_copy_assignable : std::is_copy_assignable<T>
 {
 };
 
 template <typename T>
 struct is_copy_assignable<T,
-  typename ::std::enable_if<is_vector<T>{}>::type
+  typename std::enable_if<is_vector<T>{}>::type
 > : is_copy_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_assignable<T,
-  typename ::std::enable_if<is_list<T>{}>::type
+  typename std::enable_if<is_list<T>{}>::type
 > : is_copy_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_assignable<T,
-  typename ::std::enable_if<is_map<T>{}>::type
+  typename std::enable_if<is_map<T>{}>::type
 > : is_copy_assignable<typename T::mapped_type>
 {
 };
 
 template <typename T, typename = void>
-struct is_copy_constructible : ::std::is_copy_constructible<T>
+struct is_copy_constructible : std::is_copy_constructible<T>
 {
 };
 
 template <typename T>
 struct is_copy_constructible<T,
-  typename ::std::enable_if<is_vector<T>{}>::type
+  typename std::enable_if<is_vector<T>{}>::type
 > : is_copy_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_constructible<T,
-  typename ::std::enable_if<is_list<T>{}>::type
+  typename std::enable_if<is_list<T>{}>::type
 > : is_copy_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_constructible<T,
-  typename ::std::enable_if<is_map<T>{}>::type
+  typename std::enable_if<is_map<T>{}>::type
 > : is_copy_constructible<typename T::mapped_type>
 {
 };
 
 template <typename T, typename = void>
-struct is_move_assignable : ::std::is_move_assignable<T>
+struct is_move_assignable : std::is_move_assignable<T>
 {
 };
 
 template <typename T>
-struct is_move_assignable<T, ::std::enable_if_t<is_vector<T>{}> > :
+struct is_move_assignable<T, std::enable_if_t<is_vector<T>{}> > :
   is_move_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
-struct is_move_assignable<T, ::std::enable_if_t<is_list<T>{}> > :
+struct is_move_assignable<T, std::enable_if_t<is_list<T>{}> > :
   is_move_assignable<typename T::value_type>
 {
 };
 
 
 template <typename T>
-struct is_move_assignable<T, ::std::enable_if_t<is_map<T>{}> > :
+struct is_move_assignable<T, std::enable_if_t<is_map<T>{}> > :
   is_move_assignable<typename T::mapped_type>
 {
 };
 
 template <typename T, typename = void>
-struct is_move_constructible : ::std::is_move_constructible<T>
+struct is_move_constructible : std::is_move_constructible<T>
 {
 };
 
 template <typename T>
-struct is_move_constructible<T, ::std::enable_if_t<is_vector<T>{}> > :
+struct is_move_constructible<T, std::enable_if_t<is_vector<T>{}> > :
   is_move_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
-struct is_move_constructible<T, ::std::enable_if_t<is_list<T>{}> > :
+struct is_move_constructible<T, std::enable_if_t<is_list<T>{}> > :
   is_move_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
-struct is_move_constructible<T, ::std::enable_if<is_map<T>{}> > :
+struct is_move_constructible<T, std::enable_if<is_map<T>{}> > :
   is_move_constructible<typename T::mapped_type>
 {
 };
@@ -226,8 +226,8 @@ using copier_type = void (*)(bool, deleter_type, void*, void const*);
 using mover_type = void (*)(bool, deleter_type, void*, void*);
 
 template <class U>
-typename ::std::enable_if<
-  !::std::is_void<U>{}
+typename std::enable_if<
+  !std::is_void<U>{}
 >::type
 deleter_stub(void* const store)
 {
@@ -235,15 +235,15 @@ deleter_stub(void* const store)
 }
 
 template <class U>
-typename ::std::enable_if<
-  ::std::is_void<U>{}
+typename std::enable_if<
+  std::is_void<U>{}
 >::type
 deleter_stub(void* const)
 {
 }
 
 template <typename U>
-typename ::std::enable_if<
+typename std::enable_if<
   is_copy_constructible<U>{} &&
   is_copy_assignable<U>{}
 >::type
@@ -264,7 +264,7 @@ copier_stub(bool const same_type, deleter_type const deleter,
 }
 
 template <typename U>
-typename ::std::enable_if<
+typename std::enable_if<
   is_copy_constructible<U>{} &&
   !is_copy_assignable<U>{}
 >::type
@@ -277,7 +277,7 @@ copier_stub(bool const, deleter_type const deleter,
 }
 
 template <typename U>
-typename ::std::enable_if<
+typename std::enable_if<
   is_move_constructible<U>{} &&
   is_move_assignable<U>{}
 >::type
@@ -287,18 +287,18 @@ mover_stub(bool const same_type, deleter_type const deleter,
   if (same_type)
   {
     *reinterpret_cast<U*>(dst_store) =
-      ::std::move(*reinterpret_cast<U*>(src_store));
+      std::move(*reinterpret_cast<U*>(src_store));
   }
   else
   {
     deleter(dst_store);
 
-    new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
+    new (dst_store) U(std::move(*reinterpret_cast<U*>(src_store)));
   }
 }
 
 template <typename U>
-typename ::std::enable_if<
+typename std::enable_if<
   is_move_constructible<U>{} &&
   !is_move_assignable<U>{}
 >::type
@@ -307,11 +307,11 @@ mover_stub(bool const, deleter_type const deleter,
 {
   deleter(dst_store);
 
-  new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
+  new (dst_store) U(std::move(*reinterpret_cast<U*>(src_store)));
 }
 
 template <class U>
-constexpr inline typename ::std::enable_if<
+constexpr inline typename std::enable_if<
   !is_copy_constructible<U>{}, copier_type
 >::type
 get_copier() noexcept
@@ -320,7 +320,7 @@ get_copier() noexcept
 }
 
 template <class U>
-constexpr inline typename ::std::enable_if<
+constexpr inline typename std::enable_if<
   is_copy_constructible<U>{}, copier_type
 >::type
 get_copier() noexcept
@@ -329,7 +329,7 @@ get_copier() noexcept
 }
 
 template <class U>
-constexpr inline typename ::std::enable_if<
+constexpr inline typename std::enable_if<
   !is_move_constructible<U>{}, mover_type
 >::type
 get_mover() noexcept
@@ -338,7 +338,7 @@ get_mover() noexcept
 }
 
 template <class U>
-constexpr inline typename ::std::enable_if<
+constexpr inline typename std::enable_if<
   is_move_constructible<U>{}, mover_type
 >::type
 get_mover() noexcept
@@ -352,12 +352,12 @@ struct meta
   mover_type mover;
   deleter_type deleter;
 
-  ::std::size_t size;
+  std::size_t size;
 };
 
 template <typename U>
-inline typename ::std::enable_if<
-  !::std::is_void<U>{},
+inline typename std::enable_if<
+  !std::is_void<U>{},
   struct meta const*
 >::type
 get_meta()
@@ -373,8 +373,8 @@ get_meta()
 }
 
 template <typename U>
-inline typename ::std::enable_if<
-  ::std::is_void<U>{},
+inline typename std::enable_if<
+  std::is_void<U>{},
   struct meta const*
 >::type
 get_meta()
@@ -398,14 +398,14 @@ get_meta()
 # pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif // __GNUC__
 
-template <::std::size_t N>
+template <std::size_t N>
 class some
 {
-  template <::std::size_t M>
+  template <std::size_t M>
   friend class some;
 
 public:
-  using typeid_t = ::std::uintptr_t;
+  using typeid_t = std::uintptr_t;
 
   some() = default;
 
@@ -413,7 +413,7 @@ public:
 
   some(some const& other) { *this = other; }
 
-  some(some&& other) { *this = ::std::move(other); }
+  some(some&& other) { *this = std::move(other); }
 
   some& operator=(some const& rhs)
   {
@@ -433,7 +433,7 @@ public:
       else
       {
 #ifndef NDEBUG
-        throw ::std::bad_typeid();
+        throw std::bad_typeid();
 #endif // NDEBUG
       }
     }
@@ -442,7 +442,7 @@ public:
     return *this;
   }
 
-  template <::std::size_t M>
+  template <std::size_t M>
   some& operator=(some<M> const& rhs)
   {
     if (this != &rhs)
@@ -462,7 +462,7 @@ public:
       else
       {
 #ifndef NDEBUG
-        throw ::std::bad_typeid();
+        throw std::bad_typeid();
 #endif // NDEBUG
       }
     }
@@ -489,7 +489,7 @@ public:
       else
       {
 #ifndef NDEBUG
-        throw ::std::bad_typeid();
+        throw std::bad_typeid();
 #endif // NDEBUG
       }
     }
@@ -498,7 +498,7 @@ public:
     return *this;
   }
 
-  template <::std::size_t M>
+  template <std::size_t M>
   some& operator=(some<M>&& rhs)
   {
     if (this != &rhs)
@@ -518,7 +518,7 @@ public:
       else
       {
 #ifndef NDEBUG
-        throw ::std::bad_typeid();
+        throw std::bad_typeid();
 #endif // NDEBUG
       }
     }
@@ -529,18 +529,18 @@ public:
 
   template <
     typename U,
-    typename = typename ::std::enable_if<
-      !::std::is_array<
+    typename = typename std::enable_if<
+      !std::is_array<
         typename detail::some::remove_cvr_t<U>
       >{} &&
-      !::std::is_same<
-        typename ::std::decay<U>::type, some
+      !std::is_same<
+        typename std::decay<U>::type, some
       >{}
     >::type
   >
   some(U&& f)
   {
-    *this = ::std::forward<U>(f);
+    *this = std::forward<U>(f);
   }
 
   explicit operator bool() const noexcept
@@ -549,29 +549,29 @@ public:
   }
 
   template <typename U,
-    typename = typename ::std::enable_if<
-      !::std::is_same<
-        typename ::std::decay<U>::type, some
+    typename = typename std::enable_if<
+      !std::is_same<
+        typename std::decay<U>::type, some
       >{}
     >::type
   >
   some& operator=(U&& u)
   {
-    assign(::std::forward<U>(u));
+    assign(std::forward<U>(u));
 
     return *this;
   }
 
   // copy assignment possible
   template <typename U>
-  typename ::std::enable_if<
-    !::std::is_array<detail::some::remove_cvr_t<U> >{} &&
+  typename std::enable_if<
+    !std::is_array<detail::some::remove_cvr_t<U> >{} &&
     detail::some::is_copy_assignable<detail::some::remove_cvr_t<U> >{},
     some&
   >::type
   assign(U&& u)
   {
-    using user_type = ::std::decay_t<U>;
+    using user_type = std::decay_t<U>;
     static_assert(sizeof(user_type) <= sizeof(store_), "");
 
     if (detail::some::get_meta<user_type>() == meta_)
@@ -582,7 +582,7 @@ public:
     {
       clear();
 
-      new (static_cast<void*>(&store_)) user_type(::std::forward<U>(u));
+      new (static_cast<void*>(&store_)) user_type(std::forward<U>(u));
 
       meta_ = detail::some::get_meta<user_type>();
     }
@@ -592,27 +592,27 @@ public:
 
   // move assignment possible
   template <typename U>
-  typename ::std::enable_if<
-    !::std::is_array<detail::some::remove_cvr_t<U> >{} &&
-    ::std::is_rvalue_reference<U&&>{} &&
+  typename std::enable_if<
+    !std::is_array<detail::some::remove_cvr_t<U> >{} &&
+    std::is_rvalue_reference<U&&>{} &&
     !detail::some::is_copy_assignable<detail::some::remove_cvr_t<U> >{} &&
     detail::some::is_move_assignable<detail::some::remove_cvr_t<U> >{},
     some&
   >::type
   assign(U&& u)
   {
-    using user_type = ::std::decay_t<U>;
+    using user_type = std::decay_t<U>;
     static_assert(sizeof(user_type) <= sizeof(store_), "");
 
     if (detail::some::get_meta<user_type>() == meta_)
     {
-      *reinterpret_cast<user_type*>(&store_) = ::std::move(u);
+      *reinterpret_cast<user_type*>(&store_) = std::move(u);
     }
     else
     {
       clear();
 
-      new (static_cast<void*>(&store_)) user_type(::std::forward<U>(u));
+      new (static_cast<void*>(&store_)) user_type(std::forward<U>(u));
 
       meta_ = detail::some::get_meta<user_type>();
     }
@@ -622,20 +622,20 @@ public:
 
   // assignment not possible
   template <typename U>
-  typename ::std::enable_if<
-    !::std::is_array<detail::some::remove_cvr_t<U> >{} &&
+  typename std::enable_if<
+    !std::is_array<detail::some::remove_cvr_t<U> >{} &&
     !detail::some::is_copy_assignable<detail::some::remove_cvr_t<U> >{} &&
     !detail::some::is_move_assignable<detail::some::remove_cvr_t<U> >{},
     some&
   >::type
   assign(U&& u)
   {
-    using user_type = ::std::decay_t<U>;
+    using user_type = std::decay_t<U>;
     static_assert(sizeof(user_type) <= sizeof(store_), "");
 
     clear();
 
-    new (static_cast<void*>(&store_)) user_type(::std::forward<U>(u));
+    new (static_cast<void*>(&store_)) user_type(std::forward<U>(u));
 
     meta_ = detail::some::get_meta<user_type>();
 
@@ -657,7 +657,7 @@ public:
     {
       if (meta_->mover)
       {
-        other = ::std::move(*this);
+        other = std::move(*this);
         clear();
       }
       else if (meta_->copier)
@@ -671,7 +671,7 @@ public:
     {
       if (other.meta_->mover)
       {
-        *this = ::std::move(other);
+        *this = std::move(other);
         other.clear();
       }
       else if (other.meta_->copier)
@@ -683,24 +683,24 @@ public:
     }
     else if (meta_->mover && other.meta_->mover)
     {
-      some tmp(::std::move(other));
+      some tmp(std::move(other));
 
-      other = ::std::move(*this);
-      *this = ::std::move(tmp);
+      other = std::move(*this);
+      *this = std::move(tmp);
     }
     else if (meta_->mover && other.meta_->copier)
     {
       some tmp(other);
 
-      other = ::std::move(*this);
+      other = std::move(*this);
       *this = tmp;
     }
     else if (meta_->copier && other.meta_->mover)
     {
-      some tmp(::std::move(other));
+      some tmp(std::move(other));
 
       other = *this;
-      *this = ::std::move(tmp);
+      *this = std::move(tmp);
     }
     else if (meta_->copier && other.meta_->copier)
     {
@@ -712,7 +712,7 @@ public:
     else
     {
 #ifndef NDEBUG
-      throw ::std::bad_typeid();
+      throw std::bad_typeid();
 #endif // NDEBUG
     }
   }
@@ -726,28 +726,28 @@ public:
   typeid_t type_id() const noexcept { return typeid_t(meta_); }
 
 private:
-  template <typename U, ::std::size_t M> friend bool contains(some<M> const&) noexcept;
+  template <typename U, std::size_t M> friend bool contains(some<M> const&) noexcept;
 
 #ifdef NDEBUG
-  template <typename U, ::std::size_t M> friend U& get(some<M>&) noexcept;
-  template <typename U, ::std::size_t M> friend U const& get(some<M> const&) noexcept;
+  template <typename U, std::size_t M> friend U& get(some<M>&) noexcept;
+  template <typename U, std::size_t M> friend U const& get(some<M> const&) noexcept;
 #else
-  template <typename U, ::std::size_t M> friend U& get(some<M>&);
-  template <typename U, ::std::size_t M> friend U const& get(some<M> const&);
+  template <typename U, std::size_t M> friend U& get(some<M>&);
+  template <typename U, std::size_t M> friend U const& get(some<M> const&);
 #endif // NDEBUG
 
   struct detail::some::meta const* meta_{detail::some::get_meta<void>()};
 
-  typename ::std::aligned_storage<N>::type store_;
+  typename std::aligned_storage<N>::type store_;
 };
 
-template <typename U, ::std::size_t N>
+template <typename U, std::size_t N>
 inline bool contains(some<N> const& s) noexcept
 {
   return detail::some::get_meta<U>() == s.meta_;
 }
 
-template <typename U, ::std::size_t N>
+template <typename U, std::size_t N>
 inline U& get(some<N>& s)
 #ifdef NDEBUG
 noexcept
@@ -762,14 +762,14 @@ noexcept
   }
   else
   {
-    throw ::std::bad_cast();
+    throw std::bad_cast();
   }
 #else
   return *reinterpret_cast<nonref*>(&s.store_);
 #endif // NDEBUG
 }
 
-template <typename U, ::std::size_t N>
+template <typename U, std::size_t N>
 inline U const& get(some<N> const& s)
 #ifdef NDEBUG
 noexcept
@@ -784,28 +784,26 @@ noexcept
   }
   else
   {
-    throw ::std::bad_cast();
+    throw std::bad_cast();
   }
 #else
   return *reinterpret_cast<nonref const*>(&s.store_);
 #endif // NDEBUG
 }
 
-template <typename U, ::std::size_t N>
-inline typename ::std::enable_if<
-  (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+template <typename U, std::size_t N>
+inline std::enable_if_t<(std::is_enum<U>{} || std::is_fundamental<U>{}),
   U
->::type
+>
 cget(some<N> const& s) noexcept(noexcept(get<U>(s)))
 {
   return get<U>(s);
 }
 
-template <typename U, ::std::size_t N>
-inline typename ::std::enable_if<
-  !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+template <typename U, std::size_t N>
+inline std::enable_if_t<!(std::is_enum<U>{} || std::is_fundamental<U>{}),
   U const&
->::type
+>
 cget(some<N> const& s) noexcept(noexcept(get<U>(s)))
 {
   return get<U>(s);
