@@ -83,7 +83,7 @@ class forwarder<R (A...), N, NE> : public detail::forwarder::argument_types<A...
 public:
   using result_type = R;
 
-  using size = std::integral_constant<std::size_t, N>;
+  static constexpr auto const size = N;
 
 public:
   forwarder() = default;
