@@ -1,3 +1,7 @@
+#ifndef GENERIC_MANY_HPP
+# define GENERIC_MANY_HPP
+# pragma once
+
 #include <cstddef>
 
 #include <tuple>
@@ -181,3 +185,5 @@ auto& get(::generic::many<Types...>&& m) noexcept
 }
 
 }
+
+#endif // GENERIC_MANY_HPP
