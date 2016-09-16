@@ -13,18 +13,18 @@
 namespace generic
 {
 
-template <typename F>
-constexpr inline void alloc_stack(::std::size_t const N, F&& f) noexcept(
+template <typename T = char, typename F>
+constexpr inline void salloc(::std::size_t const N, F&& f) noexcept(
   noexcept(f(nullptr))
 )
 {
 #if defined(__GNUC__)
-  f(alloca(N));
+  f(static_cast<T*>(alloca(N * sizeof(T))));
 #elif defined(_MSC_VER)
-  f(_alloca(N));
+  f(static_cast<T*>(_alloca(N * sizeof(T))));
 #else
-  alignas(::std::max_align_t) char p[N];
-  f(p);
+  alignas(::std::max_align_t) char p[N * sizeof(T)];
+  f(reinterpret_cast<T*>(p));
 #endif //
 }
 
