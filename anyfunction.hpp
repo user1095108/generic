@@ -14,31 +14,103 @@ namespace generic
 namespace
 {
 
-template <typename R, typename ...A>
+template <typename>
 struct signature
 {
 };
 
+template <typename F>
+struct remove_cv_seq;
+
+//
 template <typename R, typename ...A>
-constexpr auto extract_signature(R (*const)(A...)) noexcept
+struct remove_cv_seq<R(A...)>
 {
-  return signature<R, A...>();
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) volatile>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const volatile>
+{
+  using type = R(A...);
+};
+
+//
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) &>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const &>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) volatile &>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const volatile &>
+{
+  using type = R(A...);
+};
+
+//
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) &&>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const &&>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) volatile &&>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const volatile &&>
+{
+  using type = R(A...);
+};
+
+template <typename F>
+constexpr inline auto extract_signature(F* const) noexcept
+{
+  return signature<typename remove_cv_seq<F>::type>();
 }
 
-template <typename C, typename R, typename ...A>
-constexpr auto extract_signature(R (C::* const)(A...)) noexcept
+template <typename C, typename F>
+constexpr inline auto extract_signature(F C::* const) noexcept
 {
-  return signature<R, A...>();
-}
-
-template <typename C, typename R, typename ...A>
-constexpr auto extract_signature(R (C::* const)(A...) const) noexcept
-{
-  return signature<R, A...>();
+  return signature<typename remove_cv_seq<F>::type>();
 }
 
 template <typename F>
-constexpr auto extract_signature(F const&) noexcept ->
+constexpr inline auto extract_signature(F const&) noexcept ->
   decltype(&F::operator(), extract_signature(&F::operator()))
 {
   return extract_signature(&F::operator());
@@ -125,7 +197,7 @@ class any_function
   }
 
   template <typename F, typename R, typename ...A>
-  void assign(signature<R, A...>) noexcept
+  void assign(signature<R(A...)>) noexcept
   {
     f_ = invoker<F, R, A...>;
 
