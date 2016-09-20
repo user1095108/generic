@@ -25,6 +25,13 @@ int main()
 
   ::std::cout << f.invoke<int>() << ::std::endl;
 
+  f = [](int a, int b, int c)
+    {
+      ::std::cout << a << " " << b << " " << c << ::std::endl;
+    };
+
+  f(1, 2, 3);
+
   S s;
 
   f = &S::apply;
