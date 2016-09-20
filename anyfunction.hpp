@@ -368,13 +368,13 @@ public:
   }
 
   template <typename ...A>
-  auto operator()(A&& ...args)
+  auto operator()(A&& ...args) const
   {
     return invoke(::std::forward<A>(args)...);
   }
 
   template <typename ...A>
-  Any apply(::generic::many<A...> const& m)
+  Any apply(::generic::many<A...> const& m) const
   {
 #ifndef NDEBUG
     assert(type_id<::generic::many<A...> >() == tuple_type_id_);
@@ -388,7 +388,7 @@ public:
   }
 
   template <typename ...A>
-  auto invoke(A&& ...args)
+  auto invoke(A&& ...args) const
   {
     return apply(
       ::generic::many<arg_type_t<A>...>{::std::forward<A>(args)...}

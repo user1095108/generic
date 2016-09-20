@@ -369,13 +369,13 @@ public:
   }
 
   template <typename ...A>
-  auto operator()(A&& ...args)
+  auto operator()(A&& ...args) const
   {
     return invoke(::std::forward<A>(args)...);
   }
 
   template <typename ...A>
-  Any apply(::std::tuple<A...> const& m)
+  Any apply(::std::tuple<A...> const& m) const
   {
 #ifndef NDEBUG
     assert(type_id<::std::tuple<A...> >() == tuple_type_id_);
@@ -389,7 +389,7 @@ public:
   }
 
   template <typename ...A>
-  auto invoke(A&& ...args)
+  auto invoke(A&& ...args) const
   {
     return apply(
       ::std::tuple<arg_type_t<A>...>{::std::forward<A>(args)...}
