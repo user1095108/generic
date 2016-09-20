@@ -109,7 +109,7 @@ public:
   template <typename F, typename =
     ::std::enable_if_t<!::std::is_same<::std::decay_t<F>, forwarder>{}>
   >
-  auto& operator=(F&& f) noexcept
+  forwarder& operator=(F&& f) noexcept
   {
     assign(::std::forward<F>(f));
 
@@ -143,27 +143,27 @@ public:
     ::new (static_cast<void*>(&store_)) functor_type(::std::forward<F>(f));
 
     stub_ = [](void const* const ptr, A&&... args) noexcept(
-          noexcept(
-          (
+        noexcept(
+        (
 #if __cplusplus <= 201402L
-            (*static_cast<functor_type const*>(ptr))(
-              ::std::forward<A>(args)...)
+          (*static_cast<functor_type const*>(ptr))(
+            ::std::forward<A>(args)...)
 #else
-            ::std::invoke(*static_cast<functor_type const*>(ptr),
-              ::std::forward<A>(args)...)
+          ::std::invoke(*static_cast<functor_type const*>(ptr),
+            ::std::forward<A>(args)...)
 #endif // __cplusplus
-          )
         )
-      ) -> R
-      {
+      )
+    ) -> R
+    {
 #if __cplusplus <= 201402L
-        return (*static_cast<functor_type const*>(ptr))(
-          ::std::forward<A>(args)...);
+      return (*static_cast<functor_type const*>(ptr))(
+        ::std::forward<A>(args)...);
 #else
-        return ::std::invoke(*static_cast<functor_type const*>(ptr),
-          ::std::forward<A>(args)...);
+      return ::std::invoke(*static_cast<functor_type const*>(ptr),
+        ::std::forward<A>(args)...);
 #endif // __cplusplus
-      };
+    };
   }
 
   void reset() noexcept { stub_ = nullptr; }

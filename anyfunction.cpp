@@ -2,6 +2,14 @@
 
 #include "anyfunction.hpp"
 
+struct S
+{
+  void apply()
+  {
+    ::std::cout << "applied" << ::std::endl;
+  }
+};
+
 int main()
 {
   ::generic::any_function<> f(
@@ -15,7 +23,13 @@ int main()
 
   f();
 
-  ::std::cout << f.operator()<int>() << ::std::endl;
+  ::std::cout << f.invoke<int>() << ::std::endl;
+
+  S s;
+
+  f = &S::apply;
+
+  f(::std::ref(s));
 
   return 0;
 }

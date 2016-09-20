@@ -2,7 +2,11 @@
 # define GENERIC_ANYFUNCTION_HPP
 # pragma once
 
+#include <cassert>
+
 #include <cstdint>
+
+#include <functional>
 
 #include "many.hpp"
 
@@ -19,7 +23,72 @@ struct signature
 {
 };
 
+//
+template <typename>
+struct class_ref;
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...)>
+{
+  using type = C&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const>
+{
+  using type = C const&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile>
+{
+  using type = C const volatile&;
+};
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) &>
+{
+  using type = C&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const &>
+{
+  using type = C const&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile &>
+{
+  using type = C const volatile&;
+};
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) &&>
+{
+  using type = C&&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const &&>
+{
+  using type = C const&&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile &&>
+{
+  using type = C const volatile&&;
+};
+
 template <typename F>
+using class_ref_t = typename class_ref<F>::type;
+
+//
+template <typename>
 struct remove_cv_seq;
 
 //
@@ -144,7 +213,8 @@ class any_function
   Any any_;
 
 #ifndef NDEBUG
-  typeid_t type_id_;
+  typeid_t tuple_type_id_;
+  typeid_t result_type_id_;
 #endif // NDEBUG
 
   template <typename F, typename R, typename ...A, ::std::size_t ...I>
@@ -153,16 +223,16 @@ class any_function
     ::generic::many<A...> const& t,
     void* const r,
     ::std::index_sequence<I...> const) noexcept(
-      noexcept(f(::std::get<I>(t)...))
+      noexcept(::std::invoke(f, ::std::get<I>(t)...))
     )
   {
     if (r)
     {
-      ::new (r) R(f(::std::get<I>(t)...));
+      ::new (r) R(::std::invoke(f, ::std::get<I>(t)...));
     }
     else
     {
-      f(::std::get<I>(t)...);
+      ::std::invoke(f, ::std::get<I>(t)...);
     }
   }
 
@@ -172,14 +242,15 @@ class any_function
     ::generic::many<A...> const& t,
     void* const,
     ::std::index_sequence<I...> const) noexcept(
-      noexcept(f(::std::get<I>(t)...))
+      noexcept(::std::invoke(f, ::std::get<I>(t)...))
     )
   {
-    f(::std::get<I>(t)...);
+    ::std::invoke(f, ::std::get<I>(t)...);
   }
 
   template <typename F, typename R, typename ...A>
-  static void invoker(Any const& any,
+  static ::std::enable_if_t<!::std::is_member_function_pointer<F>{}>
+  invoker(Any const& any,
     void const* const v,
     void* const r) noexcept(
     noexcept(do_invoke<F, R, A...>(::generic::get<F>(any),
@@ -197,12 +268,45 @@ class any_function
   }
 
   template <typename F, typename R, typename ...A>
-  void assign(signature<R(A...)>) noexcept
+  static ::std::enable_if_t<::std::is_member_function_pointer<F>{}>
+  invoker(Any const& any,
+    void const* const v,
+    void* const r) noexcept(
+    noexcept(do_invoke<F, R, A...>(::generic::get<F>(any),
+      *static_cast<::generic::many<class_ref_t<F>, A...> const*>(v),
+      r,
+      ::std::make_index_sequence<sizeof...(A) + 1>())
+    )
+  )
+  {
+    do_invoke<F, R, A...>(::generic::get<F>(any),
+      *static_cast<::generic::many<class_ref_t<F>, A...> const*>(v),
+      r,
+      ::std::make_index_sequence<sizeof...(A) + 1>()
+    );
+  }
+
+  template <typename F, typename R, typename ...A>
+  ::std::enable_if_t<!::std::is_member_function_pointer<F>{}>
+  assign(signature<R(A...)>) noexcept
   {
     f_ = invoker<F, R, A...>;
 
 #ifndef NDEBUG
-    type_id_ = type_id<::generic::many<A...> >();
+    tuple_type_id_ = type_id<::generic::many<A...>>();
+    result_type_id_ = type_id<R>();
+#endif // NDEBUG
+  }
+
+  template <typename F, typename R, typename ...A>
+  ::std::enable_if_t<::std::is_member_function_pointer<F>{}>
+  assign(signature<R(A...)>) noexcept
+  {
+    f_ = invoker<F, R, A...>;
+
+#ifndef NDEBUG
+    tuple_type_id_ = type_id<::generic::many<class_ref_t<F>, A...>>();
+    result_type_id_ = type_id<R>();
 #endif // NDEBUG
   }
 
@@ -243,12 +347,12 @@ public:
 
   any_function& operator=(any_function&&) = default;
 
-  template <typename F>
-  ::std::enable_if_t<
-    !::std::is_same<::std::decay_t<F>, any_function>{},
-    any_function&
+  template <typename F,
+    typename = ::std::enable_if_t<
+      !::std::is_same<::std::decay_t<F>, any_function>{}
+    >
   >
-  operator=(F&& f)
+  any_function& operator=(F&& f)
   {
     assign(::std::forward<F>(f));
 
@@ -276,40 +380,20 @@ public:
   template <typename ...A>
   void operator()(A&& ...args)
   {
-#ifndef NDEBUG
-    assert(type_id<::generic::many<arg_type_t<A>...> >() == type_id_);
-#endif // NDEBUG
-
-    auto const a(
-      ::generic::many<arg_type_t<A>...>{::std::forward<A>(args)...}
-    );
-
-    f_(any_, &a, nullptr);
+    return invoke(::std::forward<A>(args)...);
   }
 
   template <typename R, typename ...A>
   R operator()(A&& ...args)
   {
-#ifndef NDEBUG
-    assert(type_id<::generic::many<arg_type_t<A>...> >() == type_id_);
-#endif // NDEBUG
-
-    auto const a(
-      ::generic::many<arg_type_t<A>...>{::std::forward<A>(args)...}
-    );
-
-    alignas(R) char r[sizeof(R)];
-
-    f_(any_, &a, r);
-
-    return *reinterpret_cast<R*>(r);
+    return invoke<R>(::std::forward<A>(args)...);
   }
 
   template <typename ...A>
   void apply(::generic::many<A...> const& m)
   {
 #ifndef NDEBUG
-    assert(type_id<::generic::many<A...> >() == type_id_);
+    assert(type_id<::generic::many<A...> >() == tuple_type_id_);
 #endif // NDEBUG
 
     f_(any_, &m, nullptr);
@@ -319,7 +403,8 @@ public:
   R apply(::generic::many<A...> const& m)
   {
 #ifndef NDEBUG
-    assert(type_id<::generic::many<A...> >() == type_id_);
+    assert(type_id<::generic::many<A...>>() == tuple_type_id_);
+    assert(type_id<R>() == result_type_id_);
 #endif // NDEBUG
 
     alignas(R) char r[sizeof(R)];
@@ -327,6 +412,20 @@ public:
     f_(any_, &m, r);
 
     return *reinterpret_cast<R*>(r);
+  }
+
+  template <typename ...A>
+  void invoke(A&& ...args)
+  {
+    apply(::generic::many<arg_type_t<A>...>{::std::forward<A>(args)...});
+  }
+
+  template <typename R, typename ...A>
+  R invoke(A&& ...args)
+  {
+    return apply<R>(
+      ::generic::many<arg_type_t<A>...>{::std::forward<A>(args)...}
+    );
   }
 };
 
