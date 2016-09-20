@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "anyfunction.hpp"
+#include "stdanyfunction.hpp"
 
 struct S
 {
@@ -12,7 +12,7 @@ struct S
 
 int main()
 {
-  ::generic::any_function<> f(
+  any_function<> f(
     []()
     {
       ::std::cout << "hello world" << ::std::endl;
@@ -21,14 +21,7 @@ int main()
     }
   );
 
-  ::std::cout << ::generic::get<int>(f()) << ::std::endl;
-
-  f = [](int a, int b, int c)
-    {
-      ::std::cout << a << " " << b << " " << c << ::std::endl;
-    };
-
-  f(1, 2, 3);
+  ::std::cout << ::std::experimental::any_cast<int const&>(f()) << ::std::endl;
 
   S s;
 

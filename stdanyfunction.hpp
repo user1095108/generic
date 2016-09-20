@@ -1,19 +1,16 @@
-#ifndef GENERIC_ANYFUNCTION_HPP
-# define GENERIC_ANYFUNCTION_HPP
+#ifndef GENERIC_STDANYFUNCTION_HPP
+# define GENERIC_STDANYFUNCTION_HPP
 # pragma once
 
 #include <cassert>
 
 #include <cstdint>
 
+#include <experimental/any>
+
 #include <functional>
 
-#include "many.hpp"
-
-#include "some.hpp"
-
-namespace generic
-{
+#include <tuple>
 
 namespace
 {
@@ -187,7 +184,7 @@ constexpr inline auto extract_signature(F const&) noexcept ->
 
 }
 
-template <typename Any = ::generic::some<4 * sizeof(void*)>>
+template <typename Any = ::std::experimental::any>
 class any_function
 {
   using typeid_t = ::std::uintptr_t;
@@ -219,7 +216,7 @@ class any_function
   template <typename F, typename R, typename ...A, ::std::size_t ...I>
   static ::std::enable_if_t<!::std::is_void<R>{}>
   do_invoke(F const& f,
-    ::generic::many<A...> const& t,
+    ::std::tuple<A...> const& t,
     Any& r,
     ::std::index_sequence<I...> const) noexcept(
       noexcept(::std::invoke(f, ::std::get<I>(t)...))
@@ -231,7 +228,7 @@ class any_function
   template <typename F, typename R, typename ...A, ::std::size_t ...I>
   static ::std::enable_if_t<::std::is_void<R>{}>
   do_invoke(F const& f,
-    ::generic::many<A...> const& t,
+    ::std::tuple<A...> const& t,
     Any&,
     ::std::index_sequence<I...> const) noexcept(
       noexcept(::std::invoke(f, ::std::get<I>(t)...))
@@ -245,15 +242,17 @@ class any_function
   invoker(Any const& any,
     void const* const v,
     Any& r) noexcept(
-    noexcept(do_invoke<F, R, A...>(::generic::get<F>(any),
-      *static_cast<::generic::many<A...> const*>(v),
+    noexcept(do_invoke<F, R, A...>(
+      ::std::experimental::any_cast<F const&>(any),
+      *static_cast<::std::tuple<A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A)>())
     )
   )
   {
-    do_invoke<F, R, A...>(::generic::get<F>(any),
-      *static_cast<::generic::many<A...> const*>(v),
+    do_invoke<F, R, A...>(
+      ::std::experimental::any_cast<F const&>(any),
+      *static_cast<::std::tuple<A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A)>()
     );
@@ -264,15 +263,17 @@ class any_function
   invoker(Any const& any,
     void const* const v,
     Any& r) noexcept(
-    noexcept(do_invoke<F, R, A...>(::generic::get<F>(any),
-      *static_cast<::generic::many<class_ref_t<F>, A...> const*>(v),
+    noexcept(do_invoke<F, R, A...>(
+      ::std::experimental::any_cast<F const&>(any),
+      *static_cast<::std::tuple<class_ref_t<F>, A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A) + 1>())
     )
   )
   {
-    do_invoke<F, R, A...>(::generic::get<F>(any),
-      *static_cast<::generic::many<class_ref_t<F>, A...> const*>(v),
+    do_invoke<F, R, A...>(
+      ::std::experimental::any_cast<F const&>(any),
+      *static_cast<::std::tuple<class_ref_t<F>, A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A) + 1>()
     );
@@ -285,7 +286,7 @@ class any_function
     f_ = invoker<F, R, A...>;
 
 #ifndef NDEBUG
-    tuple_type_id_ = type_id<::generic::many<A...>>();
+    tuple_type_id_ = type_id<::std::tuple<A...>>();
 #endif // NDEBUG
   }
 
@@ -296,7 +297,7 @@ class any_function
     f_ = invoker<F, R, A...>;
 
 #ifndef NDEBUG
-    tuple_type_id_ = type_id<::generic::many<class_ref_t<F>, A...>>();
+    tuple_type_id_ = type_id<::std::tuple<class_ref_t<F>, A...>>();
 #endif // NDEBUG
   }
 
@@ -374,10 +375,10 @@ public:
   }
 
   template <typename ...A>
-  Any apply(::generic::many<A...> const& m)
+  Any apply(::std::tuple<A...> const& m)
   {
 #ifndef NDEBUG
-    assert(type_id<::generic::many<A...> >() == tuple_type_id_);
+    assert(type_id<::std::tuple<A...> >() == tuple_type_id_);
 #endif // NDEBUG
 
     Any result;
@@ -391,11 +392,9 @@ public:
   auto invoke(A&& ...args)
   {
     return apply(
-      ::generic::many<arg_type_t<A>...>{::std::forward<A>(args)...}
+      ::std::tuple<arg_type_t<A>...>{::std::forward<A>(args)...}
     );
   }
 };
 
-}
-
-#endif // GENERIC_ANYFUNCTION_HPP
+#endif // GENERIC_STDANYFUNCTION_HPP
