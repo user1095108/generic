@@ -210,7 +210,7 @@ class any_function
   Any any_;
 
 #ifndef NDEBUG
-  typeid_t tuple_type_id_;
+  typeid_t type_id_;
 #endif // NDEBUG
 
   template <typename F, typename R, typename ...A, ::std::size_t ...I>
@@ -286,7 +286,7 @@ class any_function
     f_ = invoker<F, R, A...>;
 
 #ifndef NDEBUG
-    tuple_type_id_ = type_id<::std::tuple<A...>>();
+    type_id_ = type_id<::std::tuple<A...>>();
 #endif // NDEBUG
   }
 
@@ -297,7 +297,7 @@ class any_function
     f_ = invoker<F, R, A...>;
 
 #ifndef NDEBUG
-    tuple_type_id_ = type_id<::std::tuple<class_ref_t<F>, A...>>();
+    type_id_ = type_id<::std::tuple<class_ref_t<F>, A...>>();
 #endif // NDEBUG
   }
 
@@ -378,7 +378,7 @@ public:
   Any apply(::std::tuple<A...> const& m) const
   {
 #ifndef NDEBUG
-    assert(type_id<::std::tuple<A...> >() == tuple_type_id_);
+    assert(type_id<::std::tuple<A...> >() == type_id_);
 #endif // NDEBUG
 
     Any result;
