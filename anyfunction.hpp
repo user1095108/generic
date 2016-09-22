@@ -222,10 +222,18 @@ class any_function
     ::generic::many<A...> const& t,
     Any& r,
     ::std::index_sequence<I...> const) noexcept(
+#if __cplusplus <= 201402L
+      noexcept(f(::std::get<I>(t)...))
+#else
       noexcept(::std::invoke(f, ::std::get<I>(t)...))
+#endif
     )
   {
+#if __cplusplus <= 201402L
+    r = f(::std::get<I>(t)...);
+#else
     r = ::std::invoke(f, ::std::get<I>(t)...);
+#endif
   }
 
   template <typename F, typename R, typename ...A, ::std::size_t ...I>
@@ -234,10 +242,18 @@ class any_function
     ::generic::many<A...> const& t,
     Any&,
     ::std::index_sequence<I...> const) noexcept(
+#if __cplusplus <= 201402L
+      noexcept(f(::std::get<I>(t)...))
+#else
       noexcept(::std::invoke(f, ::std::get<I>(t)...))
+#endif
     )
   {
+#if __cplusplus <= 201402L
+    f(::std::get<I>(t)...);
+#else
     ::std::invoke(f, ::std::get<I>(t)...);
+#endif
   }
 
   template <typename F, typename R, typename ...A>
