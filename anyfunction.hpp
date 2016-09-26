@@ -216,9 +216,9 @@ class any_function
   typeid_t type_id_;
 #endif // NDEBUG
 
-  template <typename F, typename R, typename ...A, ::std::size_t ...I>
+  template <typename R, typename ...A, typename F, ::std::size_t ...I>
   static ::std::enable_if_t<!::std::is_void<R>{}>
-  do_invoke(F const& f,
+  do_invoke(F&& f,
     ::generic::many<A...> const& t,
     Any& r,
     ::std::index_sequence<I...> const) noexcept(
@@ -236,9 +236,9 @@ class any_function
 #endif
   }
 
-  template <typename F, typename R, typename ...A, ::std::size_t ...I>
+  template <typename R, typename ...A, typename F, ::std::size_t ...I>
   static ::std::enable_if_t<::std::is_void<R>{}>
-  do_invoke(F const& f,
+  do_invoke(F&& f,
     ::generic::many<A...> const& t,
     Any&,
     ::std::index_sequence<I...> const) noexcept(
@@ -261,14 +261,14 @@ class any_function
   invoker(Any const& any,
     void const* const v,
     Any& r) noexcept(
-    noexcept(do_invoke<F, R, A...>(::generic::get<F>(any),
+    noexcept(do_invoke<R, A...>(::generic::get<F>(any),
       *static_cast<::generic::many<A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A)>())
     )
   )
   {
-    do_invoke<F, R, A...>(::generic::get<F>(any),
+    do_invoke<R, A...>(::generic::get<F>(any),
       *static_cast<::generic::many<A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A)>()
@@ -280,14 +280,14 @@ class any_function
   invoker(Any const& any,
     void const* const v,
     Any& r) noexcept(
-    noexcept(do_invoke<F, R, A...>(::generic::get<F>(any),
+    noexcept(do_invoke<R, A...>(::generic::get<F>(any),
       *static_cast<::generic::many<class_ref_t<F>, A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A) + 1>())
     )
   )
   {
-    do_invoke<F, R, A...>(::generic::get<F>(any),
+    do_invoke<R, A...>(::generic::get<F>(any),
       *static_cast<::generic::many<class_ref_t<F>, A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A) + 1>()
