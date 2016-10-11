@@ -261,14 +261,14 @@ class any_function
   invoker(Any const& any,
     void const* const v,
     Any& r) noexcept(
-    noexcept(do_invoke<R, A...>(::generic::get<F>(any),
+    noexcept(do_invoke<R, A...>(::std::get<F>(any),
       *static_cast<::generic::many<A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A)>())
     )
   )
   {
-    do_invoke<R, A...>(::generic::get<F>(any),
+    do_invoke<R, A...>(::std::get<F>(any),
       *static_cast<::generic::many<A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A)>()
@@ -280,14 +280,14 @@ class any_function
   invoker(Any const& any,
     void const* const v,
     Any& r) noexcept(
-    noexcept(do_invoke<R, A...>(::generic::get<F>(any),
+    noexcept(do_invoke<R, A...>(::std::get<F>(any),
       *static_cast<::generic::many<class_ref_t<F>, A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A) + 1>())
     )
   )
   {
-    do_invoke<R, A...>(::generic::get<F>(any),
+    do_invoke<R, A...>(::std::get<F>(any),
       *static_cast<::generic::many<class_ref_t<F>, A...> const*>(v),
       r,
       ::std::make_index_sequence<sizeof...(A) + 1>()

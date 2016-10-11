@@ -21,7 +21,7 @@ int main()
     }
   );
 
-  ::std::cout << ::generic::get<int>(f()) << ::std::endl;
+  ::std::cout << ::std::get<int>(f()) << ::std::endl;
 
   f = [](int a, int b, int c)
     {

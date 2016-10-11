@@ -729,11 +729,11 @@ private:
   template <typename U, ::std::size_t M> friend bool contains(some<M> const&) noexcept;
 
 #ifdef NDEBUG
-  template <typename U, ::std::size_t M> friend U& get(some<M>&) noexcept;
-  template <typename U, ::std::size_t M> friend U const& get(some<M> const&) noexcept;
+  template <typename U, ::std::size_t M> friend U& ::std::get(some<M>&) noexcept;
+  template <typename U, ::std::size_t M> friend U const& ::std::get(some<M> const&) noexcept;
 #else
-  template <typename U, ::std::size_t M> friend U& get(some<M>&);
-  template <typename U, ::std::size_t M> friend U const& get(some<M> const&);
+  template <typename U, ::std::size_t M> friend U& ::std::get(some<M>&);
+  template <typename U, ::std::size_t M> friend U const& ::std::get(some<M> const&);
 #endif // NDEBUG
 
   struct detail::some::meta const* meta_{detail::some::get_meta<void>()};
@@ -747,16 +747,25 @@ inline bool contains(some<N> const& s) noexcept
   return detail::some::get_meta<U>() == s.meta_;
 }
 
+#ifdef __GNUC__
+# pragma GCC diagnostic pop
+#endif // __GNUC__
+
+}
+
+namespace std
+{
+
 template <typename U, ::std::size_t N>
-inline U& get(some<N>& s)
+inline U& get(::generic::some<N>& s)
 #ifdef NDEBUG
 noexcept
 #endif // NDEBUG
 {
-  using nonref = detail::some::remove_cvr_t<U>;
+  using nonref = ::generic::detail::some::remove_cvr_t<U>;
 
 #ifndef NDEBUG
-  if (contains<nonref>(s))
+  if (::generic::contains<nonref>(s))
   {
     return *reinterpret_cast<nonref*>(&s.store_);
   }
@@ -770,15 +779,15 @@ noexcept
 }
 
 template <typename U, ::std::size_t N>
-inline U const& get(some<N> const& s)
+inline U const& get(::generic::some<N> const& s)
 #ifdef NDEBUG
 noexcept
 #endif // NDEBUG
 {
-  using nonref = detail::some::remove_cvr_t<U>;
+  using nonref = ::generic::detail::some::remove_cvr_t<U>;
 
 #ifndef NDEBUG
-  if (contains<nonref>(s))
+  if (::generic::contains<nonref>(s))
   {
     return *reinterpret_cast<nonref const*>(&s.store_);
   }
@@ -790,30 +799,6 @@ noexcept
   return *reinterpret_cast<nonref const*>(&s.store_);
 #endif // NDEBUG
 }
-
-template <typename U, ::std::size_t N>
-inline ::std::enable_if_t<(::std::is_enum<U>{} ||
-  ::std::is_fundamental<U>{}),
-  U
->
-cget(some<N> const& s) noexcept(noexcept(get<U>(s)))
-{
-  return get<U>(s);
-}
-
-template <typename U, ::std::size_t N>
-inline ::std::enable_if_t<!(::std::is_enum<U>{} ||
-  ::std::is_fundamental<U>{}),
-  U const&
->
-cget(some<N> const& s) noexcept(noexcept(get<U>(s)))
-{
-  return get<U>(s);
-}
-
-#ifdef __GNUC__
-# pragma GCC diagnostic pop
-#endif // __GNUC__
 
 }
 
