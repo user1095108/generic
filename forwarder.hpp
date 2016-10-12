@@ -64,7 +64,7 @@ class forwarder;
 template <typename R, typename ...A, ::std::size_t N, bool NE>
 class forwarder<R (A...), N, NE> : public detail::forwarder::argument_types<A...>
 {
-  R (*stub_)(void const*, A&&...) noexcept(NE) {};
+  R (*stub_)(void*, A&&...) noexcept(NE) {};
 
   ::std::aligned_storage_t<N> store_;
 
@@ -122,7 +122,9 @@ public:
     noexcept(noexcept(stub_(&store_, ::std::forward<A>(args)...)))
   {
     //assert(stub_);
-    return stub_(&store_, ::std::forward<A>(args)...);
+    return stub_(const_cast<void*>(static_cast<void const*>(&store_)),
+      ::std::forward<A>(args)...
+    );
   }
 
   void assign(::std::nullptr_t) noexcept
@@ -142,14 +144,14 @@ public:
 
     ::new (static_cast<void*>(&store_)) functor_type(::std::forward<F>(f));
 
-    stub_ = [](void const* const ptr, A&&... args) noexcept(
+    stub_ = [](void* const ptr, A&&... args) noexcept(
         noexcept(
         (
 #if __cplusplus <= 201402L
-          (*static_cast<functor_type const*>(ptr))(
+          (*static_cast<functor_type*>(ptr))(
             ::std::forward<A>(args)...)
 #else
-          ::std::invoke(*static_cast<functor_type const*>(ptr),
+          ::std::invoke(*static_cast<functor_type*>(ptr),
             ::std::forward<A>(args)...)
 #endif // __cplusplus
         )
@@ -157,10 +159,10 @@ public:
     ) -> R
     {
 #if __cplusplus <= 201402L
-      return (*static_cast<functor_type const*>(ptr))(
+      return (*static_cast<functor_type*>(ptr))(
         ::std::forward<A>(args)...);
 #else
-      return ::std::invoke(*static_cast<functor_type const*>(ptr),
+      return ::std::invoke(*static_cast<functor_type*>(ptr),
         ::std::forward<A>(args)...);
 #endif // __cplusplus
     };
