@@ -22,7 +22,7 @@ class coroutine
   jmp_buf env_in_;
   jmp_buf env_out_;
 
-  ::generic::forwarder<void (coroutine&)> f_;
+  ::generic::forwarder<void()> f_;
 
   bool running_;
   bool terminated_;
@@ -33,10 +33,10 @@ class coroutine
 
 public:
   explicit coroutine(::std::size_t const N = 128 * 1024) :
-    stack_(new char[N]),
-    stack_top_(stack_.get() + N),
     running_{false},
-    terminated_{true}
+    terminated_{true},
+    stack_(new char[N]),
+    stack_top_(stack_.get() + N)
   {
   }
 
@@ -57,7 +57,16 @@ public:
   {
     running_ = terminated_ = false;
 
-    f_ = ::std::forward<F>(f);
+    f_ = [this, f = ::std::forward<F>(f)]() mutable 
+      {
+        f(*this);
+
+        running_ = false;
+
+        terminated_ = true;
+
+        yield();
+      };
   }
 
   void yield() noexcept
@@ -78,9 +87,7 @@ public:
     {
       return;
     }
-    // else do nothing
-
-    if (running_)
+    else if (running_)
     {
       longjmp(env_out_, 1);
     }
@@ -93,16 +100,7 @@ public:
 
       alloca(top - stack_top_);
 
-      [this]() __attribute__ ((noinline)) mutable 
-      {
-        f_(::std::ref(*this));
-
-        running_ = false;
-
-        terminated_ = true;
-
-        yield();
-      }();
+      f_();
     }
   }
 };
