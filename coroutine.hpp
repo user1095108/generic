@@ -15,7 +15,6 @@
 namespace generic
 {
 
-template <::std::size_t N = 16384>
 class coroutine
 {
   jmp_buf env_in_;
@@ -23,10 +22,16 @@ class coroutine
 
   bool running_{};
 
-  ::generic::light_ptr<char[]> stack_{new char[N]};
+  ::generic::light_ptr<char[]> stack_;
+
+  char* const stack_top_;
 
 public:
-  coroutine() = default;
+  explicit coroutine(::std::size_t const N = 128 * 1024) :
+    stack_(new char[N]),
+    stack_top_(stack_.get() + N)
+  {
+  }
 
   template <typename F, typename ...A>
   coroutine(F&& f, A&& ...a)
@@ -53,7 +58,7 @@ public:
     char* top;
     top = reinterpret_cast<char*>(&top);
 
-    alloca(top - (stack_.get() + N));
+    alloca(top - stack_top_);
 
     [this, f = ::std::forward<F>(f)](A&& ...a) __attribute__ ((noinline))
     {
