@@ -34,9 +34,10 @@ public:
   }
 
   template <typename F, typename ...A>
-  coroutine(F&& f, A&& ...a)
+  explicit coroutine(::std::size_t const N, F&& f, A&& ...args) :
+    coroutine(N)
   {
-    run(::std::forward<F>(f), ::std::forward<A>(a)...);
+    run(::std::forward<F>(f), ::std::forward<A>(args)...);
   }
 
   auto running() const noexcept
@@ -60,7 +61,7 @@ public:
 
     alloca(top - stack_top_);
 
-    [this, f = ::std::forward<F>(f)](A&& ...a) __attribute__ ((noinline))
+    [this, f = ::std::forward<F>(f)](A&& ...a) __attribute__ ((noinline)) mutable 
     {
       f(::std::ref(*this), ::std::forward<A>(a)...);
 
