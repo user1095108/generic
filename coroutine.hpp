@@ -57,7 +57,7 @@ public:
   {
     running_ = terminated_ = false;
 
-    f_ = [this, f = ::std::forward<F>(f)]() mutable 
+    f_ = [this, f = ::std::forward(f)]() mutable 
       {
         f(*this);
 
