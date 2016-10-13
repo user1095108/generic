@@ -15,7 +15,7 @@ int main()
 {
   ::generic::coroutine c(1024 * 1024);
 
-  c.run([](decltype(c)& c)
+  c.assign([](::generic::coroutine& c)
     {
       A a;
 
@@ -28,7 +28,7 @@ int main()
     }
   );
 
-  while (c.running())
+  while (!c.terminated())
   {
     c.resume();
   }
