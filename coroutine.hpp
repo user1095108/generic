@@ -22,7 +22,7 @@ class coroutine
   jmp_buf env_in_;
   jmp_buf env_out_;
 
-  ::generic::forwarder<void()> f_;
+  ::std::function<void()> f_;
 
   bool running_;
   bool terminated_;
@@ -57,7 +57,7 @@ public:
   {
     running_ = terminated_ = false;
 
-    f_ = [this, f = ::std::forward(f)]() mutable 
+    f_ = [this, f = ::std::forward<F>(f)]() mutable 
       {
         f(*this);
 
@@ -95,6 +95,7 @@ public:
     {
       running_ = true;
 
+      // stack switch
       char* top;
       top = reinterpret_cast<char*>(&top);
 
