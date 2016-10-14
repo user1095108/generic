@@ -8,9 +8,9 @@
 
 #include <functional>
 
-#include "forwarder.hpp"
+#include <memory>
 
-#include "lightptr.hpp"
+#include "forwarder.hpp"
 
 namespace generic
 {
@@ -25,7 +25,7 @@ class coroutine
   bool running_;
   bool terminated_;
 
-  ::generic::light_ptr<char[]> stack_;
+  ::std::unique_ptr<char[]> stack_;
 
   char* const stack_top_;
 
@@ -96,13 +96,13 @@ public:
       // stack switch
 #if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
       asm volatile(
-        "movq %%rsp, %0"
+        "movq %0, %%rsp"
         :
         : "rm" (stack_top_)
       );
 #elif defined(i386) || defined(__i386) || defined(__i386__)
       asm volatile(
-        "movl %%esp, %0"
+        "movl %0, %%esp"
         :
         : "rm" (stack_top_)
       );
