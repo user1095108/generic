@@ -2,8 +2,6 @@
 # define GENERIC_COROUTINE_HPP
 # pragma once
 
-#include <alloca.h>
-
 #include <cassert>
 
 #include <csetjmp>
@@ -96,10 +94,21 @@ public:
       running_ = true;
 
       // stack switch
-      char* top;
-      top = reinterpret_cast<char*>(&top);
-
-      alloca(top - stack_top_);
+#if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
+      asm volatile(
+        "movq %%rsp, %0"
+        :
+        : "rm" (stack_top_)
+      );
+#elif defined(i386) || defined(__i386) || defined(__i386__)
+      asm volatile(
+        "movl %%esp, %0"
+        :
+        : "rm" (stack_top_)
+      );
+#else
+#error "can't switch stack frame"
+#endif
 
       f_();
     }
