@@ -90,7 +90,8 @@ bool getstate(statebuf& ssb) noexcept
   return r;
 }
 
-inline void setstate(statebuf const& ssb) noexcept
+inline __attribute__((returns_twice))
+static void setstate(statebuf const& ssb) noexcept
 {
 #if defined(i386) || defined(__i386) || defined(__i386__)
   asm volatile (
@@ -109,6 +110,7 @@ inline void setstate(statebuf const& ssb) noexcept
 #else
 # error ""
 #endif
+  for (;;);
 }
 
 #endif // SAVE_STATE_H
