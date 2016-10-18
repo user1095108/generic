@@ -57,23 +57,6 @@ public:
 
     f_ = [this, f = ::std::forward<F>(f)]() __attribute__((always_inline, returns_twice)) mutable 
       {
-      // stack switch
-#if defined(i386) || defined(__i386) || defined(__i386__)
-      asm volatile(
-        "movl %0, %%esp"
-        :
-        : "m" (stack_top_)
-      );
-#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
-      asm volatile(
-        "movq %0, %%rsp"
-        :
-        : "m" (stack_top_)
-      );
-#else
-#error "can't switch stack frame"
-#endif
-
         f(*this);
 
         running_ = false;
@@ -109,6 +92,23 @@ public:
     else
     {
       running_ = true;
+
+      // stack switch
+#if defined(i386) || defined(__i386) || defined(__i386__)
+      asm volatile(
+        "movl %0, %%esp"
+        :
+        : "m" (stack_top_)
+      );
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
+      asm volatile(
+        "movq %0, %%rsp"
+        :
+        : "m" (stack_top_)
+      );
+#else
+#error "can't switch stack frame"
+#endif
 
       f_();
     }
