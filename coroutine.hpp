@@ -12,13 +12,15 @@
 
 #include "forwarder.hpp"
 
+#include "setstate.hpp"
+
 namespace generic
 {
 
 class coroutine
 {
-  jmp_buf env_in_;
-  jmp_buf env_out_;
+  statebuf env_in_;
+  statebuf env_out_;
 
   ::std::function<void()> f_;
 
@@ -69,40 +71,41 @@ public:
 
   void yield() noexcept
   {
-    if (setjmp(env_out_))
+    if (getstate(env_out_))
     {
       return;
     }
     else
     {
-      longjmp(env_in_, 1);
+      setstate(env_in_);
     }
   }
 
   void resume() noexcept
   {
-    if (setjmp(env_in_))
+    if (getstate(env_in_))
     {
       return;
     }
     else if (running_)
     {
-      longjmp(env_out_, 1);
+      setstate(env_out_);
     }
     else
     {
       running_ = true;
 
       // stack switch
-#if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
+#if defined(i386) || defined(__i386) || defined(__i386__)
       asm volatile(
-        "movq %0, %%rsp"
+        "movl %0, %%esp"
         :
         : "rm" (stack_top_)
       );
-#elif defined(i386) || defined(__i386) || defined(__i386__)
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) ||\
+  defined(__x86_64)
       asm volatile(
-        "movl %0, %%esp"
+        "movq %0, %%rsp"
         :
         : "rm" (stack_top_)
       );
