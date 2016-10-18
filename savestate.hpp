@@ -23,7 +23,7 @@ bool savestate(statebuf& ssb) noexcept
     "push %%esi\n\t"
     "push %%edi\n\t"
     "push %%ebp\n\t"
-    "movl %%esp, %0\n\t"
+    "movl %%esp, %0\n\t" // store sp
     "movl $1f, %1\n\t" // store label
     "movb $0, %2\n\t" // return false
     "jmp 2f\n\t"
@@ -57,7 +57,7 @@ bool savestate(statebuf& ssb) noexcept
     "push %%r13\n\t"
     "push %%r14\n\t"
     "push %%r15\n\t"
-    "movq %%rsp, %0\n\t"
+    "movq %%rsp, %0\n\t" // store sp
     "movq $1f, %1\n\t" // store label
     "movb $0, %2\n\t" // return false
     "jmp 2f\n\r"
