@@ -102,8 +102,7 @@ public:
         :
         : "rm" (stack_top_)
       );
-#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) ||\
-  defined(__x86_64)
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
       asm volatile(
         "movq %0, %%rsp"
         :

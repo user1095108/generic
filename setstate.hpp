@@ -9,9 +9,26 @@ struct statebuf
 };
 
 inline
-__attribute__((always_inline))
+__attribute__((always_inline, returns_twice))
 bool getstate(statebuf& ssb) noexcept 
 {
+  ssb.label = &&rettrue;
+
+#if defined(i386) || defined(__i386) || defined(__i386__)
+  asm volatile (
+    "push %%eax\n\t"
+    "push %%ebx\n\t"
+    "push %%ecx\n\t"
+    "push %%edx\n\t"
+    "push %%esi\n\t"
+    "push %%edi\n\t"
+    "push %%ebp\n\t"
+    "movl %%esp, %0\n\t"
+    : "=m" (ssb.sp)
+    :
+    : "memory"
+  );
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
   asm volatile (
     "push %%rax\n\t"
     "push %%rbx\n\t"
@@ -33,14 +50,28 @@ bool getstate(statebuf& ssb) noexcept
     :
     : "memory"
   );
+#else
+# error ""
+#endif
 
   asm goto (""::::rettrue);
-
-  ssb.label = &&rettrue;
 
   return false;
 
   rettrue:
+#if defined(i386) || defined(__i386) || defined(__i386__)
+  asm volatile (
+    "pop %%ebp\n\t"
+    "pop %%edi\n\t"
+    "pop %%esi\n\t"
+    "pop %%edx\n\t"
+    "pop %%ecx\n\t"
+    "pop %%ebx\n\t"
+    "pop %%eax\n\t"
+    :
+    :
+  );
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
   asm volatile (
     "pop %%r15\n\t"
     "pop %%r14\n\t"
@@ -60,18 +91,32 @@ bool getstate(statebuf& ssb) noexcept
     :
     :
   );
+#else
+# error ""
+#endif
 
   return true;
 }
 
 inline void setstate(statebuf const& ssb) noexcept
 {
+#if defined(i386) || defined(__i386) || defined(__i386__)
+  asm volatile (
+    "movl %0, %%esp\n\t"
+    "jmp *%1"
+    :
+    : "m" (ssb.sp), "m" (ssb.label)
+  );
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
   asm volatile (
     "movq %0, %%rsp\n\t"
     "jmp *%1"
     :
     : "m" (ssb.sp), "m" (ssb.label)
   );
+#else
+# error ""
+#endif
 }
 
 #endif // SAVE_STATE_H
