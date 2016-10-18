@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include "setstate.hpp"
+#include "savestate.hpp"
 
 namespace generic
 {
@@ -86,25 +86,25 @@ public:
 
   void yield() noexcept
   {
-    if (getstate(env_out_))
+    if (savestate(env_out_))
     {
       return;
     }
     else
     {
-      setstate(env_in_);
+      restorestate(env_in_);
     }
   }
 
   void resume() noexcept
   {
-    if (getstate(env_in_))
+    if (savestate(env_in_))
     {
       return;
     }
     else if (running_)
     {
-      setstate(env_out_);
+      restorestate(env_out_);
     }
     else
     {
