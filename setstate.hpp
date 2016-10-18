@@ -12,7 +12,7 @@ inline
 __attribute__((always_inline, returns_twice))
 bool getstate(statebuf& ssb) noexcept 
 {
-  ssb.label = &&rettrue;
+  bool r;
 
 #if defined(i386) || defined(__i386) || defined(__i386__)
   asm volatile (
@@ -24,10 +24,22 @@ bool getstate(statebuf& ssb) noexcept
     "push %%edi\n\t"
     "push %%ebp\n\t"
     "movl %%esp, %0\n\t"
-    : "=m" (ssb.sp)
+    "movl $1f, %1\n\t" // store label
+    "movb $0, %2\n\t" // return false
+    "jmp 2f\n\t"
+    "1:\n\t"
+    "pop %%ebp\n\t"
+    "pop %%edi\n\t"
+    "pop %%esi\n\t"
+    "pop %%edx\n\t"
+    "pop %%ecx\n\t"
+    "pop %%ebx\n\t"
+    "pop %%eax\n\t"
+    "movb $1, %2\n\t" // return true
+    "2:"
+    : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
     : "memory"
-  );
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
   asm volatile (
     "push %%rax\n\t"
@@ -46,33 +58,10 @@ bool getstate(statebuf& ssb) noexcept
     "push %%r14\n\t"
     "push %%r15\n\t"
     "movq %%rsp, %0\n\t"
-    : "=m" (ssb.sp)
-    :
-    : "memory"
-  );
-#else
-# error ""
-#endif
-
-  asm goto (""::::rettrue);
-
-  return false;
-
-  rettrue:
-#if defined(i386) || defined(__i386) || defined(__i386__)
-  asm volatile (
-    "pop %%ebp\n\t"
-    "pop %%edi\n\t"
-    "pop %%esi\n\t"
-    "pop %%edx\n\t"
-    "pop %%ecx\n\t"
-    "pop %%ebx\n\t"
-    "pop %%eax\n\t"
-    :
-    :
-  );
-#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
-  asm volatile (
+    "movq $1f, %1\n\t" // store label
+    "movb $0, %2\n\t" // return false
+    "jmp 2f\n\r"
+    "1:\n\t"
     "pop %%r15\n\t"
     "pop %%r14\n\t"
     "pop %%r13\n\t"
@@ -88,14 +77,17 @@ bool getstate(statebuf& ssb) noexcept
     "pop %%rcx\n\t"
     "pop %%rbx\n\t"
     "pop %%rax\n\t"
+    "movb $1, %2\n\t" // return true
+    "2:"
+    : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
-    :
-  );
+    : "memory"
 #else
 # error ""
 #endif
+  );
 
-  return true;
+  return r;
 }
 
 inline void setstate(statebuf const& ssb) noexcept
