@@ -30,6 +30,7 @@ int main()
 
   while (!c.terminated())
   {
+    ::std::cout << "resuming" << ::std::endl;
     c.resume();
   }
 
