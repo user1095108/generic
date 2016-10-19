@@ -55,7 +55,7 @@ public:
   {
     running_ = terminated_ = false;
 
-    f_ = [this, f = ::std::forward<F>(f)]() mutable 
+    f_ = [this, f = ::std::forward<F>(f)]()
       {
         // stack switch
 #if defined(i386) || defined(__i386) || defined(__i386__)
