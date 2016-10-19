@@ -30,7 +30,7 @@ class coroutine
   char* const stack_top_;
 
 public:
-  explicit coroutine(::std::size_t const N = 1024 * 1024) :
+  explicit coroutine(::std::size_t const N = 512 * 1024) :
     running_{false},
     terminated_{true},
     stack_(new char[N]),
