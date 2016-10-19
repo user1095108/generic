@@ -10,13 +10,15 @@
 
 #include <memory>
 
+#include "savestate.hpp"
+
 namespace generic
 {
 
 class coroutine
 {
-  jmp_buf env_in_;
-  jmp_buf env_out_;
+  statebuf env_in_;
+  statebuf env_out_;
 
   ::std::function<void()> f_;
 
@@ -53,7 +55,7 @@ public:
   {
     running_ = terminated_ = false;
 
-    f_ = [this, f = ::std::forward<F>(f)]() __attribute__((always_inline, returns_twice)) mutable 
+    f_ = [this, f = ::std::forward<F>(f)]() mutable 
       {
         f(*this);
 
@@ -65,24 +67,36 @@ public:
       };
   }
 
-  void yield() noexcept __attribute__((no_caller_saved_registers))
+  void yield() noexcept
   {
-    if (!setjmp(env_out_))
+#if defined(i386) || defined(__i386) || defined(__i386__)
+    asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
+    asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15");
+#endif
+
+    if (!savestate(env_out_))
     {
-      longjmp(env_in_, 1);
+      restorestate(env_in_);
     }
     // else do nothing
   }
 
-  void resume() noexcept __attribute__((no_caller_saved_registers))
+  void resume() noexcept
   {
-    if (setjmp(env_in_))
+#if defined(i386) || defined(__i386) || defined(__i386__)
+    asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
+    asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15");
+#endif
+
+    if (savestate(env_in_))
     {
       return;
     }
     else if (running_)
     {
-      longjmp(env_out_, 1);
+      restorestate(env_out_);
     }
     else
     {

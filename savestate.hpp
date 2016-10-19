@@ -8,9 +8,7 @@ struct statebuf
   void* label;
 };
 
-inline
-__attribute__((always_inline, returns_twice))
-bool savestate(statebuf& ssb) noexcept 
+inline __attribute__((returns_twice)) bool savestate(statebuf& ssb) noexcept 
 {
   bool r;
 
@@ -44,8 +42,7 @@ bool savestate(statebuf& ssb) noexcept
   return r;
 }
 
-inline __attribute__((noreturn, returns_twice))
-static void restorestate(statebuf const& ssb) noexcept
+inline void restorestate(statebuf const& ssb) noexcept
 {
 #if defined(i386) || defined(__i386) || defined(__i386__)
   asm volatile (
@@ -64,7 +61,6 @@ static void restorestate(statebuf const& ssb) noexcept
 #else
 # error ""
 #endif
-  for (;;);
 }
 
 #endif // SAVE_STATE_H
