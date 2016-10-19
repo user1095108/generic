@@ -8,7 +8,7 @@ struct statebuf
   void* label;
 };
 
-inline __attribute__((returns_twice)) bool savestate(statebuf& ssb) noexcept 
+inline bool savestate(statebuf& ssb) noexcept 
 {
   bool r;
 

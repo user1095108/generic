@@ -30,7 +30,7 @@ class coroutine
   char* const stack_top_;
 
 public:
-  explicit coroutine(::std::size_t const N = 128 * 1024) :
+  explicit coroutine(::std::size_t const N = 1024 * 1024) :
     running_{false},
     terminated_{true},
     stack_(new char[N]),
@@ -57,6 +57,23 @@ public:
 
     f_ = [this, f = ::std::forward<F>(f)]() mutable 
       {
+        // stack switch
+#if defined(i386) || defined(__i386) || defined(__i386__)
+        asm volatile(
+          "movl %0, %%esp"
+          :
+          : "m" (stack_top_)
+        );
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
+        asm volatile(
+          "movq %0, %%rsp"
+          :
+          : "m" (stack_top_)
+        );
+#else
+#error "can't switch stack frame"
+#endif
+
         f(*this);
 
         running_ = false;
@@ -67,7 +84,7 @@ public:
       };
   }
 
-  void yield() noexcept
+  void yield() noexcept __attribute__ ((noinline))
   {
 #if defined(i386) || defined(__i386) || defined(__i386__)
     asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
@@ -82,7 +99,7 @@ public:
     // else do nothing
   }
 
-  void resume() noexcept
+  void resume() noexcept __attribute__ ((noinline))
   {
 #if defined(i386) || defined(__i386) || defined(__i386__)
     asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
@@ -101,23 +118,6 @@ public:
     else
     {
       running_ = true;
-
-      // stack switch
-#if defined(i386) || defined(__i386) || defined(__i386__)
-      asm volatile(
-        "movl %0, %%esp"
-        :
-        : "m" (stack_top_)
-      );
-#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
-      asm volatile(
-        "movq %0, %%rsp"
-        :
-        : "m" (stack_top_)
-      );
-#else
-#error "can't switch stack frame"
-#endif
 
       f_();
     }
