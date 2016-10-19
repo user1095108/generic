@@ -10,15 +10,13 @@
 
 #include <memory>
 
-#include "savestate.hpp"
-
 namespace generic
 {
 
 class coroutine
 {
-  statebuf env_in_;
-  statebuf env_out_;
+  jmp_buf env_in_;
+  jmp_buf env_out_;
 
   ::std::function<void()> f_;
 
@@ -67,27 +65,24 @@ public:
       };
   }
 
-  void yield() noexcept
+  void yield() noexcept __attribute__((no_caller_saved_registers))
   {
-    if (savestate(env_out_))
+    if (!setjmp(env_out_))
     {
-      return;
+      longjmp(env_in_, 1);
     }
-    else
-    {
-      restorestate(env_in_);
-    }
+    // else do nothing
   }
 
-  void resume() noexcept
+  void resume() noexcept __attribute__((no_caller_saved_registers))
   {
-    if (savestate(env_in_))
+    if (setjmp(env_in_))
     {
       return;
     }
     else if (running_)
     {
-      restorestate(env_out_);
+      longjmp(env_out_, 1);
     }
     else
     {
