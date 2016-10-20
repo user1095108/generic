@@ -17,54 +17,67 @@ namespace generic
 
 class coroutine
 {
+public:
+  enum status
+  {
+    UNINITIALIZED,
+    INITIALIZED,
+    RUNNING,
+    TERMINATED
+  };
+
+private:
   statebuf env_in_;
   statebuf env_out_;
 
   ::std::function<void()> f_;
 
-  bool running_;
-  bool terminated_;
+  enum status status_{UNINITIALIZED};
+
+  ::std::size_t N_;
 
   ::std::unique_ptr<char[]> stack_;
 
-  char* const stack_top_;
+  enum : ::std::size_t { default_stack_size = 512 * 1024 };
 
 public:
-  explicit coroutine(::std::size_t const N = 512 * 1024) :
-    running_{false},
-    terminated_{true},
-    stack_(new char[N]),
-    stack_top_(stack_.get() + N)
+  explicit coroutine(::std::size_t const N = default_stack_size) :
+    N_(N)
   {
   }
 
   template <typename F>
-  explicit coroutine(::std::size_t const N, F&& f) :
+  explicit coroutine(F&& f, ::std::size_t const N) :
     coroutine(N)
   {
     assign(::std::forward<F>(f));
   }
 
-  auto terminated() const noexcept
+  auto status() const noexcept
   {
-    return terminated_;
+    return status_;
+  }
+
+  auto is_terminated() const noexcept
+  {
+    return TERMINATED == status_;
   }
 
   template <typename F>
   void assign(F&& f)
   {
-    running_ = terminated_ = false;
-
     f_ = [this, f = ::std::forward<F>(f)]()
       {
+        status_ = RUNNING;
+
         f(*this);
 
-        running_ = false;
-
-        terminated_ = true;
+        status_ = TERMINATED;
 
         yield();
       };
+
+    status_ = INITIALIZED;
   }
 
   void yield() noexcept __attribute__ ((noinline))
@@ -75,7 +88,15 @@ public:
     asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15");
 #endif
 
-    if (!savestate(env_out_))
+    if (savestate(env_out_))
+    {
+      if (is_terminated())
+      {
+        stack_.reset();
+      }
+      // else do nothing
+    }
+    else
     {
       restorestate(env_in_);
     }
@@ -94,26 +115,26 @@ public:
     {
       return;
     }
-    else if (running_)
+    else if (RUNNING == status_)
     {
       restorestate(env_out_);
     }
     else
     {
-      running_ = true;
+      stack_.reset(new char[N_]);
 
       // stack switch
 #if defined(i386) || defined(__i386) || defined(__i386__)
       asm volatile(
         "movl %0, %%esp"
         :
-        : "m" (stack_top_)
+        : "r" (stack_.get() + N_)
       );
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
       asm volatile(
         "movq %0, %%rsp"
         :
-        : "m" (stack_top_)
+        : "r" (stack_.get() + N_)
       );
 #else
 #error "can't switch stack frame"

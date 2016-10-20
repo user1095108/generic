@@ -28,7 +28,7 @@ int main()
     }
   );
 
-  while (!c.terminated())
+  while (!c.is_terminated())
   {
     ::std::cout << "resuming" << ::std::endl;
     c.resume();
