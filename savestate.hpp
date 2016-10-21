@@ -8,10 +8,15 @@ struct statebuf
   void* label;
 };
 
-inline __attribute__((always_inline)) bool savestate(statebuf& ssb) noexcept 
+#if defined(__GNUC__)
+inline __attribute__((always_inline)) bool savestate(statebuf& ssb) noexcept
+#elif defined(_MSC_VER)
+__forceinline bool savestate(statebuf& ssb) noexcept
+#endif
 {
   bool r;
 
+#if defined(__GNUC__)
 #if defined(i386) || defined(__i386) || defined(__i386__)
   asm volatile (
     "movl %%esp, %0\n\t" // store sp
@@ -23,6 +28,7 @@ inline __attribute__((always_inline)) bool savestate(statebuf& ssb) noexcept
     : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
     : "memory"
+	);
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
   asm volatile (
     "movq %%rsp, %0\n\t" // store sp
@@ -34,16 +40,23 @@ inline __attribute__((always_inline)) bool savestate(statebuf& ssb) noexcept
     : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
     : "memory"
+	);
 #else
 # error ""
 #endif
-  );
+#elif defined(_MSC_VER)
+#endif
 
   return r;
 }
 
+#if defined(__GNUC__)
 inline __attribute__((always_inline)) void restorestate(statebuf const& ssb) noexcept
+#elif defined(_MSC_VER)
+__forceinline void restorestate(statebuf const& ssb) noexcept
+#endif
 {
+#if defined(__GNUC__)
 #if defined(i386) || defined(__i386) || defined(__i386__)
   asm volatile (
     "movl %0, %%esp\n\t"
@@ -60,6 +73,8 @@ inline __attribute__((always_inline)) void restorestate(statebuf const& ssb) noe
   );
 #else
 # error ""
+#endif
+#elif defined(_MSC_VER)
 #endif
 }
 

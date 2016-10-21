@@ -82,12 +82,18 @@ public:
     status_ = INITIALIZED;
   }
 
+#if defined(__GNUC__)
   void yield() noexcept __attribute__ ((noinline))
+#elif defined(_MSC_VER)
+  __declspec(noinline) void yield() noexcept
+#endif
   {
+#if defined(__GNUC__)
 #if defined(i386) || defined(__i386) || defined(__i386__)
     asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
     asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15");
+#endif
 #endif
 
     if (savestate(env_out_))
@@ -105,12 +111,18 @@ public:
     // else do nothing
   }
 
+#if defined(__GNUC__)
   void resume() noexcept __attribute__ ((noinline))
+#elif defined(_MSC_VER)
+  __declspec(noinline) void resume() noexcept
+#endif
   {
+#if defined(__GNUC__)
 #if defined(i386) || defined(__i386) || defined(__i386__)
     asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
     asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15");
+#endif
 #endif
 
     if (savestate(env_in_))
@@ -125,6 +137,7 @@ public:
     {
       stack_.reset(new char[N_]);
 
+#if defined(__GNUC__)
       // stack switch
 #if defined(i386) || defined(__i386) || defined(__i386__)
       asm volatile(
@@ -140,6 +153,7 @@ public:
       );
 #else
 #error "can't switch stack frame"
+#endif
 #endif
 
       f_();
