@@ -36,7 +36,7 @@ private:
 
   enum status status_{UNINITIALIZED};
 
-  ::std::size_t N_;
+  ::std::size_t const N_;
 
   ::std::unique_ptr<char[]> stack_;
 
