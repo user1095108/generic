@@ -6,6 +6,8 @@
 
 #include <csetjmp>
 
+#include <cstdint>
+
 #include <functional>
 
 #include <memory>
@@ -18,7 +20,7 @@ namespace generic
 class coroutine
 {
 public:
-  enum status
+  enum status : ::std::uint8_t
   {
     UNINITIALIZED,
     INITIALIZED,
