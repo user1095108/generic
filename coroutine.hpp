@@ -22,7 +22,6 @@ class coroutine
 public:
   enum status : ::std::uint8_t
   {
-    UNINITIALIZED,
     INITIALIZED,
     RUNNING,
     TERMINATED
@@ -34,7 +33,7 @@ private:
 
   ::std::function<void()> f_;
 
-  enum status status_{UNINITIALIZED};
+  enum status status_{TERMINATED};
 
   ::std::size_t const N_;
 
