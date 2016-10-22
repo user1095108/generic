@@ -34,5 +34,7 @@ int main()
     c.resume();
   }
 
+  ::std::cin.ignore();
+
   return 0;
 }

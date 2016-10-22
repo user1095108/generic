@@ -155,11 +155,11 @@ public:
 #error "can't switch stack frame"
 #endif
 #elif defined(_MSC_VER)
-	  register auto const p(stack_.get() + N_);
+    register auto const p(stack_.get() + N_);
 
-	  _asm {
-		mov esp, p
-	  }
+    _asm {
+      mov esp, p
+    }
 #else
 #error "can't switch stack frame"
 #endif
