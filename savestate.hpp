@@ -59,7 +59,7 @@ inline __attribute__((always_inline)) bool savestate(statebuf& ssb) noexcept
     return r;
   }
 #else
-# error ""
+# error "unsupported compiler"
 #endif
 
 #if defined(__GNUC__)
@@ -80,7 +80,7 @@ inline __attribute__((always_inline)) bool savestate(statebuf& ssb) noexcept
     : "m" (SSB.sp), "m" (SSB.label)\
   );
 #else
-# error ""
+# error "unsupported architecture"
 #endif
 #elif defined(_MSC_VER)
 #define restorestate(SSB)          \
