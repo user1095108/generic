@@ -20,6 +20,8 @@ namespace generic
 class coroutine
 {
 public:
+  enum : ::std::size_t { default_stack_size = 512 * 1024 };
+
   enum status : ::std::uint8_t
   {
     INITIALIZED,
@@ -31,15 +33,13 @@ private:
   statebuf env_in_;
   statebuf env_out_;
 
-  ::std::function<void()> f_;
-
   enum status status_{TERMINATED};
-
-  ::std::size_t const N_;
 
   ::std::unique_ptr<char[]> stack_;
 
-  enum : ::std::size_t { default_stack_size = 512 * 1024 };
+  ::std::size_t const N_;
+
+  ::std::function<void()> f_;
 
 public:
   explicit coroutine(::std::size_t const N = default_stack_size) :
