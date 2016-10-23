@@ -9,7 +9,7 @@ struct statebuf
 };
 
 #if defined(__GNUC__)
-inline bool savestate(statebuf& ssb) noexcept
+inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
 {
 	bool r;
 
@@ -71,7 +71,7 @@ __forceinline bool savestate(statebuf& ssb) noexcept
     "movl %0, %%esp\n\t"           \
     "jmp *%1"                      \
     :                              \
-    : "m" (ssb.sp), "m" (ssb.label)\
+    : "m" (SSB.sp), "m" (SSB.label)\
   );
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
 #define restorestate(SSB)          \
