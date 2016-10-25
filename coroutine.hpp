@@ -107,7 +107,6 @@ public:
     {
       restorestate(env_in_);
     }
-    // else do nothing
   }
 
 #if defined(__GNUC__)
@@ -116,6 +115,8 @@ public:
   __declspec(noinline) void resume() noexcept
 #endif
   {
+	assert(TERMINATED != status());
+
 #if defined(__GNUC__)
 #if defined(i386) || defined(__i386) || defined(__i386__)
     asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
@@ -154,15 +155,12 @@ public:
 #error "can't switch stack frame"
 #endif
 #elif defined(_MSC_VER)
-    register auto const p(stack_.get() + N_);
+    auto const p(stack_.get() + N_);
 
-    _asm {
-      mov esp, p
-    }
+    _asm mov esp, p
 #else
 #error "can't switch stack frame"
 #endif
-
       f_();
     }
   }
