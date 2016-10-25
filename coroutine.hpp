@@ -115,7 +115,7 @@ public:
   __declspec(noinline) void resume() noexcept
 #endif
   {
-	assert(TERMINATED != status());
+    assert(TERMINATED != status());
 
 #if defined(__GNUC__)
 #if defined(i386) || defined(__i386) || defined(__i386__)
@@ -129,7 +129,7 @@ public:
     {
       return;
     }
-    else if (RUNNING == status_)
+    else if (RUNNING == status())
     {
       restorestate(env_out_);
     }
