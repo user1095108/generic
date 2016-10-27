@@ -35,9 +35,9 @@ private:
 
   enum status status_{TERMINATED};
 
-  ::std::unique_ptr<char[]> stack_;
-
   ::std::size_t const N_;
+
+  ::std::unique_ptr<char[]> stack_;
 
   ::std::function<void()> f_;
 
@@ -53,6 +53,10 @@ public:
   {
     assign(::std::forward<F>(f));
   }
+
+  coroutine(coroutine&&) = default;
+
+  coroutine& operator=(coroutine&&) = default;
 
   auto status() const noexcept
   {
