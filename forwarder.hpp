@@ -119,7 +119,12 @@ public:
   explicit operator bool() const noexcept { return stub_; }
 
   R operator()(A... args) const
-    noexcept(noexcept(stub_(&store_, ::std::forward<A>(args)...)))
+    noexcept(
+        noexcept(stub_(const_cast<void*>(static_cast<void const*>(&store_)),
+          ::std::forward<A>(args)...
+        )
+      )
+    )
   {
     //assert(stub_);
     return stub_(const_cast<void*>(static_cast<void const*>(&store_)),
