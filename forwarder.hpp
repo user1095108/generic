@@ -18,34 +18,6 @@
 namespace generic
 {
 
-namespace detail
-{
-
-namespace forwarder
-{
-
-template <typename ...A>
-struct argument_types
-{
-};
-
-template <typename A>
-struct argument_types<A>
-{
-  using argument_type = A;
-};
-
-template <typename A, typename B>
-struct argument_types<A, B>
-{
-  using first_argument_type = A;
-  using second_argument_type = B;
-};
-
-}
-
-}
-
 constexpr auto const default_forwarder_noexcept =
 #if __cpp_exceptions
 false;
@@ -62,7 +34,7 @@ template <typename F,
 class forwarder;
 
 template <typename R, typename ...A, ::std::size_t N, bool NE>
-class forwarder<R (A...), N, NE> : public detail::forwarder::argument_types<A...>
+class forwarder<R (A...), N, NE>
 {
   R (*stub_)(void*, A&&...) noexcept(NE) {};
 
@@ -85,7 +57,7 @@ class forwarder<R (A...), N, NE> : public detail::forwarder::argument_types<A...
 public:
   using result_type = R;
 
-  static constexpr auto const size = N;
+  enum : ::std::size_t { size = N };
 
 public:
   forwarder() = default;
