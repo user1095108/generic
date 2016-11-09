@@ -44,7 +44,7 @@ inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
 #elif defined(_MSC_VER)
 __forceinline bool savestate(statebuf& ssb) noexcept
 {
-	register bool r;
+	bool r;
 
 	__asm {
 		push ebp
