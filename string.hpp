@@ -1,5 +1,6 @@
-#ifndef STRING_HPP
-# define STRING_HPP
+#ifndef GENERIC_STRING_HPP
+# define GENERIC_STRING_HPP
+# pragma once
 
 #include <cstring>
 
@@ -180,4 +181,4 @@ trim(::std::basic_string<CharT, Traits, Allocator>& s,
 
 }
 
-#endif // STRING_HPP
+#endif // GENERIC_STRING_HPP
