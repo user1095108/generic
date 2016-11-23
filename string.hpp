@@ -37,11 +37,11 @@ inline typename C::value_type join(C const& container,
 {
   if (container.size())
   {
-    typename C::value_type r(container.front());
+    typename C::value_type r(*container.begin());
 
     auto const end(container.end());
 
-    for (typename C::const_iterator i(container.begin() + 1); i != end; ++i)
+    for (auto i(::std::next(container.begin())); i != end; ++i)
     {
       r += sep + *i;
     }
