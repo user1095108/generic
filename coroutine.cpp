@@ -6,22 +6,22 @@ struct A
 {
   ~A()
   {
-    ::std::cout << "destroyed" << ::std::endl;
+    std::cout << "destroyed" << std::endl;
   }
 };
 
 
 int main()
 {
-  ::generic::coroutine c(1024 * 1024);
+  gnr::coroutine<> c(1024 * 1024);
 
-  c.assign([](::generic::coroutine& c)
+  c.assign([](gnr::coroutine<>& c)
     {
       A a;
 
       for (int i{}; i != 3; ++i)
       {
-        ::std::cout << i << ::std::endl;
+        std::cout << i << std::endl;
 
         c.yield();
       }
@@ -30,11 +30,11 @@ int main()
 
   while (!c.is_terminated())
   {
-    ::std::cout << "resuming" << ::std::endl;
+    std::cout << "resuming" << std::endl;
     c.resume();
   }
 
-  ::std::cin.ignore();
+  std::cin.ignore();
 
   return 0;
 }

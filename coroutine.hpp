@@ -1,5 +1,5 @@
-#ifndef GENERIC_COROUTINE_HPP
-# define GENERIC_COROUTINE_HPP
+#ifndef GNR_COROUTINE_HPP
+# define GNR_COROUTINE_HPP
 # pragma once
 
 #include <cassert>
@@ -14,15 +14,16 @@
 
 #include "savestate.hpp"
 
-namespace generic
+namespace gnr
 {
 
+template <template <typename> class Function = std::function>
 class coroutine
 {
 public:
-  enum : ::std::size_t { default_stack_size = 512 * 1024 };
+  enum : std::size_t { default_stack_size = 512 * 1024 };
 
-  enum status : ::std::uint8_t
+  enum status : std::uint8_t
   {
     INITIALIZED,
     RUNNING,
@@ -35,23 +36,23 @@ private:
 
   enum status status_{TERMINATED};
 
-  ::std::size_t const N_;
+  std::size_t const N_;
 
-  ::std::unique_ptr<char[]> stack_;
+  std::unique_ptr<char[]> stack_;
 
-  ::std::function<void()> f_;
+  Function<void()> f_;
 
 public:
-  explicit coroutine(::std::size_t const N = default_stack_size) :
+  explicit coroutine(std::size_t const N = default_stack_size) :
     N_(N)
   {
   }
 
   template <typename F>
-  explicit coroutine(F&& f, ::std::size_t const N) :
+  explicit coroutine(F&& f, std::size_t const N) :
     coroutine(N)
   {
-    assign(::std::forward<F>(f));
+    assign(std::forward<F>(f));
   }
 
   coroutine(coroutine&&) = default;
@@ -71,7 +72,7 @@ public:
   template <typename F>
   void assign(F&& f)
   {
-    f_ = [this, f = ::std::forward<F>(f)]()
+    f_ = [this, f = std::forward<F>(f)]()
       {
         status_ = RUNNING;
 
@@ -172,4 +173,4 @@ public:
 
 }
 
-#endif // GENERIC_COROUTINE_HPP
+#endif // GNR_COROUTINE_HPP
