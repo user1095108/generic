@@ -1,5 +1,5 @@
-#ifndef GENERIC_MANY_HPP
-# define GENERIC_MANY_HPP
+#ifndef GNR_MANY_HPP
+# define GNR_MANY_HPP
 # pragma once
 
 #include <cstddef>
@@ -10,7 +10,7 @@
 
 #include <utility>
 
-namespace generic
+namespace gnr
 {
 
 namespace detail
@@ -23,9 +23,9 @@ enum TupleValue { Scalar, Reference, Class };
 
 template<std::size_t I,
   class T,
-  TupleValue = ::std::is_class<T>{} ?
+  TupleValue = std::is_class<T>{} ?
     TupleValue::Class :
-    ::std::is_reference<T>{} ?
+    std::is_reference<T>{} ?
       TupleValue::Reference :
       TupleValue::Scalar
 >
@@ -36,7 +36,7 @@ struct tuple_base
   tuple_base() = default;
 
   template <typename A>
-  constexpr tuple_base(A&& value) : value{::std::forward<A>(value)}
+  constexpr tuple_base(A&& value) : value{std::forward<A>(value)}
   {
   }
 };
@@ -44,7 +44,7 @@ struct tuple_base
 template<std::size_t I, class T>
 struct tuple_base<I, T, TupleValue::Reference>
 {
-  ::std::add_pointer_t<::std::remove_reference_t<T>> value;
+  std::add_pointer_t<std::remove_reference_t<T>> value;
 
   tuple_base() = delete;
 
@@ -64,36 +64,36 @@ struct tuple_base<I, T, TupleValue::Class> : T
   tuple_base() = default;
 
   template <typename A>
-  constexpr tuple_base(A&& value) : T{::std::forward<A>(value)}
+  constexpr tuple_base(A&& value) : T{std::forward<A>(value)}
   {
   }
 };
 
-template <::std::size_t I, class T>
+template <std::size_t I, class T>
 auto& get(tuple_base<I, T, TupleValue::Scalar>& obj)
 {
   return obj.value;
 }
 
-template <::std::size_t I, class T>
+template <std::size_t I, class T>
 auto& get(tuple_base<I, T, TupleValue::Scalar> const& obj)
 {
   return obj.value;
 }
 
-template <::std::size_t I, class T>
+template <std::size_t I, class T>
 auto& get(tuple_base<I, T, TupleValue::Reference> const& obj)
 {
   return *obj.value;
 }
 
-template <::std::size_t I, class T>
+template <std::size_t I, class T>
 auto get(tuple_base<I, T, TupleValue::Class>& obj) -> T&
 {
   return obj;
 }
 
-template <::std::size_t I, class T>
+template <std::size_t I, class T>
 auto get(tuple_base<I, T, TupleValue::Class> const& obj) -> T const&
 {
   return obj;
@@ -102,8 +102,8 @@ auto get(tuple_base<I, T, TupleValue::Class> const& obj) -> T const&
 template <typename ...>
 struct many_impl;
 
-template <::std::size_t... Is, typename ...Types>
-struct many_impl<::std::index_sequence<Is...>, Types...> :
+template <std::size_t... Is, typename ...Types>
+struct many_impl<std::index_sequence<Is...>, Types...> :
   tuple_base<Is, Types>...
 {
   many_impl() = default;
@@ -116,7 +116,7 @@ struct many_impl<::std::index_sequence<Is...>, Types...> :
 #if !__cpp_aggregate_bases
   template<typename ...U>
   constexpr many_impl(U&& ...u) :
-    tuple_base<Is, Types>{::std::forward<U>(u)}...
+    tuple_base<Is, Types>{std::forward<U>(u)}...
   {
   }
 #endif
@@ -128,7 +128,7 @@ struct many_impl<::std::index_sequence<Is...>, Types...> :
 
 template <typename ...Types>
 struct many : detail::many::many_impl<
-  ::std::make_index_sequence<sizeof...(Types)>,
+  std::make_index_sequence<sizeof...(Types)>,
   Types...
 >
 {
@@ -141,7 +141,7 @@ struct many : detail::many::many_impl<
 
 #if !__cpp_aggregate_bases
   template<class... U>
-  constexpr many(U&& ...u) : many::many_impl{::std::forward<U>(u)...}
+  constexpr many(U&& ...u) : many::many_impl{std::forward<U>(u)...}
   {
   }
 #endif
@@ -153,37 +153,37 @@ namespace std
 {
 
 template <typename ...Types>
-class tuple_size<::generic::many<Types...>> :
-  public ::std::integral_constant<size_t, sizeof...(Types)>
+class tuple_size<gnr::many<Types...>> :
+  public std::integral_constant<size_t, sizeof...(Types)>
 {
 };
 
 template <size_t I, class ...Types>
-class tuple_element<I, ::generic::many<Types...>>
+class tuple_element<I, gnr::many<Types...>>
 {
 public:
   using type = tuple_element_t<I, tuple<Types...>>;
 };
 
 template <size_t I, typename ...Types> 
-auto& get(::generic::many<Types...>& m) noexcept
+auto& get(gnr::many<Types...>& m) noexcept
 {
-  return ::generic::detail::many::get<I>(m);
+  return gnr::detail::many::get<I>(m);
 }
 
 template <size_t I, typename ...Types> 
-auto& get(::generic::many<Types...> const& m) noexcept
+auto& get(gnr::many<Types...> const& m) noexcept
 {
-  return ::generic::detail::many::get<I>(m);
+  return gnr::detail::many::get<I>(m);
 }
 
 template<size_t I, typename ...Types> 
-auto& get(::generic::many<Types...>&& m) noexcept
+auto& get(gnr::many<Types...>&& m) noexcept
 {
   // m is now a lvalue
-  return ::generic::detail::many::get<I>(m);
+  return gnr::detail::many::get<I>(m);
 }
 
 }
 
-#endif // GENERIC_MANY_HPP
+#endif // GNR_MANY_HPP

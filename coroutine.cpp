@@ -15,7 +15,7 @@ int main()
 {
   gnr::coroutine<> c(1024 * 1024);
 
-  c.assign([](gnr::coroutine<>& c)
+  c.assign([](auto& c)
     {
       A a;
 

@@ -1,5 +1,5 @@
-#ifndef GENERIC_ALLOCA_HPP
-# define GENERIC_ALLOCA_HPP
+#ifndef GNR_ALLOCA_HPP
+# define GNR_ALLOCA_HPP
 # pragma once
 
 #include <cstddef>
@@ -10,7 +10,7 @@
 # include <malloc.h>
 #endif //
 
-namespace generic
+namespace gnr
 {
 
 template <typename T = char, typename F>
@@ -30,4 +30,4 @@ constexpr inline void salloc(::std::size_t const N, F&& f) noexcept(
 
 }
 
-#endif // GENERIC_ALLOCA_HPP
+#endif // GNR_ALLOCA_HPP
