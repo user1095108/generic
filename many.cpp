@@ -4,9 +4,9 @@
 
 int main()
 {
-  auto t(::generic::make_many(1, 2, 3));
+  auto t(gnr::many<int, int, int>(1, 2, 3));
 
-  ::std::cout << ::std::get<2>(t) << ::std::endl;
+  std::cout << std::get<2>(t) << std::endl;
 
   return 0;
 }
