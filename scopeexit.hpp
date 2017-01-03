@@ -1,5 +1,5 @@
-#ifndef GENERIC_SCOPEEXIT_HPP
-# define GENERIC_SCOPEEXIT_HPP
+#ifndef GNR_SCOPEEXIT_HPP
+# define GNR_SCOPEEXIT_HPP
 # pragma once
 
 #include <utility>
@@ -43,7 +43,7 @@
 #define LAST_9(x1, x2, x3, x4, x5, x6, x7, x8, x9) x9
 #define LAST_10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) x10
 
-namespace detail
+namespace
 {
 
 template <typename T>
@@ -52,7 +52,7 @@ class scope_exit
   T f_;
 
 public:
-  explicit scope_exit(T&& f) noexcept : f_(::std::forward<T>(f))
+  explicit scope_exit(T&& f) noexcept : f_(std::forward<T>(f))
   {
     static_assert(noexcept(f_()), "throwing functors are unsupported");
   }
@@ -65,23 +65,23 @@ class scope_exit_helper { };
 template<typename T>
 inline scope_exit<T> make_scope_exit(T&& f) noexcept
 {
-  return scope_exit<T>(::std::forward<T>(f));
+  return scope_exit<T>(std::forward<T>(f));
 }
 
 template<typename T>
 inline scope_exit<T> operator+(scope_exit_helper&&, T&& f) noexcept
 {
-  return scope_exit<T>(::std::forward<T>(f));
+  return scope_exit<T>(std::forward<T>(f));
 }
 
 }
 
-#define SCOPE_EXIT(...) auto const CAT(scope_exit_, __LINE__)     \
-  (::detail::make_scope_exit([POP_LAST(__VA_ARGS__)]() noexcept   \
+#define SCOPE_EXIT(...) auto const CAT(scope_exit_, __LINE__)    \
+  (make_scope_exit([POP_LAST(__VA_ARGS__)]() noexcept   \
     { LAST(__VA_ARGS__); }))
-#define SCOPE_EXIT_ auto const CAT(scope_exit_, __LINE__) =       \
-  ::detail::scope_exit_helper()+[&]() noexcept
-#define SCOPE_EXIT__(...) auto const CAT(scope_exit_, __LINE__) = \
-  ::detail::scope_exit_helper()+[__VA_ARGS__]() noexcept
+#define SCOPE_EXIT_ auto const CAT(scope_exit_, __LINE__) =      \
+  scope_exit_helper()+[&]() noexcept
+#define SCOPE_EXIT__(...) auto const CAT(scope_exit_, __LINE__) =\
+  scope_exit_helper()+[__VA_ARGS__]() noexcept
 
-#endif // GENERIC_SCOPEEXIT_HPP
+#endif // GNR_SCOPEEXIT_HPP

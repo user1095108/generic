@@ -1,10 +1,10 @@
-#ifndef GENERIC_CIFY_HPP
-# define GENERIC_CIFY_HPP
+#ifndef GNR_CIFY_HPP
+# define GNR_CIFY_HPP
 # pragma once
 
 #include <utility>
 
-namespace generic
+namespace gnr
 {
 
 namespace
@@ -80,4 +80,4 @@ inline F thread_local_cify(L&& l)
 
 }
 
-#endif // GENERIC_CIFY_HPP
+#endif // GNR_CIFY_HPP

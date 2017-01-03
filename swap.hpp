@@ -1,5 +1,6 @@
-#ifndef GENERIC_SWAP_HPP
-# define GENERIC_SWAP_HPP
+#ifndef GNR_SWAP_HPP
+# define GNR_SWAP_HPP
+# pragma once
 
 #include <cstdint>
 
@@ -9,7 +10,7 @@
 # include <stdlib.h>
 #endif // _MSC_VER
 
-namespace generic
+namespace gnr
 {
 
 #if defined(__GNUC__)
@@ -195,4 +196,4 @@ swap_if_le(T const i) noexcept
 
 }
 
-#endif // GENERIC_SWAP_HPP
+#endif // GNR_SWAP_HPP
