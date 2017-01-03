@@ -8,6 +8,8 @@
 
 #include <cstdint>
 
+#include <iostream>
+
 #include <functional>
 
 #include <memory>
@@ -44,7 +46,8 @@ private:
 
 public:
   explicit coroutine(std::size_t const N = default_stack_size) :
-    N_(N)
+    N_(N),
+    stack_(new char[N])
   {
   }
 
@@ -100,15 +103,7 @@ public:
 #endif
 #endif
 
-    if (savestate(env_out_))
-    {
-      if (is_terminated())
-      {
-        stack_.reset();
-      }
-      // else do nothing
-    }
-    else
+    if (!savestate(env_out_))
     {
       restorestate(env_in_);
     }
@@ -120,8 +115,6 @@ public:
   __declspec(noinline) void resume() noexcept
 #endif
   {
-    assert(TERMINATED != status());
-
 #if defined(__GNUC__)
 #if defined(i386) || defined(__i386) || defined(__i386__)
     asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
@@ -130,6 +123,7 @@ public:
 #endif
 #endif
 
+    assert(TERMINATED != status());
     if (savestate(env_in_))
     {
       return;
@@ -140,8 +134,6 @@ public:
     }
     else
     {
-      stack_.reset(new char[N_]);
-
 #if defined(__GNUC__)
       // stack switch
 #if defined(i386) || defined(__i386) || defined(__i386__)
