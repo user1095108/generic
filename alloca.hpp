@@ -4,9 +4,9 @@
 
 #include <cstddef>
 
-#if defined(__GNUC__)
+#if defined(__linux__)
 # include <alloca.h>
-#elif defined(_MSC_VER)
+#elif defined(_WIN32)
 # include <malloc.h>
 #endif //
 
@@ -14,16 +14,16 @@ namespace gnr
 {
 
 template <typename T = char, typename F>
-constexpr inline void salloc(::std::size_t const N, F&& f) noexcept(
+constexpr inline void salloc(std::size_t const N, F&& f) noexcept(
   noexcept(f(nullptr))
 )
 {
-#if defined(__GNUC__)
+#if defined(__linux__)
   f(static_cast<T*>(alloca(N * sizeof(T))));
-#elif defined(_MSC_VER)
+#elif defined(_WIN32)
   f(static_cast<T*>(_alloca(N * sizeof(T))));
 #else
-  alignas(::std::max_align_t) char p[N * sizeof(T)];
+  alignas(std::max_align_t) char p[N * sizeof(T)];
   f(reinterpret_cast<T*>(p));
 #endif //
 }
