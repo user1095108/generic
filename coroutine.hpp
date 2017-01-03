@@ -52,7 +52,7 @@ public:
   }
 
   template <typename F>
-  explicit coroutine(F&& f, std::size_t const N) :
+  explicit coroutine(F&& f, std::size_t const N = default_stack_size) :
     coroutine(N)
   {
     assign(std::forward<F>(f));
