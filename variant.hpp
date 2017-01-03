@@ -1,5 +1,5 @@
-#ifndef GENERIC_VARIANT_HPP
-# define GENERIC_VARIANT_HPP
+#ifndef GNR_VARIANT_HPP
+# define GNR_VARIANT_HPP
 # pragma once
 
 #include <cassert>
@@ -14,7 +14,7 @@
 
 #include <utility>
 
-namespace generic
+namespace gnr
 {
 
 namespace detail
@@ -24,14 +24,14 @@ namespace variant
 {
 
 template <typename T>
-using remove_cvr = ::std::remove_cv<
-  typename ::std::remove_reference<T>::type
+using remove_cvr = std::remove_cv<
+  typename std::remove_reference<T>::type
 >;
 
 template <typename A, typename ...B>
 struct max_align_type
 {
-  using type = typename ::std::conditional<
+  using type = typename std::conditional<
     (alignof(A) > alignof(typename max_align_type<B...>::type)),
     A,
     typename max_align_type<B...>::type
@@ -41,7 +41,7 @@ struct max_align_type
 template <typename A, typename B>
 struct max_align_type<A, B>
 {
-  using type = typename ::std::conditional<
+  using type = typename std::conditional<
     (alignof(A) > alignof(B)), A, B
   >::type;
 };
@@ -55,7 +55,7 @@ struct max_align_type<A>
 template <typename A, typename ...B>
 struct max_size_type
 {
-  using type = typename ::std::conditional<
+  using type = typename std::conditional<
     (sizeof(A) > sizeof(typename max_size_type<B...>::type)),
     A,
     typename max_size_type<B...>::type
@@ -65,7 +65,7 @@ struct max_size_type
 template <typename A, typename B>
 struct max_size_type<A, B>
 {
-  using type = typename ::std::conditional<
+  using type = typename std::conditional<
     (sizeof(A) > sizeof(B)), A, B>::type;
 };
 
@@ -77,8 +77,8 @@ struct max_size_type<A>
 
 template <typename A, typename B, typename ...C>
 struct index_of :
-  ::std::integral_constant<int,
-    ::std::is_same<A, B>{} ?
+  std::integral_constant<int,
+    std::is_same<A, B>{} ?
     0 :
     -1 == index_of<A, C...>{} ? -1 : 1 + index_of<A, C...>{}
   >
@@ -87,13 +87,13 @@ struct index_of :
 
 template <typename A, typename B>
 struct index_of<A, B> :
-  ::std::integral_constant<int, ::std::is_same<A, B>{} - 1>
+  std::integral_constant<int, std::is_same<A, B>{} - 1>
 {
 };
 
 template <typename A, typename ...B>
 struct has_duplicates :
-  ::std::integral_constant<bool,
+  std::integral_constant<bool,
     -1 == index_of<A, B...>{} ? has_duplicates<B...>{} : true
   >
 {
@@ -101,14 +101,14 @@ struct has_duplicates :
 
 template <typename A>
 struct has_duplicates<A> :
-  ::std::integral_constant<bool, false>
+  std::integral_constant<bool, false>
 {
 };
 
 template <typename A, typename B, typename ...C>
 struct compatible_index_of :
-  ::std::integral_constant<int,
-    ::std::is_constructible<A, B>{} ?
+  std::integral_constant<int,
+    std::is_constructible<A, B>{} ?
       0 :
       -1 == compatible_index_of<A, C...>{} ?
         -1 :
@@ -119,15 +119,15 @@ struct compatible_index_of :
 
 template <typename A, typename B>
 struct compatible_index_of<A, B> :
-  ::std::integral_constant<int, ::std::is_constructible<A, B>{} - 1>
+  std::integral_constant<int, std::is_constructible<A, B>{} - 1>
 {
 };
 
 template <typename A, typename B, typename ...C>
 struct compatible_type
 {
-  using type = typename ::std::conditional<
-    ::std::is_constructible<A, B>{},
+  using type = typename std::conditional<
+    std::is_constructible<A, B>{},
     B,
     typename compatible_type<A, C...>::type
   >::type;
@@ -136,43 +136,43 @@ struct compatible_type
 template <typename A, typename B>
 struct compatible_type<A, B>
 {
-  using type = typename ::std::conditional<
-    ::std::is_constructible<A, B>{}, B, void>::type;
+  using type = typename std::conditional<
+    std::is_constructible<A, B>{}, B, void>::type;
 };
 
 template <template <typename> class, typename, typename = void>
-struct is_comparable : ::std::false_type { };
+struct is_comparable : std::false_type { };
 
 template <template <typename> class R, typename U>
 struct is_comparable<R,
   U,
-  decltype(void(::std::declval<R<U> const&>()(
-    ::std::declval<U const&>(), ::std::declval<U const&>())))
-> : ::std::true_type
+  decltype(void(std::declval<R<U> const&>()(
+    std::declval<U const&>(), std::declval<U const&>())))
+> : std::true_type
 {
 };
 
-template <typename, typename = ::std::size_t>
-struct is_hashable : ::std::false_type { };
+template <typename, typename = std::size_t>
+struct is_hashable : std::false_type { };
 
 template <typename U>
 struct is_hashable<U,
-  decltype(::std::hash<U>()(::std::declval<U>()))
-> : ::std::true_type
+  decltype(std::hash<U>()(std::declval<U>()))
+> : std::true_type
 {
 };
 
 template <class, class, typename = void>
-struct is_streamable : ::std::false_type { };
+struct is_streamable : std::false_type { };
 
 template <class S, class C>
 struct is_streamable<S, C,
-  decltype(void(::std::declval<S&>() << ::std::declval<C const&>()))
-> : ::std::true_type
+  decltype(void(std::declval<S&>() << std::declval<C const&>()))
+> : std::true_type
 {
 };
 
-template < ::std::size_t I, typename A, typename ...B>
+template < std::size_t I, typename A, typename ...B>
 struct type_at : type_at<I - 1, B...>
 {
 };
@@ -184,7 +184,7 @@ struct type_at<0, A, B...>
 };
 
 template <bool B>
-using bool_constant = ::std::integral_constant<bool, B>;
+using bool_constant = std::integral_constant<bool, B>;
 
 template <class A, class ...B>
 struct all_of : bool_constant<A{} && all_of<B...>{}>
@@ -206,8 +206,8 @@ struct any_of<A> : bool_constant<A{}>
 {
 };
 
-template <typename T, typename = ::std::size_t>
-struct is_vector : ::std::false_type
+template <typename T, typename = std::size_t>
+struct is_vector : std::false_type
 {
 };
 
@@ -222,12 +222,12 @@ struct is_vector<T,
     sizeof((void(T::*)(typename T::value_type&&))(&T::push_back)) |
     sizeof(&T::shrink_to_fit)
   )
-> : ::std::true_type
+> : std::true_type
 {
 };
 
-template <typename T, typename = ::std::size_t>
-struct is_list : ::std::false_type
+template <typename T, typename = std::size_t>
+struct is_list : std::false_type
 {
 };
 
@@ -238,12 +238,12 @@ struct is_list<T,
     sizeof((void(T::*)(typename T::value_type&&))(&T::push_front)) |
     sizeof(&T::pop_front)
   )
-> : ::std::true_type
+> : std::true_type
 {
 };
 
-template <typename T, typename = ::std::size_t>
-struct is_map : ::std::false_type
+template <typename T, typename = std::size_t>
+struct is_map : std::false_type
 {
 };
 
@@ -254,77 +254,77 @@ struct is_map<T,
     sizeof(typename T::mapped_type) |
     sizeof(typename T::value_type)
   )
-> : ::std::true_type
+> : std::true_type
 {
 };
 
 template <typename T, typename = void>
-struct is_copy_assignable : ::std::is_copy_assignable<T>
+struct is_copy_assignable : std::is_copy_assignable<T>
 {
 };
 
 template <typename T>
 struct is_copy_assignable<T,
-  typename ::std::enable_if<is_vector<T>{}>::type
+  std::enable_if_t<is_vector<T>{}>
 > : is_copy_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_assignable<T,
-  typename ::std::enable_if<is_list<T>{}>::type
+  std::enable_if_t<is_list<T>{}>
 > : is_copy_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_assignable<T,
-  typename ::std::enable_if<is_map<T>{}>::type
+  std::enable_if_t<is_map<T>{}>
 > : is_copy_assignable<typename T::mapped_type>
 {
 };
 
 template <typename T, typename = void>
-struct is_copy_constructible : ::std::is_copy_constructible<T>
+struct is_copy_constructible : std::is_copy_constructible<T>
 {
 };
 
 template <typename T>
 struct is_copy_constructible<T,
-  typename ::std::enable_if<is_vector<T>{}>::type
+  std::enable_if_t<is_vector<T>{}>
 > : is_copy_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_constructible<T,
-  typename ::std::enable_if<is_list<T>{}>::type
+  std::enable_if_t<is_list<T>{}>
 > : is_copy_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_copy_constructible<T,
-  typename ::std::enable_if<is_map<T>{}>::type
+  std::enable_if_t<is_map<T>{}>
 > : is_copy_constructible<typename T::mapped_type>
 {
 };
 
 template <typename T, typename = void>
-struct is_move_assignable : ::std::is_move_assignable<T>
+struct is_move_assignable : std::is_move_assignable<T>
 {
 };
 
 template <typename T>
 struct is_move_assignable<T,
-  typename ::std::enable_if<is_vector<T>{}>::type
+  std::enable_if_t<is_vector<T>{}>
 > : is_move_assignable<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_move_assignable<T,
-  typename ::std::enable_if<is_list<T>{}>::type
+  std::enable_if_t<is_list<T>{}>
 > : is_move_assignable<typename T::value_type>
 {
 };
@@ -332,33 +332,33 @@ struct is_move_assignable<T,
 
 template <typename T>
 struct is_move_assignable<T,
-  typename ::std::enable_if<is_map<T>{}>::type
+  std::enable_if_t<is_map<T>{}>
 > : is_move_assignable<typename T::mapped_type>
 {
 };
 
 template <typename T, typename = void>
-struct is_move_constructible : ::std::is_move_constructible<T>
+struct is_move_constructible : std::is_move_constructible<T>
 {
 };
 
 template <typename T>
 struct is_move_constructible<T,
-  typename ::std::enable_if<is_vector<T>{}>::type
+  std::enable_if_t<is_vector<T>{}>
 > : is_move_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_move_constructible<T,
-  typename ::std::enable_if<is_list<T>{}>::type
+  std::enable_if_t<is_list<T>{}>
 > : is_move_constructible<typename T::value_type>
 {
 };
 
 template <typename T>
 struct is_move_constructible<T,
-  typename ::std::enable_if<is_map<T>{}>::type
+  std::enable_if_t<is_map<T>{}>
 > : is_move_constructible<typename T::mapped_type>
 {
 };
@@ -374,10 +374,10 @@ using copier_type = void (*)(bool, deleter_type, void*, void const*);
 using mover_type = void (*)(bool, deleter_type, void*, void*);
 
 template <typename U>
-typename ::std::enable_if<
+std::enable_if_t<
   detail::variant::is_copy_constructible<U>{} &&
   !detail::variant::is_copy_assignable<U>{}
->::type
+>
 copier_stub(bool const, deleter_type const deleter,
   void* const dst_store, void const* const src_store)
 {
@@ -387,10 +387,10 @@ copier_stub(bool const, deleter_type const deleter,
 }
 
 template <typename U>
-typename ::std::enable_if<
+std::enable_if_t<
   detail::variant::is_copy_constructible<U>{} &&
   detail::variant::is_copy_assignable<U>{}
->::type
+>
 copier_stub(bool const same_type, deleter_type const deleter,
   void* const dst_store, void const* const src_store)
 {
@@ -408,84 +408,88 @@ copier_stub(bool const same_type, deleter_type const deleter,
 }
 
 template <typename U>
-typename ::std::enable_if<
+std::enable_if_t<
   detail::variant::is_move_constructible<U>{} &&
   !detail::variant::is_move_assignable<U>{}
->::type
+>
 mover_stub(bool const, deleter_type const deleter,
   void* const dst_store, void* const src_store)
 {
   deleter(dst_store);
 
-  new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
+  new (dst_store) U(std::move(*reinterpret_cast<U*>(src_store)));
 }
 
 template <typename U>
-typename ::std::enable_if<
+std::enable_if_t<
   detail::variant::is_move_constructible<U>{} &&
   detail::variant::is_move_assignable<U>{}
->::type
+>
 mover_stub(bool const same_type, deleter_type const deleter,
   void* const dst_store, void* const src_store)
 {
   if (same_type)
   {
     *reinterpret_cast<U*>(dst_store) =
-      ::std::move(*reinterpret_cast<U*>(src_store));
+      std::move(*reinterpret_cast<U*>(src_store));
   }
   else
   {
     deleter(dst_store);
 
-    new (dst_store) U(::std::move(*reinterpret_cast<U*>(src_store)));
+    new (dst_store) U(std::move(*reinterpret_cast<U*>(src_store)));
   }
 }
 
 template <class U>
-typename ::std::enable_if<
-  !detail::variant::is_copy_constructible<U>{}, copier_type
->::type
+std::enable_if_t<
+  !detail::variant::is_copy_constructible<U>{},
+  copier_type
+>
 inline get_copier() noexcept
 {
   return nullptr;
 }
 
 template <class U>
-typename ::std::enable_if<
-  detail::variant::is_copy_constructible<U>{}, copier_type
->::type
+std::enable_if_t<
+  detail::variant::is_copy_constructible<U>{},
+  copier_type
+>
 inline get_copier() noexcept
 {
   return copier_stub<U>;
 }
 
 template <class U>
-typename ::std::enable_if<
-  !detail::variant::is_move_constructible<U>{}, mover_type
->::type
+std::enable_if_t<
+  !detail::variant::is_move_constructible<U>{},
+  mover_type
+>
 inline get_mover() noexcept
 {
   return nullptr;
 }
 
 template <class U>
-typename ::std::enable_if<
-  detail::variant::is_move_constructible<U>{}, mover_type
->::type
+std::enable_if_t<
+  detail::variant::is_move_constructible<U>{},
+  mover_type
+>
 inline get_mover() noexcept
 {
   return mover_stub<U>;
 }
 
 template <class U>
-typename ::std::enable_if<!::std::is_void<U>{}>::type
+std::enable_if_t<!std::is_void<U>{}>
 deleter_stub(void* const store)
 {
   reinterpret_cast<U*>(store)->~U();
 }
 
 template <class U>
-typename ::std::enable_if<::std::is_void<U>{}>::type
+std::enable_if_t<std::is_void<U>{}>
 deleter_stub(void* const) noexcept
 {
 }
@@ -521,10 +525,10 @@ inline struct meta const* get_meta()
 template <typename ...T> class variant;
 
 template <typename U, typename ...T>
-inline typename ::std::enable_if<
+inline typename std::enable_if_t<
   (-1 != detail::variant::index_of<U, T...>{}),
   U&
->::type
+>
 get(variant<T...>& v)
 #ifdef NDEBUG
 noexcept
@@ -537,7 +541,7 @@ noexcept
   }
   else
   {
-    throw ::std::bad_typeid();
+    throw std::bad_typeid();
   }
 #else
   return *reinterpret_cast<U*>(v.store_);
@@ -545,10 +549,10 @@ noexcept
 }
 
 template <typename U, typename ...T>
-inline typename ::std::enable_if<
+inline std::enable_if_t<
   (-1 != detail::variant::index_of<U, T...>{}),
   U const&
->::type
+>
 get(variant<T...> const& v)
 #ifdef NDEBUG
 noexcept
@@ -561,7 +565,7 @@ noexcept
   }
   else
   {
-    throw ::std::bad_typeid();
+    throw std::bad_typeid();
   }
 #else
   return *reinterpret_cast<U const*>(v.store_);
@@ -569,10 +573,10 @@ noexcept
 }
 
 template <typename U, typename ...T>
-inline typename ::std::enable_if<
+inline typename std::enable_if<
   (-1 == detail::variant::index_of<U, T...>{}) &&
   (-1 != detail::variant::compatible_index_of<U, T...>{}) &&
-  (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  (std::is_enum<U>{} || std::is_fundamental<U>{}),
   U
 >::type
 get(variant<T...> const& v)
@@ -580,7 +584,7 @@ get(variant<T...> const& v)
 noexcept
 #endif
 {
-  static_assert(::std::is_same<
+  static_assert(std::is_same<
     typename detail::variant::type_at<
       detail::variant::compatible_index_of<U, T...>{}, T...>::type,
     typename detail::variant::compatible_type<U, T...>::type>{},
@@ -596,7 +600,7 @@ noexcept
   }
   else
   {
-    throw ::std::bad_typeid();
+    throw std::bad_typeid();
   }
 #else
   return U(
@@ -610,9 +614,9 @@ noexcept
 template <typename ...T>
 class variant
 {
-  static_assert(!detail::variant::any_of< ::std::is_reference<T>...>{},
+  static_assert(!detail::variant::any_of< std::is_reference<T>...>{},
     "reference types are unsupported");
-  static_assert(!detail::variant::any_of< ::std::is_void<T>...>{},
+  static_assert(!detail::variant::any_of< std::is_void<T>...>{},
     "void type is unsupported");
   static_assert(detail::variant::all_of<
     detail::variant::is_move_or_copy_constructible<T>...>{},
@@ -629,13 +633,13 @@ class variant
   template <typename ...U>
   friend class variant;
 
-  friend struct ::std::hash<variant<T...> >;
+  friend struct std::hash<variant<T...> >;
 
   template <typename U, typename ...V>
-  friend typename ::std::enable_if<
+  friend std::enable_if_t<
     (-1 != detail::variant::index_of<U, V...>{}),
     U&
-  >::type
+  >
   get(variant<V...>&)
 #ifdef NDEBUG
   noexcept
@@ -643,10 +647,10 @@ class variant
   ;
 
   template <typename U, typename ...V>
-  friend typename ::std::enable_if<
+  friend std::enable_if_t<
     (-1 != detail::variant::index_of<U, V...>{}),
     U const&
-  >::type
+  >
   get(variant<V...> const&)
 #ifdef NDEBUG
   noexcept
@@ -654,12 +658,12 @@ class variant
   ;
 
   template <typename U, typename ...V>
-  friend typename ::std::enable_if<
+  friend std::enable_if_t<
     (-1 == detail::variant::index_of<U, V...>{}) &&
     (-1 != detail::variant::compatible_index_of<U, V...>{}) &&
-    (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+    (std::is_enum<U>{} || std::is_fundamental<U>{}),
     U
-  >::type
+  >
   get(variant<V...> const&)
 #ifdef NDEBUG
   noexcept
@@ -675,7 +679,7 @@ class variant
   }
 
   template <int I, typename U, typename ...V>
-  typename ::std::enable_if<bool(sizeof...(V)), int>::type
+  std::enable_if_t<bool(sizeof...(V)), int>
   convert_type_id() const noexcept
   {
     return I == type_id_ ?
@@ -684,33 +688,33 @@ class variant
   }
 
   template <int I, typename U>
-  typename ::std::enable_if<
+  std::enable_if_t<
     !detail::variant::is_hashable<U>{},
-    ::std::size_t
-  >::type
+    std::size_t
+  >
   get_hash() const noexcept
   {
     return 0;
   }
 
   template <int I, typename U>
-  typename ::std::enable_if<
+  std::enable_if_t<
     detail::variant::is_hashable<U>{},
-    ::std::size_t
-  >::type
+    std::size_t
+  >
   get_hash() const noexcept
   {
     return I == type_id_ ?
-      ::std::hash<U>()(::generic::get<U>(*this)) :
+      std::hash<U>()(gnr::get<U>(*this)) :
       0;
   }
 
   template <int I, typename U, typename ...V>
-  typename ::std::enable_if<
+  std::enable_if_t<
     bool(sizeof...(V)) &&
     !detail::variant::is_hashable<U>{},
-    ::std::size_t
-  >::type
+    std::size_t
+  >
   get_hash() const noexcept
   {
     return I == type_id_ ?
@@ -719,44 +723,44 @@ class variant
   }
 
   template <int I, typename U, typename ...V>
-  typename ::std::enable_if<
+  std::enable_if_t<
     bool(sizeof...(V)) &&
     detail::variant::is_hashable<U>{},
     int
-  >::type
+  >
   get_hash() const noexcept
   {
     return I == type_id_ ?
-      ::std::hash<U>()(::generic::get<U>(*this)) :
+      std::hash<U>()(gnr::get<U>(*this)) :
       get_hash<I + 1, V...>();
   }
 
   template <template <typename> class R, int I, typename U, typename ...A>
-  typename ::std::enable_if<
+  std::enable_if_t<
     !detail::variant::is_comparable<R, U>{}, bool
-  >::type
+  >
   binary_relation(variant<A...> const&) const noexcept
   {
     return false;
   }
 
   template <template <typename> class R, int I, typename U, typename ...A>
-  typename ::std::enable_if<
+  std::enable_if_t<
     detail::variant::is_comparable<R, U>{}, bool
-  >::type
+  >
   binary_relation(variant<A...> const& a) const noexcept
   {
     return I == type_id_ ?
-      R<U>()(::generic::get<U>(*this), ::generic::get<U>(a)) :
+      R<U>()(gnr::get<U>(*this), gnr::get<U>(a)) :
       false;
   }
 
   template <template <typename> class R, int I, typename U, typename ...V,
     typename ...A>
-  typename ::std::enable_if<
+  std::enable_if_t<
     bool(sizeof...(V)) &&
     !detail::variant::is_comparable<R, U>{}, bool
-  >::type
+  >
   binary_relation(variant<A...> const& a) const noexcept
   {
     return I == type_id_ ?
@@ -766,45 +770,45 @@ class variant
 
   template <template <typename> class R, int I, typename U, typename ...V,
     typename ...A>
-  typename ::std::enable_if<
+  std::enable_if_t<
     bool(sizeof...(V)) &&
     detail::variant::is_comparable<R, U>{}, bool
-  >::type
+  >
   binary_relation(variant<A...> const& a) const noexcept
   {
     return I == type_id_ ?
-      R<U>()(::generic::get<U>(*this), ::generic::get<U>(a)) :
+      R<U>()(gnr::get<U>(*this), gnr::get<U>(a)) :
       binary_relation<R, I + 1, V...>(a);
   }
 
-  template <::std::size_t I, typename OS, typename U>
-  typename ::std::enable_if<
+  template <std::size_t I, typename OS, typename U>
+  std::enable_if_t<
     !detail::variant::is_streamable<OS, U>{},
     OS&
-  >::type
+  >
   stream_value(OS& os) const noexcept
   {
     return os;
   }
 
-  template <::std::size_t I, typename OS, typename U>
-  typename ::std::enable_if<
+  template <std::size_t I, typename OS, typename U>
+  std::enable_if_t<
     detail::variant::is_streamable<OS, U>{},
     OS&
-  >::type
+  >
   stream_value(OS& os) const noexcept
   {
     return I == type_id_ ?
-      os << ::generic::get<U>(*this) :
+      os << gnr::get<U>(*this) :
       os;
   }
 
-  template <::std::size_t I, typename OS, typename U, typename ...V>
-  typename ::std::enable_if<
+  template <std::size_t I, typename OS, typename U, typename ...V>
+  std::enable_if_t<
     !detail::variant::is_streamable<OS, U>{} &&
     bool(sizeof...(V)),
     OS&
-  >::type
+  >
   stream_value(OS& os) const noexcept
   {
     return I == type_id_ ?
@@ -812,16 +816,16 @@ class variant
       stream_value<I + 1, OS, V...>(os);
   }
 
-  template <::std::size_t I, typename OS, typename U, typename ...V>
-  typename ::std::enable_if<
+  template <std::size_t I, typename OS, typename U, typename ...V>
+  std::enable_if_t<
     detail::variant::is_streamable<OS, U>{} &&
     bool(sizeof...(V)),
     OS&
-  >::type
+  >
   stream_value(OS& os) const noexcept
   {
     return I == type_id_ ?
-      os << ::generic::get<U>(*this) :
+      os << gnr::get<U>(*this) :
       stream_value<I + 1, OS, V...>(os);
   }
 
@@ -832,12 +836,12 @@ public:
 
   variant(variant const& other) { *this = other; }
 
-  variant(variant&& other) { *this = ::std::move(other); }
+  variant(variant&& other) { *this = std::move(other); }
 
   bool operator==(variant const& v) const noexcept
   {
     return (v.type_id_ == type_id_) && *this ?
-      binary_relation<::std::equal_to, 0, T...>(v) :
+      binary_relation<std::equal_to, 0, T...>(v) :
       type_id_ == v.type_id_;
   }
 
@@ -847,14 +851,14 @@ public:
     auto const converted_type_id(v.template convert_type_id<0, T...>());
 
     return (converted_type_id == type_id_) && *this ?
-      binary_relation<::std::equal_to, 0, T...>(v) :
+      binary_relation<std::equal_to, 0, T...>(v) :
       converted_type_id == type_id_;
   }
 
   bool operator<(variant const& v) const noexcept
   {
     return (v.type_id_ == type_id_) && *this ?
-      binary_relation<::std::less, 0, T...>(v) :
+      binary_relation<std::less, 0, T...>(v) :
       type_id_ < v.type_id_;
   }
 
@@ -864,14 +868,14 @@ public:
     auto const converted_type_id(v.template convert_type_id<0, T...>());
 
     return (converted_type_id == type_id_) && *this?
-      binary_relation<::std::less, 0, T...>(v) :
+      binary_relation<std::less, 0, T...>(v) :
       type_id_ < converted_type_id;
   }
 
   bool operator<=(variant const& v) const noexcept
   {
     return (v.type_id_ == type_id_) && *this ?
-      binary_relation<::std::less_equal, 0, T...>(v) :
+      binary_relation<std::less_equal, 0, T...>(v) :
       type_id_ <= v.type_id_;
   }
 
@@ -881,14 +885,14 @@ public:
     auto const converted_type_id(v.template convert_type_id<0, T...>());
 
     return (converted_type_id == type_id_) && *this ?
-      binary_relation<::std::less_equal, 0, T...>(v) :
+      binary_relation<std::less_equal, 0, T...>(v) :
       type_id_ <= converted_type_id;
   }
 
   bool operator>(variant const& v) const noexcept
   {
     return (v.type_id_ == type_id_) && *this ?
-      binary_relation<::std::greater, 0, T...>(v) :
+      binary_relation<std::greater, 0, T...>(v) :
       type_id_ > v.type_id_;
   }
 
@@ -898,14 +902,14 @@ public:
     auto const converted_type_id(v.template convert_type_id<0, T...>());
 
     return converted_type_id == type_id_ ?
-      binary_relation<::std::greater, 0, T...>(v) :
+      binary_relation<std::greater, 0, T...>(v) :
       type_id_ > converted_type_id;
   }
 
   bool operator>=(variant const& v) const noexcept
   {
     return v.type_id_ == type_id_ ?
-      binary_relation<::std::greater_equal, 0, T...>(v) :
+      binary_relation<std::greater_equal, 0, T...>(v) :
       type_id_ >= v.type_id_;
   }
 
@@ -915,7 +919,7 @@ public:
     auto const converted_type_id(v.template convert_type_id<0, T...>());
 
     return converted_type_id == type_id_ ?
-      binary_relation<::std::greater_equal, 0, T...>(v) :
+      binary_relation<std::greater_equal, 0, T...>(v) :
       type_id_ >= converted_type_id;
   }
 
@@ -942,7 +946,7 @@ public:
 #ifndef NDEBUG
       else
       {
-        throw ::std::bad_typeid();
+        throw std::bad_typeid();
       }
 #endif // NDEBUG
     }
@@ -972,7 +976,7 @@ public:
         if (-1 == converted_type_id)
         {
 #ifndef NDEBUG
-          throw ::std::bad_typeid();
+          throw std::bad_typeid();
 #endif // NDEBUG
         }
         else
@@ -988,7 +992,7 @@ public:
 #ifndef NDEBUG
       else
       {
-        throw ::std::bad_typeid();
+        throw std::bad_typeid();
       }
 #endif // NDEBUG
     }
@@ -1020,7 +1024,7 @@ public:
 #ifndef NDEBUG
       else
       {
-        throw ::std::bad_typeid();
+        throw std::bad_typeid();
       }
 #endif // NDEBUG
     }
@@ -1048,7 +1052,7 @@ public:
         if (-1 == converted_type_id)
         {
 #ifndef NDEBUG
-          throw ::std::bad_typeid();
+          throw std::bad_typeid();
 #endif // NDEBUG
         }
         else
@@ -1064,7 +1068,7 @@ public:
 #ifndef NDEBUG
       else
       {
-        throw ::std::bad_typeid();
+        throw std::bad_typeid();
       }
 #endif // NDEBUG
     }
@@ -1075,44 +1079,44 @@ public:
 
   template <
     typename U,
-    typename = typename ::std::enable_if<
-      !::std::is_array<
+    typename = std::enable_if_t<
+      !std::is_array<
         typename detail::variant::remove_cvr<U>::type
       >{} &&
       detail::variant::any_of<
-        ::std::is_same<
+        std::is_same<
           typename detail::variant::remove_cvr<U>::type, T
         >...
       >{} &&
-      !::std::is_same<
-        typename ::std::decay<U>::type, variant
+      !std::is_same<
+        typename std::decay<U>::type, variant
       >{}
-    >::type
+    >
   >
   variant(U&& f)
   {
-    *this = ::std::forward<U>(f);
+    *this = std::forward<U>(f);
   }
 
   // copy assignment possible
   template <typename U>
-  typename ::std::enable_if<
-    !::std::is_array<
+  std::enable_if_t<
+    !std::is_array<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
     detail::variant::any_of<
-      ::std::is_same<
+      std::is_same<
         typename detail::variant::remove_cvr<U>::type, T
       >...
     >{} &&
     detail::variant::is_copy_assignable<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
-    !::std::is_same<
-      typename ::std::decay<U>::type, variant
+    !std::is_same<
+      typename std::decay<U>::type, variant
     >{},
     variant&
-  >::type
+  >
   operator=(U&& u)
   {
     using user_type = typename detail::variant::remove_cvr<U>::type;
@@ -1125,7 +1129,7 @@ public:
     {
       clear();
 
-      new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
+      new (static_cast<void*>(store_)) user_type(std::forward<U>(u));
 
       meta_ = detail::variant::get_meta<user_type>();
 
@@ -1137,38 +1141,38 @@ public:
 
   // move assignment possible
   template <typename U>
-  typename ::std::enable_if<
+  std::enable_if_t<
     detail::variant::any_of<
-      ::std::is_same<typename detail::variant::remove_cvr<U>::type, T>...
+      std::is_same<typename detail::variant::remove_cvr<U>::type, T>...
     >{} &&
-    !::std::is_array<
+    !std::is_array<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
-    ::std::is_rvalue_reference<U&&>{} &&
+    std::is_rvalue_reference<U&&>{} &&
     !detail::variant::is_copy_assignable<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
     detail::variant::is_move_assignable<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
-    !::std::is_same<
-      typename ::std::decay<U>::type, variant
+    !std::is_same<
+      typename std::decay<U>::type, variant
     >{},
     variant&
-  >::type
+  >
   operator=(U&& u)
   {
     using user_type = typename detail::variant::remove_cvr<U>::type;
 
     if (detail::variant::index_of<user_type, T...>{} == type_id_)
     {
-      *reinterpret_cast<user_type*>(store_) = ::std::move(u);
+      *reinterpret_cast<user_type*>(store_) = std::move(u);
     }
     else
     {
       clear();
 
-      new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
+      new (static_cast<void*>(store_)) user_type(std::forward<U>(u));
 
       meta_ = detail::variant::get_meta<user_type>();
 
@@ -1180,9 +1184,9 @@ public:
 
   // assignment not possible
   template <typename U>
-  typename ::std::enable_if<
+  std::enable_if_t<
     detail::variant::any_of<
-      ::std::is_same<typename detail::variant::remove_cvr<U>::type, T>...
+      std::is_same<typename detail::variant::remove_cvr<U>::type, T>...
     >{} &&
     !detail::variant::is_copy_assignable<
       typename detail::variant::remove_cvr<U>::type
@@ -1190,18 +1194,18 @@ public:
     !detail::variant::is_move_assignable<
       typename detail::variant::remove_cvr<U>::type
     >{} &&
-    !::std::is_same<
-      typename ::std::decay<U>::type, variant
+    !std::is_same<
+      typename std::decay<U>::type, variant
     >{},
     variant&
-  >::type
+  >
   operator=(U&& u)
   {
     using user_type = typename detail::variant::remove_cvr<U>::type;
 
     clear();
 
-    new (static_cast<void*>(store_)) user_type(::std::forward<U>(u));
+    new (static_cast<void*>(store_)) user_type(std::forward<U>(u));
 
     meta_ = detail::variant::get_meta<user_type>();
 
@@ -1215,7 +1219,7 @@ public:
   template <typename U>
   variant& assign(U&& u)
   {
-    return operator=(::std::forward<U>(u));
+    return operator=(std::forward<U>(u));
   }
 
   template <typename U>
@@ -1241,7 +1245,7 @@ public:
     {
       if (meta_->mover)
       {
-        other = ::std::move(*this);
+        other = std::move(*this);
         clear();
       }
       else if (meta_->copier)
@@ -1255,7 +1259,7 @@ public:
     {
       if (other.meta_->mover)
       {
-        *this = ::std::move(other);
+        *this = std::move(other);
         other.clear();
       }
       else if (other.meta_->copier)
@@ -1267,24 +1271,24 @@ public:
     }
     else if (meta_->mover && other.meta_->mover)
     {
-      variant tmp(::std::move(other));
+      variant tmp(std::move(other));
 
-      other = ::std::move(*this);
-      *this = ::std::move(tmp);
+      other = std::move(*this);
+      *this = std::move(tmp);
     }
     else if (meta_->mover && other.meta_->copier)
     {
       variant tmp(other);
 
-      other = ::std::move(*this);
+      other = std::move(*this);
       *this = tmp;
     }
     else if (meta_->copier && other.meta_->mover)
     {
-      variant tmp(::std::move(other));
+      variant tmp(std::move(other));
 
       other = *this;
-      *this = ::std::move(tmp);
+      *this = std::move(tmp);
     }
     else if (meta_->copier && other.meta_->copier)
     {
@@ -1296,7 +1300,7 @@ public:
 #ifndef NDEBUG
     else
     {
-      throw ::std::bad_typeid();
+      throw std::bad_typeid();
     }
 #endif // NDEBUG
   }
@@ -1311,8 +1315,8 @@ public:
 
 private:
   template <typename charT, typename traits>
-  friend ::std::basic_ostream<charT, traits>& operator<<(
-    ::std::basic_ostream<charT, traits>& os, variant const& v) noexcept
+  friend std::basic_ostream<charT, traits>& operator<<(
+    std::basic_ostream<charT, traits>& os, variant const& v) noexcept
   {
     return -1 == v.type_id_ ?
       os << "<empty variant>" :
@@ -1334,11 +1338,11 @@ private:
 #endif // __GNUC__
 
 template <typename U, typename ...T>
-inline typename ::std::enable_if<
+inline std::enable_if_t<
   (-1 != detail::variant::index_of<U, T...>{}) &&
-  (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  (std::is_enum<U>{} || std::is_fundamental<U>{}),
   U
->::type
+>
 cget(variant<T...> const& v)
 #ifdef NDEBUG
 noexcept
@@ -1348,12 +1352,12 @@ noexcept
 }
 
 template <typename U, typename ...T>
-inline typename ::std::enable_if<
+inline std::enable_if_t<
   (-1 == detail::variant::index_of<U, T...>{}) &&
   (-1 != detail::variant::compatible_index_of<U, T...>{}) &&
-  (::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  (std::is_enum<U>{} || std::is_fundamental<U>{}),
   U
->::type
+>
 cget(variant<T...> const& v)
 #ifdef NDEBUG
 noexcept
@@ -1363,11 +1367,11 @@ noexcept
 }
 
 template <typename U, typename ...T>
-inline typename ::std::enable_if<
+inline std::enable_if_t<
   (-1 != detail::variant::index_of<U, T...>{}) &&
-  !(::std::is_enum<U>{} || ::std::is_fundamental<U>{}),
+  !(std::is_enum<U>{} || std::is_fundamental<U>{}),
   U const&
->::type
+>
 cget(variant<T...> const& v)
 #ifdef NDEBUG
 noexcept
@@ -1381,9 +1385,9 @@ noexcept
 namespace std
 {
   template <typename ...T>
-  struct hash<::generic::variant<T...> >
+  struct hash<gnr::variant<T...> >
   {
-    size_t operator()(::generic::variant<T...> const& v) const noexcept
+    size_t operator()(gnr::variant<T...> const& v) const noexcept
     {
       auto const seed(v.template get_hash<0, T...>());
 
@@ -1393,4 +1397,4 @@ namespace std
   };
 }
 
-#endif // GENERIC_VARIANT_HPP
+#endif // GNR_VARIANT_HPP

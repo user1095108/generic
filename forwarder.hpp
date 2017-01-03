@@ -1,10 +1,10 @@
-#ifndef GENERIC_FORWARDER_HPP
-# define GENERIC_FORWARDER_HPP
+#ifndef GNR_FORWARDER_HPP
+# define GNR_FORWARDER_HPP
 # pragma once
 
 #include <cassert>
 
-// ::std::size_t
+// std::size_t
 #include <cstddef>
 
 #include <cstring>
@@ -15,7 +15,7 @@
 
 #include <utility>
 
-namespace generic
+namespace gnr
 {
 
 constexpr auto const default_forwarder_noexcept =
@@ -28,36 +28,36 @@ true;
 constexpr auto const default_forwarder_size = 4 * sizeof(void*);
 
 template <typename F,
-  ::std::size_t N = default_forwarder_size,
+  std::size_t N = default_forwarder_size,
   bool NE = default_forwarder_noexcept
 >
 class forwarder;
 
-template <typename R, typename ...A, ::std::size_t N, bool NE>
+template <typename R, typename ...A, std::size_t N, bool NE>
 class forwarder<R (A...), N, NE>
 {
   R (*stub_)(void*, A&&...) noexcept(NE) {};
 
-  ::std::aligned_storage_t<N> store_;
+  std::aligned_storage_t<N> store_;
 
-  template<typename T, typename ...U, ::std::size_t M>
+  template<typename T, typename ...U, std::size_t M>
   friend bool operator==(forwarder<T (U...), M> const&,
-    ::std::nullptr_t) noexcept;
-  template<typename T, typename ...U, ::std::size_t M>
-  friend bool operator==(::std::nullptr_t,
+    std::nullptr_t) noexcept;
+  template<typename T, typename ...U, std::size_t M>
+  friend bool operator==(std::nullptr_t,
     forwarder<T (U...), M> const&) noexcept;
 
-  template<typename T, typename ...U, ::std::size_t M>
+  template<typename T, typename ...U, std::size_t M>
   friend bool operator!=(forwarder<T (U...), M> const&,
-    ::std::nullptr_t) noexcept;
-  template<typename T, typename ...U, ::std::size_t M>
-  friend bool operator!=(::std::nullptr_t,
+    std::nullptr_t) noexcept;
+  template<typename T, typename ...U, std::size_t M>
+  friend bool operator!=(std::nullptr_t,
     forwarder<T (U...), M> const&) noexcept;
 
 public:
   using result_type = R;
 
-  enum : ::std::size_t { size = N };
+  enum : std::size_t { size = N };
 
 public:
   forwarder() = default;
@@ -67,11 +67,11 @@ public:
   forwarder(forwarder&&) = default;
 
   template <typename F, typename =
-    ::std::enable_if_t<!::std::is_same<::std::decay_t<F>, forwarder>{}>
+    std::enable_if_t<!std::is_same<std::decay_t<F>, forwarder>{}>
   >
   forwarder(F&& f) noexcept
   {
-    assign(::std::forward<F>(f));
+    assign(std::forward<F>(f));
   }
 
   forwarder& operator=(forwarder const&) = default;
@@ -79,11 +79,11 @@ public:
   forwarder& operator=(forwarder&&) = default;
 
   template <typename F, typename =
-    ::std::enable_if_t<!::std::is_same<::std::decay_t<F>, forwarder>{}>
+    std::enable_if_t<!std::is_same<std::decay_t<F>, forwarder>{}>
   >
   forwarder& operator=(F&& f) noexcept
   {
-    assign(::std::forward<F>(f));
+    assign(std::forward<F>(f));
 
     return *this;
   }
@@ -93,18 +93,18 @@ public:
   R operator()(A... args) const
     noexcept(
         noexcept(stub_(const_cast<void*>(static_cast<void const*>(&store_)),
-          ::std::forward<A>(args)...
+          std::forward<A>(args)...
         )
       )
     )
   {
     //assert(stub_);
     return stub_(const_cast<void*>(static_cast<void const*>(&store_)),
-      ::std::forward<A>(args)...
+      std::forward<A>(args)...
     );
   }
 
-  void assign(::std::nullptr_t) noexcept
+  void assign(std::nullptr_t) noexcept
   {
     reset();
   }
@@ -112,24 +112,24 @@ public:
   template <typename F>
   void assign(F&& f) noexcept
   {
-    using functor_type = ::std::decay_t<F>;
+    using functor_type = std::decay_t<F>;
 
     static_assert(sizeof(functor_type) <= sizeof(store_),
       "functor too large");
-    static_assert(::std::is_trivially_copyable<functor_type>{},
+    static_assert(std::is_trivially_copyable<functor_type>{},
       "functor not trivially copyable");
 
-    ::new (static_cast<void*>(&store_)) functor_type(::std::forward<F>(f));
+    ::new (static_cast<void*>(&store_)) functor_type(std::forward<F>(f));
 
     stub_ = [](void* const ptr, A&&... args) noexcept(
         noexcept(
         (
 #if __cplusplus <= 201402L
           (*static_cast<functor_type*>(ptr))(
-            ::std::forward<A>(args)...)
+            std::forward<A>(args)...)
 #else
-          ::std::invoke(*static_cast<functor_type*>(ptr),
-            ::std::forward<A>(args)...)
+          std::invoke(*static_cast<functor_type*>(ptr),
+            std::forward<A>(args)...)
 #endif // __cplusplus
         )
       )
@@ -137,17 +137,17 @@ public:
     {
 #if __cplusplus <= 201402L
       return (*static_cast<functor_type*>(ptr))(
-        ::std::forward<A>(args)...);
+        std::forward<A>(args)...);
 #else
-      return ::std::invoke(*static_cast<functor_type*>(ptr),
-        ::std::forward<A>(args)...);
+      return std::invoke(*static_cast<functor_type*>(ptr),
+        std::forward<A>(args)...);
 #endif // __cplusplus
     };
   }
 
   void reset() noexcept { stub_ = nullptr; }
 
-  void swap(forwarder& other) noexcept { ::std::swap(*this, other); }
+  void swap(forwarder& other) noexcept { std::swap(*this, other); }
 
   template <typename T>
   auto target() noexcept
@@ -162,34 +162,34 @@ public:
   }
 };
 
-template<typename R, typename ...A, ::std::size_t N>
+template<typename R, typename ...A, std::size_t N>
 bool operator==(forwarder<R (A...), N> const& f,
-  ::std::nullptr_t const) noexcept
+  std::nullptr_t const) noexcept
 {
-  return f.stub_ == nullptr;
+  return nullptr == f.stub_ ;
 }
 
-template<typename R, typename ...A, ::std::size_t N>
-bool operator==(::std::nullptr_t const,
+template<typename R, typename ...A, std::size_t N>
+bool operator==(std::nullptr_t const,
   forwarder<R (A...), N> const& f) noexcept
 {
-  return f.stub_ == nullptr;
+  return nullptr == f.stub_;
 }
 
-template<typename R, typename ...A, ::std::size_t N>
+template<typename R, typename ...A, std::size_t N>
 bool operator!=(forwarder<R (A...), N> const& f,
-  ::std::nullptr_t const) noexcept
+  std::nullptr_t const) noexcept
 {
-  return !operator==(f, nullptr);
+  return !operator==(nullptr, f);
 }
 
-template<typename R, typename ...A, ::std::size_t N>
-bool operator!=(::std::nullptr_t const,
+template<typename R, typename ...A, std::size_t N>
+bool operator!=(std::nullptr_t const,
   forwarder<R (A...), N> const& f) noexcept
 {
-  return !operator==(f, nullptr);
+  return !operator==(nullptr, f);
 }
 
 }
 
-#endif // GENERIC_FORWARDER_HPP
+#endif // GNR_FORWARDER_HPP

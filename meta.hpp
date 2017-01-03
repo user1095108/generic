@@ -1,15 +1,15 @@
-#ifndef GENERIC_META_HPP
-# define GENERIC_META_HPP
+#ifndef GNR_META_HPP
+# define GNR_META_HPP
 # pragma once
 
 #include <cstddef>
 
 #include <type_traits>
 
-namespace generic
+namespace gnr
 {
 
-template <::std::size_t I, typename A, typename ...B>
+template <std::size_t I, typename A, typename ...B>
 struct type_at : type_at<I - 1, B...>
 {
 };
@@ -44,7 +44,7 @@ template <typename ...A>
 using back_t = typename back<A...>::type;
 
 template <class A, class ...B>
-struct all_of : ::std::integral_constant<bool,
+struct all_of : std::integral_constant<bool,
   A{} &&
   all_of<B...>{}
 >
@@ -52,12 +52,12 @@ struct all_of : ::std::integral_constant<bool,
 };
 
 template <class A>
-struct all_of<A> : ::std::integral_constant<bool, A{}>
+struct all_of<A> : std::integral_constant<bool, A{}>
 {
 };
 
 template <class A, class ...B>
-struct any_of : ::std::integral_constant<bool,
+struct any_of : std::integral_constant<bool,
   A{} ||
   any_of<B...>{}
 >
@@ -65,11 +65,10 @@ struct any_of : ::std::integral_constant<bool,
 };
 
 template <class A>
-struct any_of<A> : ::std::integral_constant<bool, A{}>
+struct any_of<A> : std::integral_constant<bool, A{}>
 {
 };
 
-
 }
 
-#endif // GENERIC_META_HPP
+#endif // GNR_META_HPP

@@ -1,5 +1,5 @@
-#ifndef LIGHTPTR_HPP
-# define LIGHTPTR_HPP
+#ifndef GNR_LIGHTPTR_HPP
+# define GNR_LIGHTPTR_HPP
 # pragma once
 
 #include <cassert>
@@ -12,7 +12,7 @@
 
 #include <utility>
 
-namespace generic
+namespace gnr
 {
 
 namespace detail
@@ -337,13 +337,13 @@ inline light_ptr<T> make_light(Args&& ...args)
 namespace std
 {
   template <typename T>
-  struct hash<::generic::light_ptr<T> >
+  struct hash<gnr::light_ptr<T> >
   {
-    size_t operator()(::generic::light_ptr<T> const& l) const noexcept
+    size_t operator()(gnr::light_ptr<T> const& l) const noexcept
     {
-      return hash<typename ::generic::light_ptr<T>::element_type*>()(l.ptr_);
+      return hash<typename gnr::light_ptr<T>::element_type*>()(l.ptr_);
     }
   };
 }
 
-#endif // LIGHTPTR_HPP
+#endif // GNR_LIGHTPTR_HPP

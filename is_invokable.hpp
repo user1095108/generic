@@ -1,8 +1,8 @@
-#ifndef IS_INVOKABLE_HPP
-# define IS_INVOKABLE_HPP
+#ifndef GNR_IS_INVOKABLE_HPP
+# define GNR_IS_INVOKABLE_HPP
 # pragma once
 
-namespace generic
+namespace gnr
 {
 
 namespace
@@ -25,4 +25,4 @@ struct is_invokable : decltype(f<F, A...>(0))
 
 }
 
-#endif // IS_INVOKABLE_HPP
+#endif // GNR_IS_INVOKABLE_HPP
