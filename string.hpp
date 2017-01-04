@@ -1,5 +1,5 @@
-#ifndef GENERIC_STRING_HPP
-# define GENERIC_STRING_HPP
+#ifndef GNR_STRING_HPP
+# define GNR_STRING_HPP
 # pragma once
 
 #include <cstring>
@@ -12,19 +12,19 @@
 
 #include <vector>
 
-namespace generic
+namespace gnr
 {
 
 // cstrlen
 //////////////////////////////////////////////////////////////////////////////
-template <::std::size_t N>
-inline constexpr ::std::size_t cstrlen(char const (&)[N]) noexcept
+template <std::size_t N>
+inline constexpr std::size_t cstrlen(char const (&)[N]) noexcept
 {
   return N - 1;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline constexpr ::std::size_t cstrlen(char const* const p) noexcept
+inline constexpr std::size_t cstrlen(char const* const p) noexcept
 {
   return *p ? 1 + cstrlen(p + 1) : 0;
 }
@@ -41,7 +41,7 @@ inline typename C::value_type join(C const& container,
 
     auto const end(container.end());
 
-    for (auto i(::std::next(container.begin())); i != end; ++i)
+    for (auto i(std::next(container.begin())); i != end; ++i)
     {
       r += sep + *i;
     }
@@ -81,17 +81,17 @@ inline typename C::value_type join(C const& container,
 // split
 //////////////////////////////////////////////////////////////////////////////
 template<class CharT, class Traits, class Allocator>
-inline ::std::vector<::std::basic_string<CharT, Traits, Allocator> >
-split(::std::basic_string<CharT, Traits, Allocator> const& s,
+inline std::vector<std::basic_string<CharT, Traits, Allocator> >
+split(std::basic_string<CharT, Traits, Allocator> const& s,
   CharT const delim) noexcept
 {
-  ::std::stringstream ss(s);
+  std::stringstream ss(s);
 
-  ::std::string item;
+  std::string item;
 
-  ::std::vector<typename ::std::decay<decltype(s)>::type> r;
+  std::vector<typename std::decay<decltype(s)>::type> r;
 
-  while (::std::getline(ss, item, delim))
+  while (std::getline(ss, item, delim))
   {
     r.push_back(item);
   }
@@ -100,18 +100,18 @@ split(::std::basic_string<CharT, Traits, Allocator> const& s,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline ::std::vector<::std::string>
-split(::std::string const& s,
+inline std::vector<std::string>
+split(std::string const& s,
   char const* const delims = "\f\n\r\t\v") noexcept
 {
-  ::std::vector<typename ::std::decay<decltype(s)>::type> r;
+  std::vector<typename std::decay<decltype(s)>::type> r;
 
   auto const S(s.size());
   decltype(s.size()) i{};
 
   while (i < S)
   {
-    while ((i < S) && ::std::strchr(delims, s[i]))
+    while ((i < S) && std::strchr(delims, s[i]))
     {
       ++i;
     }
@@ -124,7 +124,7 @@ split(::std::string const& s,
 
     auto j(i + 1);
 
-    while ((j < S) && !::std::strchr(delims, s[j]))
+    while ((j < S) && !std::strchr(delims, s[j]))
     {
       ++j;
     }
@@ -140,14 +140,14 @@ split(::std::string const& s,
 // trim
 //////////////////////////////////////////////////////////////////////////////
 template<class CharT, class Traits, class Allocator>
-inline ::std::basic_string<CharT, Traits, Allocator>&
-ltrim(::std::basic_string<CharT, Traits, Allocator>& s,
+inline std::basic_string<CharT, Traits, Allocator>&
+ltrim(std::basic_string<CharT, Traits, Allocator>& s,
   CharT const* cs = " ") noexcept
 {
   s.erase(s.begin(),
-    ::std::find_if(s.begin(), s.end(),
+    std::find_if(s.begin(), s.end(),
       [cs](char const c) noexcept {
-        return !::std::strrchr(cs, c);
+        return !std::strrchr(cs, c);
       }
     )
   );
@@ -156,13 +156,13 @@ ltrim(::std::basic_string<CharT, Traits, Allocator>& s,
 }
 
 template<class CharT, class Traits, class Allocator>
-inline ::std::basic_string<CharT, Traits, Allocator>&
-rtrim(::std::basic_string<CharT, Traits, Allocator>& s,
+inline std::basic_string<CharT, Traits, Allocator>&
+rtrim(std::basic_string<CharT, Traits, Allocator>& s,
   CharT const* cs = " ") noexcept
 {
-  s.erase(::std::find_if(s.rbegin(), s.rend(),
+  s.erase(std::find_if(s.rbegin(), s.rend(),
       [cs](char const c) noexcept {
-        return !::std::strrchr(cs, c);
+        return !std::strrchr(cs, c);
       }
     ).base(),
     s.end()
@@ -172,8 +172,8 @@ rtrim(::std::basic_string<CharT, Traits, Allocator>& s,
 }
 
 template<class CharT, class Traits, class Allocator>
-inline ::std::basic_string<CharT, Traits, Allocator>&
-trim(::std::basic_string<CharT, Traits, Allocator>& s,
+inline std::basic_string<CharT, Traits, Allocator>&
+trim(std::basic_string<CharT, Traits, Allocator>& s,
   CharT const* cs = " ") noexcept
 {
   return ltrim(rtrim(s, cs), cs);
@@ -181,4 +181,4 @@ trim(::std::basic_string<CharT, Traits, Allocator>& s,
 
 }
 
-#endif // GENERIC_STRING_HPP
+#endif // GNR_STRING_HPP
