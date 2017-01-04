@@ -51,7 +51,9 @@ public:
   {
   }
 
-  template <typename F>
+  template <typename F,
+    typename = std::enable_if_t<!std::is_integral<F>{}>
+  >
   explicit coroutine(F&& f, std::size_t const N = default_stack_size) :
     coroutine(N)
   {
