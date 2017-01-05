@@ -13,7 +13,7 @@ struct A
 
 int main()
 {
-  gnr::coroutine<> c(1024 * 1024);
+  gnr::coroutine<> c;
 
   c = [](auto& c)
     {

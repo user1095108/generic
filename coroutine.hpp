@@ -15,11 +15,22 @@
 namespace gnr
 {
 
-template <template <typename> class Function = std::function>
+namespace
+{
+
+enum : std::size_t { anon_default_stack_size = 512 * 1024 };
+
+}
+
+template <
+  template <typename> class Function = std::function,
+  std::size_t N = anon_default_stack_size
+>
 class coroutine
 {
 public:
-  enum : std::size_t { default_stack_size = 512 * 1024 };
+  enum : std::size_t { default_stack_size = anon_default_stack_size };
+  enum : std::size_t { stack_size = N };
 
   enum status : std::uint8_t
   {
@@ -34,24 +45,19 @@ private:
 
   enum status status_{TERMINATED};
 
-  std::size_t const N_;
-
   std::unique_ptr<char[]> stack_;
 
   Function<void()> f_;
 
 public:
-  explicit coroutine(std::size_t const N = default_stack_size) :
-    N_(N),
-    stack_(new char[N])
+  explicit coroutine() :
+    stack_(new char[stack_size])
   {
   }
 
-  template <typename F,
-    typename = std::enable_if_t<!std::is_integral<F>{}>
-  >
-  explicit coroutine(F&& f, std::size_t const N = default_stack_size) :
-    coroutine(N)
+  template <typename F>
+  explicit coroutine(F&& f) :
+    coroutine()
   {
     assign(std::forward<F>(f));
   }
@@ -148,19 +154,19 @@ public:
       asm volatile(
         "movl %0, %%esp"
         :
-        : "r" (stack_.get() + N_)
+        : "r" (stack_.get() + stack_size)
       );
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
       asm volatile(
         "movq %0, %%rsp"
         :
-        : "r" (stack_.get() + N_)
+        : "r" (stack_.get() + stack_size)
       );
 #else
 #error "can't switch stack frame"
 #endif
 #elif defined(_MSC_VER)
-    auto const p(stack_.get() + N_);
+    auto const p(stack_.get() + stack_size);
 
     _asm mov esp, p
 #else
