@@ -15,7 +15,7 @@ int main()
 {
   gnr::coroutine<> c(1024 * 1024);
 
-  c.assign([](auto& c)
+  c = [](auto& c)
     {
       A a;
 
@@ -25,8 +25,7 @@ int main()
 
         c.yield();
       }
-    }
-  );
+    };
 
   while (!c.is_terminated())
   {

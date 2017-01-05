@@ -60,6 +60,14 @@ public:
 
   coroutine& operator=(coroutine&&) = default;
 
+  template <typename F>
+  coroutine& operator=(F&& f)
+  {
+    assign(std::forward<F>(f));
+
+    return *this;
+  }
+
   auto status() const noexcept
   {
     return status_;
