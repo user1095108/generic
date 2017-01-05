@@ -23,8 +23,8 @@ enum : std::size_t { anon_default_stack_size = 512 * 1024 };
 }
 
 template <
-  template <typename> class Function = std::function,
-  std::size_t N = anon_default_stack_size
+  std::size_t N = anon_default_stack_size,
+  template <typename> class Function = std::function
 >
 class coroutine
 {
