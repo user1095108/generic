@@ -127,6 +127,8 @@ public:
   void resume() noexcept __attribute__ ((noinline))
 #elif defined(_MSC_VER)
   __declspec(noinline) void resume() noexcept
+#else
+# error "unsupported compiler"
 #endif
   {
 #if defined(__GNUC__)
