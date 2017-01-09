@@ -4,6 +4,8 @@
 
 #include <cstddef>
 
+#include <cstdint>
+
 #if defined(__linux__)
 # include <alloca.h>
 #elif defined(_WIN32)
@@ -12,6 +14,22 @@
 
 namespace gnr
 {
+
+template <typename T = char, std::size_t N, typename F>
+constexpr inline void salloc(F&& f) noexcept(
+  noexcept(f(nullptr))
+)
+{
+#if defined(__linux__)
+  f(static_cast<T*>(alloca(N * sizeof(T))));
+#elif defined(_WIN32)
+  f(static_cast<T*>(_alloca(N * sizeof(T))));
+#else
+  alignas(std::max_align_t) std::uint8_t p[N * sizeof(T)];
+
+  f(reinterpret_cast<T*>(p));
+#endif //
+}
 
 template <typename T = char, typename F>
 constexpr inline void salloc(std::size_t const N, F&& f) noexcept(
@@ -23,7 +41,8 @@ constexpr inline void salloc(std::size_t const N, F&& f) noexcept(
 #elif defined(_WIN32)
   f(static_cast<T*>(_alloca(N * sizeof(T))));
 #else
-  alignas(std::max_align_t) char p[N * sizeof(T)];
+  alignas(std::max_align_t) std::uint8_t p[N * sizeof(T)];
+
   f(reinterpret_cast<T*>(p));
 #endif //
 }
