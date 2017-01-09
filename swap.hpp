@@ -16,9 +16,9 @@ namespace gnr
 #if defined(__GNUC__)
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{} &&
-  (sizeof(::std::int64_t) == sizeof(T)),
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{} &&
+  (sizeof(std::int64_t) == sizeof(T)),
   T
 >
 swap(T const v) noexcept
@@ -27,9 +27,9 @@ swap(T const v) noexcept
 }
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{} &&
-  (sizeof(::std::int32_t) == sizeof(T)),
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{} &&
+  (sizeof(std::int32_t) == sizeof(T)),
   T
 >
 swap(T const v) noexcept
@@ -38,9 +38,9 @@ swap(T const v) noexcept
 }
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{} &&
-  (sizeof(::std::int16_t) == sizeof(T)),
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{} &&
+  (sizeof(std::int16_t) == sizeof(T)),
   T
 >
 swap(T const v) noexcept
@@ -49,9 +49,9 @@ swap(T const v) noexcept
 }
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{} &&
-  (sizeof(::std::int8_t) == sizeof(T)),
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{} &&
+  (sizeof(std::int8_t) == sizeof(T)),
   T
 >
 swap(T const v) noexcept
@@ -62,8 +62,8 @@ swap(T const v) noexcept
 #elif defined(_MSC_VER)
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{} &&
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{} &&
   (sizeof(__int64) == sizeof(T)),
   T
 >
@@ -73,8 +73,8 @@ swap(T const v) noexcept
 }
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{} &&
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{} &&
   (sizeof(unsigned long) == sizeof(T)),
   T
 >
@@ -84,8 +84,8 @@ swap(T const v) noexcept
 }
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{} &&
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{} &&
   (sizeof(unsigned short) == sizeof(T)),
   T
 >
@@ -95,9 +95,9 @@ swap(T const v) noexcept
 }
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{} &&
-  (sizeof(::std::int8_t) == sizeof(T)),
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{} &&
+  (sizeof(std::int8_t) == sizeof(T)),
   T
 >
 swap(T const v) noexcept
@@ -110,14 +110,14 @@ swap(T const v) noexcept
 namespace
 {
 
-template<class T, ::std::size_t ...I>
-constexpr inline T swap_impl(T v, ::std::index_sequence<I...> const) noexcept
+template<class T, std::size_t ...I>
+constexpr inline T swap_impl(T v, std::index_sequence<I...> const) noexcept
 {
   return (
     (
-      ((v >> (I * ::std::numeric_limits<char>::digits)) & ::std::uint8_t(~0))
+      ((v >> (I * std::numeric_limits<char>::digits)) & std::uint8_t(~0))
       <<
-      ((sizeof(T) - 1 - I) * ::std::numeric_limits<char>::digits)
+      ((sizeof(T) - 1 - I) * std::numeric_limits<char>::digits)
     ) | ...
   );
 };
@@ -125,13 +125,13 @@ constexpr inline T swap_impl(T v, ::std::index_sequence<I...> const) noexcept
 }
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{},
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{},
   T
 >
 swap(T const v) noexcept
 {
-  return swap_impl<T>(v, ::std::make_index_sequence<sizeof(T)>{});
+  return swap_impl<T>(v, std::make_index_sequence<sizeof(T)>{});
 }
 
 #endif
@@ -144,8 +144,8 @@ swap(T const v) noexcept
     defined(_MIBSEB) || defined(__MIBSEB) || defined(__MIBSEB__)
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{},
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{},
   T
 >
 swap_if_le(T const i) noexcept
@@ -154,8 +154,8 @@ swap_if_le(T const i) noexcept
 }
 
 template <typename T>
-inline ::std::enable_if_t<
-  ::std::is_integral<T>{},
+inline std::enable_if_t<
+  std::is_integral<T>{},
   T
 >
 swap_if_be(T const i) noexcept
@@ -171,8 +171,8 @@ swap_if_be(T const i) noexcept
     defined(_MIPSEL) || defined(__MIPSEL) || defined(__MIPSEL__)
 
 template <typename T>
-constexpr inline ::std::enable_if_t<
-  ::std::is_integral<T>{},
+constexpr inline std::enable_if_t<
+  std::is_integral<T>{},
   T
 >
 swap_if_be(T const i) noexcept
@@ -181,8 +181,8 @@ swap_if_be(T const i) noexcept
 }
 
 template <typename T>
-inline ::std::enable_if_t<
-  ::std::is_integral<T>{},
+inline std::enable_if_t<
+  std::is_integral<T>{},
   T
 >
 swap_if_le(T const i) noexcept
