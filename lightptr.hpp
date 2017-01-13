@@ -15,15 +15,12 @@
 namespace gnr
 {
 
-namespace detail
-{
-
-namespace light_ptr
+namespace
 {
 
 using counter_type = unsigned;
 
-using atomic_type = std::atomic<counter_type>;
+using atomic_counter_type = std::atomic<counter_type>;
 
 template <typename T>
 using deleter_type = void (*)(T*);
@@ -40,7 +37,8 @@ struct ref_type<void>
   using type = void;
 };
 
-}
+template <typename U>
+using ref_type_t = typename ref_type<U>::type;
 
 }
 
@@ -65,9 +63,10 @@ class light_ptr
     using type = V[];
   };
 
-  using element_type = std::remove_extent_t<T>;
+  template <typename ...A>
+  using deletion_type_t = typename deletion_type<A...>::type;
 
-  using deleter_type = detail::light_ptr::deleter_type<element_type>;
+  using element_type = std::remove_extent_t<T>;
 
   class counter_base
   {
@@ -75,12 +74,12 @@ class light_ptr
 
     using invoker_type = void (*)(counter_base*, element_type*) noexcept;
 
-    detail::light_ptr::atomic_type counter_{};
+    atomic_counter_type counter_{};
 
     invoker_type const invoker_;
 
   protected:
-    explicit counter_base(detail::light_ptr::counter_type const c,
+    explicit counter_base(counter_type const c,
       invoker_type const invoker) noexcept :
       counter_(c),
       invoker_(invoker)
@@ -89,12 +88,10 @@ class light_ptr
 
   public:
     template <typename U>
-    typename std::enable_if<!std::is_void<U>{}>::type
-    dec_ref(U* const ptr) noexcept
+    std::enable_if_t<!std::is_void<U>{}> dec_ref(U* const ptr) noexcept
     {
-      if (detail::light_ptr::counter_type(1) ==
-        counter_.fetch_sub(detail::light_ptr::counter_type(1),
-          std::memory_order_relaxed))
+      if (counter_type(1) ==
+        counter_.fetch_sub(counter_type(1), std::memory_order_relaxed))
       {
         using type_must_be_complete = char[sizeof(U) ? 1 : -1];
         (void)sizeof(type_must_be_complete);
@@ -104,12 +101,10 @@ class light_ptr
     }
 
     template <typename U>
-    typename std::enable_if<std::is_void<U>{}>::type
-    dec_ref(U* const ptr) noexcept
+    std::enable_if_t<std::is_void<U>{}> dec_ref(U* const ptr) noexcept
     {
-      if (detail::light_ptr::counter_type(1) ==
-        counter_.fetch_sub(detail::light_ptr::counter_type(1),
-          std::memory_order_relaxed))
+      if (counter_type(1) ==
+        counter_.fetch_sub(counter_type(1), std::memory_order_relaxed))
       {
         invoker_(this, ptr);
       }
@@ -118,8 +113,7 @@ class light_ptr
 
     void inc_ref() noexcept
     {
-      counter_.fetch_add(detail::light_ptr::counter_type(1),
-        std::memory_order_relaxed);
+      counter_.fetch_add(counter_type(1), std::memory_order_relaxed);
     }
   };
 
@@ -141,8 +135,7 @@ class light_ptr
     }
 
   public:
-    explicit counter(detail::light_ptr::counter_type const c,
-      D&& d) noexcept :
+    explicit counter(counter_type const c, D&& d) noexcept :
       counter_base(c, invoked),
       d_(std::forward<D>(d))
     {
@@ -245,23 +238,22 @@ public:
 
   explicit operator bool() const noexcept { return counter_; }
 
-  typename detail::light_ptr::ref_type<T>::type
-  operator*() const noexcept
+  ref_type_t<T> operator*() const noexcept
   {
     return *reinterpret_cast<T*>(ptr_);
   }
 
-  T* operator->() const noexcept { return reinterpret_cast<T*>(ptr_); }
+  auto operator->() const noexcept { return reinterpret_cast<T*>(ptr_); }
 
-  template <typename U = T, typename =
-    typename std::enable_if<std::is_array<U>{}>::type>
-  typename detail::light_ptr::ref_type<element_type>::type operator[](
-    std::size_t const i) const noexcept
+  template <typename U = T,
+    typename = std::enable_if_t<std::is_array<U>{}>
+  >
+  ref_type_t<element_type> operator[](std::size_t const i) const noexcept
   {
     return ptr_[i];
   }
 
-  element_type* get() const noexcept { return ptr_; }
+  auto get() const noexcept { return ptr_; }
 
   void reset() noexcept { reset(nullptr); }
 
@@ -281,7 +273,7 @@ public:
   {
     reset(p,
       [](element_type* const p) noexcept {
-        std::default_delete<typename deletion_type<T, U>::type>()(
+        std::default_delete<deletion_type_t<T, U>>()(
           static_cast<U*>(p)
         );
       }
@@ -298,10 +290,7 @@ public:
     // else do nothing
 
     counter_ = p ?
-      new counter<D>(
-        detail::light_ptr::counter_type(1),
-        std::forward<D>(d)
-      ) :
+      new counter<D>(counter_type(1), std::forward<D>(d)) :
       nullptr;
 
     ptr_ = p;
@@ -315,21 +304,21 @@ public:
 
   bool unique() const noexcept
   {
-    return detail::light_ptr::counter_type(1) == use_count();
+    return counter_type(1) == use_count();
   }
 
-  detail::light_ptr::counter_type use_count() const noexcept
+  counter_type use_count() const noexcept
   {
     return counter_ ?
       counter_->counter_.load(std::memory_order_relaxed) :
-      detail::light_ptr::counter_type{};
+      counter_type{};
   }
 };
 
-template<class T, class ...Args>
-inline light_ptr<T> make_light(Args&& ...args)
+template<class T, typename ...A>
+inline light_ptr<T> make_light(A&& ...args)
 {
-  return light_ptr<T>(new T(std::forward<Args>(args)...));
+  return light_ptr<T>(new T(std::forward<A>(args)...));
 }
 
 }
