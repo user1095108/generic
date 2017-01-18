@@ -190,23 +190,13 @@ constexpr inline auto extract_signature(F const&) noexcept ->
 template <typename Any = gnr::some<4 * sizeof(void*)>>
 class any_function
 {
-  using typeid_t = std::uintptr_t;
+  using typeid_t = void(*)();
 
-  #if defined(__GNUC__)
   template <typename T>
   static typeid_t type_id() noexcept
   {
     return typeid_t(type_id<T>);
   }
-  #else
-  template <typename T>
-  static typeid_t type_id() noexcept
-  {
-    static char const type_id{};
-
-    return typeid_t(&type_id);
-  }
-  #endif // __GNUC__
 
   void (*f_)(Any const&, void const*, Any&);
 
