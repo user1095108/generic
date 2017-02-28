@@ -321,7 +321,7 @@ struct meta
 };
 
 template <typename U>
-inline std::enable_if_t<!std::is_void<U>{}, struct meta const*>
+std::enable_if_t<!std::is_void<U>{}, struct meta const*>
 get_meta()
 {
   static struct meta const m{
@@ -336,7 +336,7 @@ get_meta()
 }
 
 template <typename U>
-inline std::enable_if_t<std::is_void<U>{}, struct meta const*>
+std::enable_if_t<std::is_void<U>{}, struct meta const*>
 get_meta()
 {
   static struct meta const m{
