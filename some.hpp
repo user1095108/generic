@@ -506,7 +506,7 @@ public:
 
   explicit operator bool() const noexcept
   {
-    return detail::some::get_meta<void>() != meta_;
+    return type_id<void>() != type_id();
   }
 
   template <typename U,
