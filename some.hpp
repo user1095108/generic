@@ -307,6 +307,8 @@ get_mover() noexcept
   return mover_stub<U>;
 }
 
+using typeid_t = void(*)();
+
 struct meta
 {
   copier_type copier;
@@ -314,6 +316,8 @@ struct meta
   deleter_type deleter;
 
   std::size_t size;
+
+  typeid_t type_id;
 };
 
 template <typename U>
@@ -324,7 +328,8 @@ get_meta()
     get_copier<U>(),
     get_mover<U>(),
     deleter_stub<U>,
-    sizeof(U)
+    sizeof(U),
+    typeid_t(get_meta<U>)
   };
 
   return &m;
@@ -338,7 +343,8 @@ get_meta()
     get_copier<U>(),
     get_mover<U>(),
     deleter_stub<U>,
-    0
+    0,
+    typeid_t(get_meta<U>)
   };
 
   return &m;
@@ -360,7 +366,7 @@ class some
   friend class some;
 
 public:
-  using typeid_t = std::uintptr_t;
+  using typeid_t = detail::some::typeid_t;
 
   some() = default;
 
@@ -678,7 +684,7 @@ public:
     return typeid_t(detail::some::get_meta<U>());
   }
 
-  typeid_t type_id() const noexcept { return typeid_t(meta_); }
+  typeid_t type_id() const noexcept { return meta_->type_id; }
 
 private:
   template <typename U, std::size_t M> friend bool contains(some<M> const&) noexcept;
