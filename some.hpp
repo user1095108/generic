@@ -393,9 +393,9 @@ public:
       }
       else
       {
-#ifndef NDEBUG
+#if defined(__cpp_exceptions)
         throw std::bad_typeid();
-#endif // NDEBUG
+#endif
       }
     }
     // else do nothing
@@ -422,9 +422,9 @@ public:
       }
       else
       {
-#ifndef NDEBUG
+#if defined(__cpp_exceptions)
         throw std::bad_typeid();
-#endif // NDEBUG
+#endif
       }
     }
     // else do nothing
@@ -449,9 +449,9 @@ public:
       }
       else
       {
-#ifndef NDEBUG
+#if defined(__cpp_exceptions)
         throw std::bad_typeid();
-#endif // NDEBUG
+#endif
       }
     }
     // else do nothing
@@ -478,9 +478,9 @@ public:
       }
       else
       {
-#ifndef NDEBUG
+#if defined(__cpp_exceptions)
         throw std::bad_typeid();
-#endif // NDEBUG
+#endif
       }
     }
     // else do nothing
@@ -672,9 +672,9 @@ public:
     }
     else
     {
-#ifndef NDEBUG
+#if defined(__cpp_exceptions)
       throw std::bad_typeid();
-#endif // NDEBUG
+#endif
     }
   }
 
@@ -719,13 +719,10 @@ namespace std
 
 template <typename U, std::size_t N>
 inline U& get(gnr::some<N>& s)
-#ifdef NDEBUG
-noexcept
-#endif // NDEBUG
 {
   using nonref = gnr::detail::some::remove_cvr_t<U>;
 
-#ifndef NDEBUG
+#if defined(__cpp_exceptions)
   if (gnr::contains<nonref>(s))
   {
     return *reinterpret_cast<nonref*>(&s.store_);
@@ -736,18 +733,15 @@ noexcept
   }
 #else
   return *reinterpret_cast<nonref*>(&s.store_);
-#endif // NDEBUG
+#endif
 }
 
 template <typename U, std::size_t N>
 inline U const& get(gnr::some<N> const& s)
-#ifdef NDEBUG
-noexcept
-#endif // NDEBUG
 {
   using nonref = gnr::detail::some::remove_cvr_t<U>;
 
-#ifndef NDEBUG
+#if defined(__cpp_exceptions)
   if (gnr::contains<nonref>(s))
   {
     return *reinterpret_cast<nonref const*>(&s.store_);
@@ -758,7 +752,7 @@ noexcept
   }
 #else
   return *reinterpret_cast<nonref const*>(&s.store_);
-#endif // NDEBUG
+#endif
 }
 
 }
