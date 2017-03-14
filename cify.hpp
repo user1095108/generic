@@ -13,16 +13,16 @@ namespace
 //////////////////////////////////////////////////////////////////////////////
 template <typename F, int I, typename L, typename R, typename ...A>
 inline F cify(L&& l, R (*)(A...) noexcept(noexcept(
-  ::std::declval<F>()(::std::declval<A>()...))))
+  std::declval<F>()(std::declval<A>()...))))
 {
-  static L l_(::std::forward<L>(l));
+  static L l_(std::forward<L>(l));
   static bool full;
 
   if (full)
   {
     l_.~L();
 
-    new (static_cast<void*>(&l_)) L(::std::forward<L>(l));
+    new (static_cast<void*>(&l_)) L(std::forward<L>(l));
   }
   else
   {
@@ -30,25 +30,25 @@ inline F cify(L&& l, R (*)(A...) noexcept(noexcept(
   }
 
   return [](A... args) noexcept(noexcept(
-      ::std::declval<F>()(::std::forward<A>(args)...))) -> R
+      std::declval<F>()(std::forward<A>(args)...))) -> R
     {
-      return l_(::std::forward<A>(args)...);
+      return l_(std::forward<A>(args)...);
     };
 }
 
 //////////////////////////////////////////////////////////////////////////////
 template <typename F, int I, typename L, typename R, typename ...A>
 inline F thread_local_cify(L&& l, R (*)(A...) noexcept(noexcept(
-  ::std::declval<F>()(::std::declval<A>()...))))
+  std::declval<F>()(std::declval<A>()...))))
 {
-  static thread_local L l_(::std::forward<L>(l));
+  static thread_local L l_(std::forward<L>(l));
   static thread_local bool full;
 
   if (full)
   {
     l_.~L();
 
-    new (static_cast<void*>(&l_)) L(::std::forward<L>(l));
+    new (static_cast<void*>(&l_)) L(std::forward<L>(l));
   }
   else
   {
@@ -56,9 +56,9 @@ inline F thread_local_cify(L&& l, R (*)(A...) noexcept(noexcept(
   }
 
   return [](A... args) noexcept(noexcept(
-      ::std::declval<F>()(::std::forward<A>(args)...))) -> R
+      std::declval<F>()(std::forward<A>(args)...))) -> R
     {
-      return l_(::std::forward<A>(args)...);
+      return l_(std::forward<A>(args)...);
     };
 }
 
@@ -68,14 +68,14 @@ inline F thread_local_cify(L&& l, R (*)(A...) noexcept(noexcept(
 template <typename F, int I = 0, typename L>
 inline F cify(L&& l)
 {
-  return cify<F, I>(::std::forward<L>(l), F());
+  return cify<F, I>(std::forward<L>(l), F());
 }
 
 //////////////////////////////////////////////////////////////////////////////
 template <typename F, int I = 0, typename L>
 inline F thread_local_cify(L&& l)
 {
-  return thread_local_cify<F, I>(::std::forward<L>(l), F());
+  return thread_local_cify<F, I>(std::forward<L>(l), F());
 }
 
 }
