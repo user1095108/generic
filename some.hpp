@@ -491,12 +491,8 @@ public:
   template <
     typename U,
     typename = std::enable_if_t<
-      !std::is_array<
-        typename detail::some::remove_cvr_t<U>
-      >{} &&
-      !std::is_same<
-        typename std::decay<U>::type, some
-      >{}
+      !std::is_array<detail::some::remove_cvr_t<U>>{} &&
+      !std::is_same<std::decay_t<U>, some>{}
     >
   >
   some(U&& f)
@@ -511,9 +507,7 @@ public:
 
   template <typename U,
     typename = std::enable_if_t<
-      !std::is_same<
-        typename std::decay<U>::type, some
-      >{}
+      !std::is_same<std::decay_t<U>, some>{}
     >
   >
   some& operator=(U&& u)
@@ -689,13 +683,8 @@ public:
 private:
   template <typename U, std::size_t M> friend bool contains(some<M> const&) noexcept;
 
-#ifdef NDEBUG
-  template <typename U, std::size_t M> friend U& std::get(some<M>&) noexcept;
-  template <typename U, std::size_t M> friend U const& std::get(some<M> const&) noexcept;
-#else
   template <typename U, std::size_t M> friend U& std::get(some<M>&);
   template <typename U, std::size_t M> friend U const& std::get(some<M> const&);
-#endif // NDEBUG
 
   struct detail::some::meta const* meta_{detail::some::get_meta<void>()};
 
