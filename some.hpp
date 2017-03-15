@@ -705,7 +705,7 @@ private:
 template <typename U, std::size_t N>
 inline bool contains(some<N> const& s) noexcept
 {
-  return detail::some::get_meta<U>() == s.meta_;
+  return detail::some::get_meta<std::decay_t<U>>() == s.meta_;
 }
 
 #ifdef __GNUC__
