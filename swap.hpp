@@ -4,6 +4,8 @@
 
 #include <cstdint>
 
+#include <cstring>
+
 #include <type_traits>
 
 #if defined(_MSC_VER)
@@ -12,6 +14,16 @@
 
 namespace gnr
 {
+
+template <class Dst, class Src>
+inline Dst bit_cast(Src const src) noexcept
+{
+  Dst dst;
+
+  std::memcpy(&dst, src, sizeof(dst));
+
+  return dst;
+}
 
 #if defined(__GNUC__)
 
