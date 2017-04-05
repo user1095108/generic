@@ -148,19 +148,20 @@ swap(T const v) noexcept
 
 #endif
 
-#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ || \
-    defined(__BIG_ENDIAN__) || \
-    defined(__ARMEB__) || \
-    defined(__THUMBEB__) || \
-    defined(__AARCH64EB__) || \
-    defined(_MIBSEB) || defined(__MIBSEB) || defined(__MIBSEB__)
-
+#if (defined(__BIG_ENDIAN__) && !defined(__LITTLE_ENDIAN__)) || \
+  (defined(_BIG_ENDIAN) && !defined(_LITTLE_ENDIAN)) || \
+  defined(__ARMEB__) || \
+  defined(__THUMBEB__) || \
+  defined(__AARCH64EB__) || \
+  defined(_MIPSEB) || \
+  defined(__MIPSEB) || \
+  defined(__MIPSEB__)
 template <typename T>
 constexpr inline std::enable_if_t<
   std::is_integral<T>{},
   T
 >
-swap_if_le(T const i) noexcept
+from_be(T const i) noexcept
 {
   return i;
 }
@@ -170,24 +171,26 @@ inline std::enable_if_t<
   std::is_integral<T>{},
   T
 >
-swap_if_be(T const i) noexcept
+from_le(T const i) noexcept
 {
   return swap(i);
 }
 
-#elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ || \
-    defined(__LITTLE_ENDIAN__) || \
-    defined(__ARMEL__) || \
-    defined(__THUMBEL__) || \
-    defined(__AARCH64EL__) || \
-    defined(_MIPSEL) || defined(__MIPSEL) || defined(__MIPSEL__)
+#elif (defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) || \
+  (defined(_LITTLE_ENDIAN) && !defined(_BIG_ENDIAN)) || \
+  defined(__ARMEL__) || \
+  defined(__THUMBEL__) || \
+  defined(__AARCH64EL__) || \
+  defined(_MIPSEL) || \
+  defined(__MIPSEL) || \
+  defined(__MIPSEL__)
 
 template <typename T>
 constexpr inline std::enable_if_t<
   std::is_integral<T>{},
   T
 >
-swap_if_be(T const i) noexcept
+from_le(T const i) noexcept
 {
   return i;
 }
@@ -197,7 +200,7 @@ inline std::enable_if_t<
   std::is_integral<T>{},
   T
 >
-swap_if_le(T const i) noexcept
+from_be(T const i) noexcept
 {
   return swap(i);
 }
