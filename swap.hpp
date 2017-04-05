@@ -147,7 +147,7 @@ swap(T const v) noexcept
 
 #endif
 
-#if (defined(__BYTE_ORDER) && (__BYTE_ORDER == __BIG_ENDIAN)) || \
+#if (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)) || \
   (defined(__BIG_ENDIAN__) && !defined(__LITTLE_ENDIAN__)) || \
   (defined(_BIG_ENDIAN) && !defined(_LITTLE_ENDIAN)) || \
   defined(__ARMEB__) || \
@@ -176,7 +176,7 @@ from_le(T const i) noexcept
   return swap(i);
 }
 
-#elif (defined(__BYTE_ORDER) && (__BYTE_ORDER == __LITTLE_ENDIAN)) || \
+#elif (defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)) || \
   (defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) || \
   (defined(_LITTLE_ENDIAN) && !defined(_BIG_ENDIAN)) || \
   defined(__ARMEL__) || \
