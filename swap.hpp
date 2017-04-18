@@ -20,6 +20,16 @@ inline Dst bit_cast(Src const src) noexcept
 {
   Dst dst;
 
+  std::memcpy(&dst, &src, sizeof(dst));
+
+  return dst;
+}
+
+template <class Dst, class Src>
+inline Dst bit_cast(Src const* src) noexcept
+{
+  Dst dst;
+
   std::memcpy(&dst, src, sizeof(dst));
 
   return dst;
