@@ -1,18 +1,15 @@
-#ifndef GENERIC_MEMFUN_HPP
-# define GENERIC_MEMFUN_HPP
+#ifndef GNR_MEMFUN_HPP
+# define GNR_MEMFUN_HPP
 # pragma once
 
 #include <utility>
 
 #define MEM_FUN(f) decltype(&f),&f
 
-namespace generic
+namespace gnr
 {
 
-namespace detail
-{
-
-namespace mem_fun
+namespace
 {
 
 template <typename FP, FP fp, typename R, class C, typename ...A>
@@ -109,8 +106,6 @@ inline auto member_delegate(C& object,
     {
       return (object.*fp)(::std::forward<A>(args)...);
     };
-}
-
 }
 
 }
@@ -129,4 +124,4 @@ inline auto mem_fun(C& object) noexcept
 
 }
 
-#endif // GENERIC_MEMFUN_HPP
+#endif // GNR_MEMFUN_HPP
