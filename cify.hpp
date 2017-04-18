@@ -2,6 +2,8 @@
 # define GNR_CIFY_HPP
 # pragma once
 
+#include <new>
+
 #include <utility>
 
 namespace gnr
