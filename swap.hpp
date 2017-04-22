@@ -26,7 +26,7 @@ inline Dst bit_cast(Src const src) noexcept
 }
 
 template <class Dst, class Src>
-inline Dst bit_cast(Src const* src) noexcept
+inline Dst bit_cast(Src* const src) noexcept
 {
   Dst dst;
 
