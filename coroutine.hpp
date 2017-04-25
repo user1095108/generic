@@ -121,6 +121,7 @@ public:
     {
       restorestate(env_in_);
     }
+    // else do nothing
   }
 
 #if defined(__GNUC__)
