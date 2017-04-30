@@ -19,7 +19,7 @@ namespace gnr
 {
 
 constexpr auto const default_forwarder_noexcept =
-#if __cpp_exceptions
+#if defined(__cpp_exceptions) && __cpp_exceptions
 false;
 #else
 true;
