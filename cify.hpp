@@ -204,7 +204,6 @@ inline auto cify(F&& f, signature<R(A...)>) noexcept
     };
 }
 
-//////////////////////////////////////////////////////////////////////////////
 template <int I, typename F, typename R, typename ...A>
 inline auto cify_once(F&& f, signature<R(A...)>) noexcept
 {
@@ -228,7 +227,6 @@ auto cify(F&& f) noexcept
   );
 }
 
-//////////////////////////////////////////////////////////////////////////////
 template <int I = 0, typename F>
 auto cify_once(F&& f) noexcept
 {
