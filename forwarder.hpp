@@ -18,18 +18,23 @@
 namespace gnr
 {
 
-constexpr auto const default_forwarder_noexcept =
+namespace
+{
+
+constexpr auto const default_noexcept =
 #if defined(__cpp_exceptions) && __cpp_exceptions
 false;
 #else
 true;
 #endif // __cpp_exceptions
 
-constexpr auto const default_forwarder_size = 4 * sizeof(void*);
+constexpr auto const default_size = 4 * sizeof(void*);
+
+}
 
 template <typename F,
-  std::size_t N = default_forwarder_size,
-  bool NE = default_forwarder_noexcept
+  std::size_t N = default_size,
+  bool NE = default_noexcept
 >
 class forwarder;
 
