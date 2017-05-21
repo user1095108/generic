@@ -152,7 +152,15 @@ public:
 
   void reset() noexcept { stub_ = nullptr; }
 
-  void swap(forwarder& other) noexcept { std::swap(*this, other); }
+  void swap(forwarder& other) noexcept
+  {
+    std::swap(*this, other);
+  }
+
+  void swap(forwarder&& other) noexcept
+  {
+    std::swap(*this, std::move(other));
+  }
 
   template <typename T>
   auto target() noexcept
