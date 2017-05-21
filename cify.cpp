@@ -10,5 +10,9 @@ int main()
 
   f();
 
+  f = gnr::cify_once([&a]{std::cout << ++a << std::endl;});
+
+  f();
+
   return 0;
 }
