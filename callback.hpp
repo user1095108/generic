@@ -200,7 +200,7 @@ constexpr inline auto extract_signature(F const&) noexcept ->
 }
 
 template <std::size_t N = default_size, bool NE = default_noexcept>
-class callback<N, NE>
+class callback
 {
   using typeid_t = void(*)();
 
@@ -210,7 +210,7 @@ class callback<N, NE>
     return typeid_t(type_id<T>);
   }
 
-  void (*f_)(void const*) noexcept(NE) {};
+  void (*f_)(void*, void const*, void*) noexcept(NE) {};
 
   std::aligned_storage_t<N> store_;
 
@@ -225,16 +225,15 @@ class callback<N, NE>
   >
   invoker(void* const store,
     void const* const v,
-    R* const r) noexcept(
-    noexcept(do_invoke<R, A...>(std::get<F>(any),
-      *static_cast<std::tuple<A...> const*>(v),
-      std::make_index_sequence<sizeof...(A)>())
+    void* const r) noexcept(
+    noexcept(std::apply(*static_cast<F*>(store),
+        *static_cast<std::tuple<A...> const*>(v)
+      )
     )
   )
   {
-    *r = std::apply(*static_cast<F*>(store),
-      *static_cast<std::tuple<A...> const*>(v),
-      std::make_index_sequence<sizeof...(A)>()
+    *static_cast<R*>(r) = std::apply(*static_cast<F*>(store),
+      *static_cast<std::tuple<A...> const*>(v)
     );
   }
 
@@ -247,26 +246,24 @@ class callback<N, NE>
     void const* const v,
     void*) noexcept(
     noexcept(std::apply(*static_cast<F*>(store),
-        *static_cast<std::tuple<A...> const*>(v),
-        std::make_index_sequence<sizeof...(A)>()
+        *static_cast<std::tuple<A...> const*>(v)
       )
     )
   )
   {
     std::apply(*static_cast<F*>(store),
-      *static_cast<std::tuple<A...> const*>(v),
-      std::make_index_sequence<sizeof...(A)>()
+      *static_cast<std::tuple<A...> const*>(v)
     );
   }
 
   template <typename F, typename R, typename ...A>
   static std::enable_if_t<
     std::is_member_function_pointer<F>{} &&
-    !is_void<R>{}
+    !std::is_void<R>{}
   >
   invoker(void* const store,
     void const* const v,
-    R* const r) noexcept(
+    void* const r) noexcept(
     noexcept(std::apply(
         *static_cast<F*>(store),
         *static_cast<std::tuple<class_ref_t<F>, A...> const*>(v)
@@ -274,7 +271,7 @@ class callback<N, NE>
     )
   )
   {
-    *r = std::apply(*static_cast<F*>(store),
+    *static_cast<R*>(r) = std::apply(*static_cast<F*>(store),
       *static_cast<std::tuple<class_ref_t<F>, A...> const*>(v)
     );
   }
@@ -282,14 +279,15 @@ class callback<N, NE>
   template <typename F, typename R, typename ...A>
   static std::enable_if_t<
     std::is_member_function_pointer<F>{} &&
-    is_void<R>{}
+    std::is_void<R>{}
   >
   invoker(void* const store,
     void const* const v,
     void*) noexcept(
-    noexcept(do_invoke<R, A...>(
-      *static_cast<std::tuple<class_ref_t<F>, A...> const*>(v),
-      std::make_index_sequence<sizeof...(A) + 1>())
+    noexcept(std::apply(
+        *static_cast<F*>(store),
+        *static_cast<std::tuple<class_ref_t<F>, A...> const*>(v)
+      )
     )
   )
   {
@@ -298,26 +296,57 @@ class callback<N, NE>
     );
   }
 
-  template<typename T, typename ...U, std::size_t M>
-  friend bool operator==(callback<T (U...), M> const&,
-    std::nullptr_t) noexcept;
-  template<typename T, typename ...U, std::size_t M>
-  friend bool operator==(std::nullptr_t,
-    callback<T (U...), M> const&) noexcept;
+  template <typename F, typename R, typename ...A>
+  std::enable_if_t<!std::is_member_function_pointer<F>{}>
+  assign(signature<R(A...)>) noexcept
+  {
+    f_ = invoker<F, R, A...>;
 
-  template<typename T, typename ...U, std::size_t M>
-  friend bool operator!=(callback<T (U...), M> const&,
-    std::nullptr_t) noexcept;
-  template<typename T, typename ...U, std::size_t M>
-  friend bool operator!=(std::nullptr_t,
-    callback<T (U...), M> const&) noexcept;
+#ifndef NDEBUG
+    type_id_ = type_id<std::tuple<A...>>();
+#endif // NDEBUG
+  }
+
+  template <typename F, typename R, typename ...A>
+  std::enable_if_t<std::is_member_function_pointer<F>{}>
+  assign(signature<R(A...)>) noexcept
+  {
+    f_ = invoker<F, R, A...>;
+
+#ifndef NDEBUG
+    type_id_ = type_id<std::tuple<class_ref_t<F>, A...>>();
+#endif // NDEBUG
+  }
+
+  template <std::size_t M>
+  friend bool operator==(callback<M> const&, std::nullptr_t) noexcept;
+  template<std::size_t M>
+  friend bool operator==(std::nullptr_t, callback<M> const&) noexcept;
+
+  template<std::size_t M>
+  friend bool operator!=(callback<M> const&, std::nullptr_t) noexcept;
+  template<std::size_t M>
+  friend bool operator!=(std::nullptr_t, callback<M> const&) noexcept;
 
 public:
-  using result_type = R;
-
   enum : std::size_t { size = N };
 
 public:
+  template <typename T>
+  struct arg_type
+  {
+    using type = std::decay_t<T>;
+  };
+
+  template <typename T>
+  struct arg_type<std::reference_wrapper<T> >
+  {
+    using type = T&;
+  };
+
+  template <typename T>
+  using arg_type_t = typename arg_type<T>::type;
+
   callback() = default;
 
   callback(callback const&) = default;
@@ -346,26 +375,10 @@ public:
     return *this;
   }
 
-  explicit operator bool() const noexcept { return stub_; }
+  explicit operator bool() const noexcept { return f_; }
 
-  template <typename R = void>
+  template <typename R = void, typename ...A>
   R operator()(A... args) const
-    noexcept(
-        noexcept(stub_(const_cast<void*>(static_cast<void const*>(&store_)),
-          std::forward<A>(args)...
-        )
-      )
-    )
-  {
-    //assert(f_);
-    f_(const_cast<void*>(static_cast<void const*>(&store_)),
-      std::forward<A>(args)...
-    );
-  }
-
-  template <typename R>
-  std::enable_if_t<!std::is_void<R>{}, R>
-  operator()(A... args) const
     noexcept(
         noexcept(f_(const_cast<void*>(static_cast<void const*>(&store_)),
           nullptr,
@@ -375,11 +388,29 @@ public:
     )
   {
     //assert(f_);
+    f_(const_cast<void*>(static_cast<void const*>(&store_)),
+      std::tuple<arg_type_t<A>...>{std::forward<A>(args)...},
+      {}
+    );
+  }
+
+  template <typename R, typename ...A>
+  std::enable_if_t<!std::is_void<R>{}, R>
+  operator()(A... args) const
+    noexcept(
+        noexcept(f_(const_cast<void*>(static_cast<void const*>(&store_)),
+          std::tuple<arg_type_t<A>...>{std::forward<A>(args)...},
+          nullptr
+        )
+      )
+    )
+  {
+    //assert(f_);
     R r;
 
     f_(const_cast<void*>(static_cast<void const*>(&store_)),
-      &r,
-      std::forward<A>(args)...
+      std::tuple<arg_type_t<A>...>{std::forward<A>(args)...},
+      &r
     );
 
     return r;
@@ -402,31 +433,10 @@ public:
 
     ::new (static_cast<void*>(&store_)) functor_type(std::forward<F>(f));
 
-    stub_ = [](void* const ptr, A&&... args) noexcept(
-        noexcept(
-        (
-#if __cplusplus <= 201402L
-          (*static_cast<functor_type*>(ptr))(
-            std::forward<A>(args)...)
-#else
-          std::invoke(*static_cast<functor_type*>(ptr),
-            std::forward<A>(args)...)
-#endif // __cplusplus
-        )
-      )
-    ) -> R
-    {
-#if __cplusplus <= 201402L
-      return (*static_cast<functor_type*>(ptr))(
-        std::forward<A>(args)...);
-#else
-      return std::invoke(*static_cast<functor_type*>(ptr),
-        std::forward<A>(args)...);
-#endif // __cplusplus
-    };
+    assign<F>(extract_signature(std::forward<F>(f)));
   }
 
-  void reset() noexcept { stub_ = nullptr; }
+  void reset() noexcept { f_ = {}; }
 
   void swap(callback& other) noexcept
   {
