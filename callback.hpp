@@ -377,30 +377,13 @@ public:
 
   explicit operator bool() const noexcept { return f_; }
 
-  template <typename R = void, typename ...A>
-  R operator()(A... args) const
-    noexcept(
-        noexcept(f_(const_cast<void*>(static_cast<void const*>(&store_)),
-          nullptr,
-          std::forward<A>(args)...
-        )
-      )
-    )
-  {
-    //assert(f_);
-    f_(const_cast<void*>(static_cast<void const*>(&store_)),
-      std::tuple<arg_type_t<A>...>{std::forward<A>(args)...},
-      {}
-    );
-  }
-
   template <typename R, typename ...A>
   std::enable_if_t<!std::is_void<R>{}, R>
-  operator()(A... args) const
+  invoke(A... args) const
     noexcept(
         noexcept(f_(const_cast<void*>(static_cast<void const*>(&store_)),
-          std::tuple<arg_type_t<A>...>{std::forward<A>(args)...},
-          nullptr
+          {},
+          {}
         )
       )
     )
@@ -408,12 +391,52 @@ public:
     //assert(f_);
     R r;
 
-    f_(const_cast<void*>(static_cast<void const*>(&store_)),
-      std::tuple<arg_type_t<A>...>{std::forward<A>(args)...},
-      &r
-    );
+    auto const a(std::tuple<arg_type_t<A>...>{std::forward<A>(args)...});
+
+    f_(const_cast<void*>(static_cast<void const*>(&store_)), &a, &r);
 
     return r;
+  }
+
+  template <typename R = void, typename ...A>
+  std::enable_if_t<std::is_void<R>{}, R>
+  invoke(A... args) const
+    noexcept(
+        noexcept(f_(const_cast<void*>(static_cast<void const*>(&store_)),
+          {},
+          {}
+        )
+      )
+    )
+  {
+    //assert(f_);
+    auto const a(std::tuple<arg_type_t<A>...>{std::forward<A>(args)...});
+
+    f_(const_cast<void*>(static_cast<void const*>(&store_)), &a, {});
+  }
+
+  template <typename R, typename ...A>
+  std::enable_if_t<!std::is_void<R>{}, R>
+  operator()(A&&... args) const noexcept(
+    noexcept(std::declval<callback>().template invoke<R>(
+        std::forward<A>(args)...
+      )
+    )
+  )
+  {
+    return invoke<R>(std::forward<A>(args)...);
+  }
+
+  template <typename R = void, typename ...A>
+  std::enable_if_t<std::is_void<R>{}, R>
+  operator()(A&&... args) const noexcept(
+    noexcept(std::declval<callback>().template invoke<R>(
+        std::forward<A>(args)...
+      )
+    )
+  )
+  {
+    invoke<R>(std::forward<A>(args)...);
   }
 
   void assign(std::nullptr_t) noexcept

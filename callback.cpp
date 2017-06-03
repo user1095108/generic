@@ -21,20 +21,20 @@ int main()
     }
   );
 
-  std::cout << f<int>() << std::endl;
+  std::cout << f.template operator()<int>() << std::endl;
 
   f = [](int a, int b, int c)
     {
       std::cout << a << " " << b << " " << c << std::endl;
     };
 
-  f(1, 2, 3);
+  f.invoke<void>(1, 2, 3);
 
   S s;
 
   f = &S::apply;
 
-  f(std::ref(s));
+  f.invoke<void>(std::ref(s));
 
   return 0;
 }
