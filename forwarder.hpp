@@ -7,8 +7,6 @@
 // std::size_t
 #include <cstddef>
 
-#include <cstring>
-
 #include <functional>
 
 #include <type_traits>
