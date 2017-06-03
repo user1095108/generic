@@ -454,40 +454,6 @@ public:
     invoke<R>(std::forward<A>(args)...);
   }
 
-  template <typename R, typename ...A>
-  std::enable_if_t<!std::is_void<R>{}, R>
-  apply(std::tuple<A...> const& t) const
-    noexcept(
-        noexcept(f_(const_cast<void*>(static_cast<void const*>(&store_)),
-          {},
-          {}
-        )
-      )
-    )
-  {
-    //assert(f_);
-    R r;
-
-    f_(const_cast<void*>(static_cast<void const*>(&store_)), &t, &r);
-
-    return r;
-  }
-
-  template <typename R = void, typename ...A>
-  std::enable_if_t<std::is_void<R>{}, R>
-  apply(std::tuple<A...> const& t) const
-    noexcept(
-        noexcept(f_(const_cast<void*>(static_cast<void const*>(&store_)),
-          {},
-          {}
-        )
-      )
-    )
-  {
-    //assert(f_);
-    f_(const_cast<void*>(static_cast<void const*>(&store_)), &t, {});
-  }
-
   void assign(std::nullptr_t) noexcept
   {
     reset();
