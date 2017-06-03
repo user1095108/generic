@@ -18,7 +18,10 @@
 namespace gnr
 {
 
-namespace
+namespace detail
+{
+
+namespace callback
 {
 
 constexpr auto default_noexcept =
@@ -199,7 +202,11 @@ constexpr inline auto extract_signature(F const&) noexcept ->
 
 }
 
-template <std::size_t N = default_size, bool NE = default_noexcept>
+}
+
+template <std::size_t N = detail::callback::default_size,
+  bool NE = detail::callback::default_noexcept
+>
 class callback
 {
   using typeid_t = void(*)();
@@ -266,13 +273,17 @@ class callback
     void* const r) noexcept(
     noexcept(std::apply(
         *static_cast<F*>(store),
-        *static_cast<std::tuple<class_ref_t<F>, A...> const*>(v)
+        *static_cast<
+          std::tuple<detail::callback::class_ref_t<F>, A...> const*
+        >(v)
       )
     )
   )
   {
     *static_cast<R*>(r) = std::apply(*static_cast<F*>(store),
-      *static_cast<std::tuple<class_ref_t<F>, A...> const*>(v)
+      *static_cast<
+        std::tuple<detail::callback::class_ref_t<F>, A...> const*
+      >(v)
     );
   }
 
@@ -286,19 +297,23 @@ class callback
     void*) noexcept(
     noexcept(std::apply(
         *static_cast<F*>(store),
-        *static_cast<std::tuple<class_ref_t<F>, A...> const*>(v)
+        *static_cast<
+          std::tuple<detail::callback::class_ref_t<F>, A...> const*
+        >(v)
       )
     )
   )
   {
     std::apply(*static_cast<F*>(store),
-      *static_cast<std::tuple<class_ref_t<F>, A...> const*>(v)
+      *static_cast<
+        std::tuple<detail::callback::class_ref_t<F>, A...> const*
+      >(v)
     );
   }
 
   template <typename F, typename R, typename ...A>
   std::enable_if_t<!std::is_member_function_pointer<F>{}>
-  assign(signature<R(A...)>) noexcept
+  assign(detail::callback::signature<R(A...)>) noexcept
   {
     f_ = invoker<F, R, A...>;
 
@@ -309,12 +324,12 @@ class callback
 
   template <typename F, typename R, typename ...A>
   std::enable_if_t<std::is_member_function_pointer<F>{}>
-  assign(signature<R(A...)>) noexcept
+  assign(detail::callback::signature<R(A...)>) noexcept
   {
     f_ = invoker<F, R, A...>;
 
 #ifndef NDEBUG
-    type_id_ = type_id<std::tuple<class_ref_t<F>, A...>>();
+    type_id_ = type_id<std::tuple<detail::callback::class_ref_t<F>, A...>>();
 #endif // NDEBUG
   }
 
@@ -456,7 +471,7 @@ public:
 
     ::new (static_cast<void*>(&store_)) functor_type(std::forward<F>(f));
 
-    assign<F>(extract_signature(std::forward<F>(f)));
+    assign<F>(detail::callback::extract_signature(std::forward<F>(f)));
   }
 
   void reset() noexcept { f_ = {}; }
