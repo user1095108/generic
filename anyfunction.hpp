@@ -360,6 +360,12 @@ public:
     return bool(any_);
   }
 
+  template <typename ...A>
+  auto operator()(A&& ...args) const
+  {
+    return invoke(std::forward<A>(args)...);
+  }
+
   bool empty() const noexcept
   {
     return !*this;
@@ -374,29 +380,19 @@ public:
   }
 
   template <typename ...A>
-  auto operator()(A&& ...args) const
-  {
-    return invoke(std::forward<A>(args)...);
-  }
-
-  template <typename ...A>
-  Any apply(gnr::many<A...> const& m) const
+  auto invoke(A&& ...args) const
   {
 #ifndef NDEBUG
-    assert(type_id<gnr::many<A...> >() == type_id_);
+    assert(type_id<gnr::many<arg_type_t<A>...> >() == type_id_);
 #endif // NDEBUG
 
     Any result;
 
+    gnr::many<arg_type_t<A>...> m{arg_type_t<A>(std::forward<A>(args))...};
+
     f_(any_, &m, result);
 
     return result;
-  }
-
-  template <typename ...A>
-  auto invoke(A&& ...args) const
-  {
-    return apply(gnr::many<arg_type_t<A>...>{std::forward<A>(args)...});
   }
 };
 

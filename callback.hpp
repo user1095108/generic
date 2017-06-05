@@ -403,7 +403,7 @@ public:
       )
     )
   {
-    //assert(f_);
+    assert(f_);
     R r;
 
     auto const a(std::tuple<arg_type_t<A>...>{std::forward<A>(args)...});
@@ -424,7 +424,7 @@ public:
       )
     )
   {
-    //assert(f_);
+    assert(f_);
     auto const a(std::tuple<arg_type_t<A>...>{std::forward<A>(args)...});
 
     f_(const_cast<void*>(static_cast<void const*>(&store_)), &a, {});
