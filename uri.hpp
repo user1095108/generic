@@ -4,7 +4,7 @@
 
 #include <regex>
 
-#include <string>
+#include <string_view>
 
 #include <utility>
 
@@ -15,11 +15,11 @@ class uri
 {
   std::string uri_;
 
-  std::pair<std::string::size_type, std::string::size_type> scheme_;
-  std::pair<std::string::size_type, std::string::size_type> authority_;
-  std::pair<std::string::size_type, std::string::size_type> path_;
-  std::pair<std::string::size_type, std::string::size_type> query_;
-  std::pair<std::string::size_type, std::string::size_type> fragment_;
+  std::string_view scheme_;
+  std::string_view authority_;
+  std::string_view path_;
+  std::string_view query_;
+  std::string_view fragment_;
 
 public:
   template <typename A>
@@ -42,11 +42,11 @@ public:
 
   std::string const& to_string() const noexcept;
 
-  auto scheme() const;
-  auto authority() const;
-  auto path() const;
-  auto query() const;
-  auto fragment() const;
+  auto& scheme() const;
+  auto& authority() const;
+  auto& path() const;
+  auto& query() const;
+  auto& fragment() const;
 
   void assign(std::string);
 };
@@ -70,43 +70,33 @@ inline std::string const& uri::to_string() const noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto uri::scheme() const
+inline auto& uri::scheme() const
 {
-  return is_valid() ?
-    std::string(uri_, scheme_.first, scheme_.second) :
-    std::string();
+  return scheme_;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto uri::authority() const
+inline auto& uri::authority() const
 {
-  return is_valid() ?
-    std::string(uri_, authority_.first, authority_.second) :
-    std::string();
+  return authority_;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto uri::path() const
+inline auto& uri::path() const
 {
-  return is_valid() ?
-    std::string(uri_, path_.first, path_.second) :
-    std::string();
+  return path_;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto uri::query() const
+inline auto& uri::query() const
 {
-  return is_valid() ?
-    std::string(uri_, query_.first, query_.second) :
-    std::string();
+  return query_;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto uri::fragment() const
+inline auto& uri::fragment() const
 {
-  return is_valid() ?
-    std::string(uri_, fragment_.first, fragment_.second) :
-    std::string();
+  return fragment_;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -124,17 +114,34 @@ inline void uri::assign(std::string u)
 
   if (std::regex_match(c_str, what, ex))
   {
-    scheme_ = {what[2].first - c_str, what[2].second - what[2].first};
-    authority_ = {what[4].first - c_str, what[4].second - what[4].first};
-    path_ = {what[5].first - c_str, what[5].second - what[5].first};
-    query_ = {what[7].first - c_str, what[7].second - what[7].first};
-    fragment_ = {what[9].first - c_str, what[9].second - what[9].first};
+    scheme_ = std::string_view(what[2].first,
+      what[2].second - what[2].first
+    );
+    authority_ = std::string_view(what[4].first,
+      what[4].second - what[4].first
+    );
+    path_ = std::string_view(what[5].first,
+      what[5].second - what[5].first
+    );
+    query_ = std::string_view(what[7].first,
+      what[7].second - what[7].first
+    );
+    fragment_ = std::string_view(what[9].first,
+      what[9].second - what[9].first
+    );
 
     uri_ = std::move(u);
   }
   else
   {
     uri_.clear();
+
+    scheme_ = {};
+    authority_ = {};
+    path_ = {};
+    query_ = {};
+    fragment_ = {};
+
     uri_.shrink_to_fit();
   }
 }
