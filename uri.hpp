@@ -48,7 +48,7 @@ public:
   auto& query() const;
   auto& fragment() const;
 
-  void assign(std::string);
+  void assign(std::string const&);
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -100,17 +100,19 @@ inline auto& uri::fragment() const
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline void uri::assign(std::string u)
+inline void uri::assign(std::string const& u)
 {
   //rfc3986
   static std::regex const ex{
     R"(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)"
   };
 
+  uri_ = u;
+
   // extract uri info
   std::cmatch what;
 
-  auto const c_str(u.c_str());
+  auto const c_str(uri_.c_str());
 
   if (std::regex_match(c_str, what, ex))
   {
@@ -129,20 +131,17 @@ inline void uri::assign(std::string u)
     fragment_ = std::string_view(what[9].first,
       what[9].second - what[9].first
     );
-
-    uri_ = std::move(u);
   }
   else
   {
     uri_.clear();
+    uri_.shrink_to_fit();
 
     scheme_ = {};
     authority_ = {};
     path_ = {};
     query_ = {};
     fragment_ = {};
-
-    uri_.shrink_to_fit();
   }
 }
 
