@@ -23,7 +23,7 @@ class uri
 
 public:
   template <typename A>
-  explicit uri(A&& a)
+  uri(A&& a)
   {
     assign(std::forward<A>(a));
   }
@@ -41,10 +41,6 @@ public:
 
   operator std::string const& () const noexcept;
 
-  bool is_valid() const noexcept;
-
-  std::string const& to_string() const noexcept;
-
   auto& scheme() const;
   auto& authority() const;
   auto& path() const;
@@ -52,6 +48,10 @@ public:
   auto& fragment() const;
 
   void assign(std::string const&);
+
+  bool is_valid() const noexcept;
+
+  std::string const& to_string() const noexcept;
 };
 
 //////////////////////////////////////////////////////////////////////////////
