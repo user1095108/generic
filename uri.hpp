@@ -36,9 +36,12 @@ public:
     return *this;
   }
 
-  bool is_valid() const noexcept;
+  bool operator==(uri const&) const noexcept;
+  bool operator!=(uri const&) const noexcept;
 
   operator std::string const& () const noexcept;
+
+  bool is_valid() const noexcept;
 
   std::string const& to_string() const noexcept;
 
@@ -52,21 +55,27 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////
+inline bool uri::operator==(uri const& other) const noexcept
+{
+  return other.to_string() == uri_;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+inline bool uri::operator!=(uri const& other) const noexcept
+{
+  return !operator==(other);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 inline bool uri::is_valid() const noexcept
 {
   return uri_.size();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline uri::operator std::string const& () const noexcept
-{
-  return uri_;
-}
-
-//////////////////////////////////////////////////////////////////////////////
 inline std::string const& uri::to_string() const noexcept
 {
-  return *this;
+  return uri_;
 }
 
 //////////////////////////////////////////////////////////////////////////////
