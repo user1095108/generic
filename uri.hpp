@@ -13,25 +13,38 @@ namespace gnr
 
 class uri
 {
-  std::string uri_;
-
   using index_pair_t = std::pair<
     std::string::size_type,
     std::string::size_type
   >;
 
-  index_pair_t scheme_;
-  index_pair_t authority_;
-  index_pair_t path_;
-  index_pair_t query_;
-  index_pair_t fragment_;
+  struct data
+  {
+    std::string uri;
+
+    index_pair_t scheme;
+    index_pair_t authority;
+    index_pair_t path;
+    index_pair_t query;
+    index_pair_t fragment;
+  };
+
+  std::unique_ptr<data> data_;
 
 public:
+  uri() = default;
+
+  uri(uri const&) = default;
+  uri(uri&&) = default;
+
   template <typename A>
   uri(A&& a)
   {
     assign(std::forward<A>(a));
   }
+
+  uri& operator=(uri const&) = default;
+  uri& operator=(uri&&) = default;
 
   template <typename A>
   auto& operator=(A&& a)
@@ -56,13 +69,15 @@ public:
 
   bool is_valid() const noexcept;
 
-  std::string const& to_string() const noexcept;
+  std::string to_string() const noexcept;
 };
 
 //////////////////////////////////////////////////////////////////////////////
 inline bool uri::operator==(uri const& other) const noexcept
 {
-  return other.to_string() == uri_;
+  return data_ ?
+    other.data_->uri == data_->uri :
+    data_ == other.data_;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -74,58 +89,68 @@ inline bool uri::operator!=(uri const& other) const noexcept
 //////////////////////////////////////////////////////////////////////////////
 inline bool uri::is_valid() const noexcept
 {
-  return uri_.size();
+  return data_ && data_->uri.size();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline std::string const& uri::to_string() const noexcept
+inline std::string uri::to_string() const noexcept
 {
-  return uri_;
+  return data_ ? data_->uri : std::string();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 inline std::string_view uri::scheme() const
 {
-  return std::string_view(
-    uri_.c_str() + scheme_.first,
-    scheme_.second
-  );
+  return data_ ?
+    std::string_view(
+      data_->uri.c_str() + data_->scheme.first,
+      data_->scheme.second
+    ) :
+    std::string_view();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 inline std::string_view uri::authority() const
 {
-  return std::string_view(
-    uri_.c_str() + authority_.first,
-    authority_.second
-  );
+  return data_ ?
+    std::string_view(
+      data_->uri.c_str() + data_->authority.first,
+      data_->authority.second
+    ) :
+    std::string_view();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 inline std::string_view uri::path() const
 {
-  return std::string_view(
-    uri_.c_str() + path_.first,
-    path_.second
-  );
+  return data_ ?
+    std::string_view(
+      data_->uri.c_str() + data_->path.first,
+      data_->path.second
+    ) :
+    std::string_view();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 inline std::string_view uri::query() const
 {
-  return std::string_view(
-    uri_.c_str() + query_.first,
-    query_.second
-  );
+  return data_ ?
+    std::string_view(
+      data_->uri.c_str() + data_->query.first,
+      data_->query.second
+    ) :
+    std::string_view();
 }
 
 //////////////////////////////////////////////////////////////////////////////
 inline std::string_view uri::fragment() const
 {
-  return std::string_view(
-    uri_.c_str() + fragment_.first,
-    fragment_.second
-  );
+  return data_ ?
+    std::string_view(
+      data_->uri.c_str() + data_->fragment.first,
+      data_->fragment.second
+    ) :
+    std::string_view();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -136,50 +161,45 @@ inline void uri::assign(std::string const& u)
     R"(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)"
   };
 
-  uri_ = u;
-
   // extract uri info
   std::cmatch what;
 
-  auto const c_str(uri_.c_str());
+  auto const c_str(u.c_str());
 
   if (std::regex_match(c_str, what, ex))
   {
-    scheme_ = {
+    data_.reset(new data());
+
+    data_->uri = u;
+
+    data_->scheme = {
       what[2].first - c_str,
       what[2].second - what[2].first
     };
 
-    authority_ = {
+    data_->authority = {
       what[4].first - c_str,
       what[4].second - what[4].first
     };
 
-    path_ = {
+    data_->path = {
       what[5].first - c_str,
       what[5].second - what[5].first
     };
 
-    query_ = {
+    data_->query = {
       what[7].first - c_str,
       what[7].second - what[7].first
     };
 
-    fragment_ = {
+    data_->fragment = {
       what[9].first - c_str,
       what[9].second - what[9].first
     };
   }
   else
   {
-    uri_.clear();
-    uri_.shrink_to_fit();
-
-    scheme_ = {0, 0};
-    authority_ = {0, 0};
-    path_ = {0, 0};
-    query_ = {0, 0};
-    fragment_ = {0, 0};
+    data_.reset();
   }
 }
 
