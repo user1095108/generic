@@ -15,11 +15,16 @@ class uri
 {
   std::string uri_;
 
-  std::string_view scheme_;
-  std::string_view authority_;
-  std::string_view path_;
-  std::string_view query_;
-  std::string_view fragment_;
+  using index_pair_t = std::pair<
+    std::string::size_type,
+    std::string::size_type
+  >;
+
+  index_pair_t scheme_;
+  index_pair_t authority_;
+  index_pair_t path_;
+  index_pair_t query_;
+  index_pair_t fragment_;
 
 public:
   template <typename A>
@@ -41,11 +46,11 @@ public:
 
   operator std::string const& () const noexcept;
 
-  auto& scheme() const;
-  auto& authority() const;
-  auto& path() const;
-  auto& query() const;
-  auto& fragment() const;
+  std::string_view scheme() const;
+  std::string_view authority() const;
+  std::string_view path() const;
+  std::string_view query() const;
+  std::string_view fragment() const;
 
   void assign(std::string const&);
 
@@ -79,33 +84,48 @@ inline std::string const& uri::to_string() const noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto& uri::scheme() const
+inline std::string_view uri::scheme() const
 {
-  return scheme_;
+  return std::string_view(
+    uri_.c_str() + scheme_.first,
+    scheme_.second
+  );
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto& uri::authority() const
+inline std::string_view uri::authority() const
 {
-  return authority_;
+  return std::string_view(
+    uri_.c_str() + authority_.first,
+    authority_.second
+  );
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto& uri::path() const
+inline std::string_view uri::path() const
 {
-  return path_;
+  return std::string_view(
+    uri_.c_str() + path_.first,
+    path_.second
+  );
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto& uri::query() const
+inline std::string_view uri::query() const
 {
-  return query_;
+  return std::string_view(
+    uri_.c_str() + query_.first,
+    query_.second
+  );
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline auto& uri::fragment() const
+inline std::string_view uri::fragment() const
 {
-  return fragment_;
+  return std::string_view(
+    uri_.c_str() + fragment_.first,
+    fragment_.second
+  );
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -125,32 +145,41 @@ inline void uri::assign(std::string const& u)
 
   if (std::regex_match(c_str, what, ex))
   {
-    scheme_ = std::string_view(what[2].first,
+    scheme_ = {
+      what[2].first - c_str,
       what[2].second - what[2].first
-    );
-    authority_ = std::string_view(what[4].first,
+    };
+
+    authority_ = {
+      what[4].first - c_str,
       what[4].second - what[4].first
-    );
-    path_ = std::string_view(what[5].first,
+    };
+
+    path_ = {
+      what[5].first - c_str,
       what[5].second - what[5].first
-    );
-    query_ = std::string_view(what[7].first,
+    };
+
+    query_ = {
+      what[7].first - c_str,
       what[7].second - what[7].first
-    );
-    fragment_ = std::string_view(what[9].first,
+    };
+
+    fragment_ = {
+      what[9].first - c_str,
       what[9].second - what[9].first
-    );
+    };
   }
   else
   {
     uri_.clear();
     uri_.shrink_to_fit();
 
-    scheme_ = {};
-    authority_ = {};
-    path_ = {};
-    query_ = {};
-    fragment_ = {};
+    scheme_ = {0, 0};
+    authority_ = {0, 0};
+    path_ = {0, 0};
+    query_ = {0, 0};
+    fragment_ = {0, 0};
   }
 }
 
