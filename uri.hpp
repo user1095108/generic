@@ -34,20 +34,24 @@ class uri
 public:
   uri() = default;
 
-  uri(uri const&) = default;
-  uri(uri&&) = default;
+  uri(uri const&);
+  uri(uri&&);
 
-  template <typename A>
+  template <typename A,
+    typename = std::enable_if_t<!std::is_same<std::decay_t<A>, uri>{}>
+  >
   uri(A&& a)
   {
     assign(std::forward<A>(a));
   }
 
-  uri& operator=(uri const&) = default;
-  uri& operator=(uri&&) = default;
+  uri& operator=(uri const&);
+  uri& operator=(uri&&);
 
-  template <typename A>
-  auto& operator=(A&& a)
+  template <typename A,
+    typename = std::enable_if_t<!std::is_same<std::decay_t<A>, uri>{}>
+  >
+  uri& operator=(A&& a)
   {
     assign(std::forward<A>(a));
 
@@ -71,6 +75,34 @@ public:
 
   std::string to_string() const noexcept;
 };
+
+//////////////////////////////////////////////////////////////////////////////
+inline uri::uri(uri const& other)
+{
+  data_.reset(new data(*other.data_));
+}
+
+//////////////////////////////////////////////////////////////////////////////
+inline uri::uri(uri&& other)
+{
+  data_ = std::move(other.data_);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+inline uri& uri::operator=(uri const& other)
+{
+  data_.reset(new data(*other.data_));
+
+  return *this;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+inline uri& uri::operator=(uri&& other)
+{
+  data_ = std::move(other.data_);
+
+  return *this;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 inline bool uri::operator==(uri const& other) const noexcept
