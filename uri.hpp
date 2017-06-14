@@ -107,7 +107,7 @@ inline uri& uri::operator=(uri&& other)
 //////////////////////////////////////////////////////////////////////////////
 inline bool uri::operator==(uri const& other) const noexcept
 {
-  return data_ ?
+  return data_ && other.data_ ?
     other.data_->uri == data_->uri :
     data_ == other.data_;
 }
