@@ -301,12 +301,7 @@ class callback
   >
   invoker(void* const store,
     void const* const v,
-    void* const r) noexcept(
-    noexcept(std::apply(*static_cast<F*>(store),
-        *static_cast<std::tuple<A...> const*>(v)
-      )
-    )
-  )
+    void* const r) noexcept(noexcept(NE))
   {
     *static_cast<R*>(r) = std::apply(*static_cast<F*>(store),
       *static_cast<std::tuple<A...> const*>(v)
@@ -320,12 +315,7 @@ class callback
   >
   invoker(void* const store,
     void const* const v,
-    void*) noexcept(
-    noexcept(std::apply(*static_cast<F*>(store),
-        *static_cast<std::tuple<A...> const*>(v)
-      )
-    )
-  )
+    void*) noexcept(noexcept(NE))
   {
     std::apply(*static_cast<F*>(store),
       *static_cast<std::tuple<A...> const*>(v)
@@ -339,15 +329,7 @@ class callback
   >
   invoker(void* const store,
     void const* const v,
-    void* const r) noexcept(
-    noexcept(std::apply(
-        *static_cast<F*>(store),
-        *static_cast<
-          std::tuple<detail::callback::class_ref_t<F>, A...> const*
-        >(v)
-      )
-    )
-  )
+    void* const r) noexcept(noexcept(NE))
   {
     *static_cast<R*>(r) = std::apply(*static_cast<F*>(store),
       *static_cast<
@@ -363,15 +345,7 @@ class callback
   >
   invoker(void* const store,
     void const* const v,
-    void*) noexcept(
-    noexcept(std::apply(
-        *static_cast<F*>(store),
-        *static_cast<
-          std::tuple<detail::callback::class_ref_t<F>, A...> const*
-        >(v)
-      )
-    )
-  )
+    void*) noexcept(noexcept(NE))
   {
     std::apply(*static_cast<F*>(store),
       *static_cast<
