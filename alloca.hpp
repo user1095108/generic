@@ -16,8 +16,7 @@ namespace gnr
 {
 
 template <typename T = char, std::size_t N, typename F>
-constexpr inline void salloc(F&& f) noexcept(
-  noexcept(f(nullptr))
+inline void salloc(F&& f) noexcept(noexcept(f(nullptr))
 )
 {
 #if defined(__linux__)
@@ -32,9 +31,7 @@ constexpr inline void salloc(F&& f) noexcept(
 }
 
 template <typename T = char, typename F>
-constexpr inline void salloc(std::size_t const N, F&& f) noexcept(
-  noexcept(f(nullptr))
-)
+inline void salloc(std::size_t const N, F&& f) noexcept(noexcept(f(nullptr)))
 {
 #if defined(__linux__)
   f(static_cast<T*>(alloca(N * sizeof(T))));
