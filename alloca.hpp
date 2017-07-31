@@ -15,9 +15,8 @@
 namespace gnr
 {
 
-template <typename T = char, std::size_t N, typename F>
-inline void salloc(F&& f) noexcept(noexcept(f(nullptr))
-)
+template <std::size_t N, typename T = char, typename F>
+inline void salloc(F&& f) noexcept(noexcept(f(nullptr)))
 {
 #if defined(__linux__)
   f(static_cast<T*>(alloca(N * sizeof(T))));
@@ -30,7 +29,7 @@ inline void salloc(F&& f) noexcept(noexcept(f(nullptr))
 #endif //
 }
 
-template <typename T = char, typename F>
+template <typename F, typename T = char>
 inline void salloc(std::size_t const N, F&& f) noexcept(noexcept(f(nullptr)))
 {
 #if defined(__linux__)
