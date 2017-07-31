@@ -29,7 +29,7 @@ inline void salloc(F&& f) noexcept(noexcept(f(nullptr)))
 #endif //
 }
 
-template <typename F, typename T = char>
+template <typename T = char, typename F>
 inline void salloc(std::size_t const N, F&& f) noexcept(noexcept(f(nullptr)))
 {
 #if defined(__linux__)
