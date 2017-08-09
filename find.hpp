@@ -21,7 +21,12 @@ template <typename C>
 struct has_find<C,
   decltype(
     sizeof(
-      (typename C::iterator(C::*)(typename C::key_type const&))(&C::find)
+      (typename C::iterator(C::*)(
+        typename C::key_type const&))(&C::find)
+    ) |
+    sizeof(
+      (typename C::const_iterator(C::*)(
+        typename C::key_type const&) const)(&C::find)
     )
   )
 > : std::true_type
