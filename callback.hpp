@@ -361,7 +361,7 @@ class callback
     f_ = invoker<F, R, A...>;
 
 #ifndef NDEBUG
-    type_id_ = type_id<std::tuple<A...>>();
+    type_id_ = type_id<std::tuple<R, A...>>();
 #endif // NDEBUG
   }
 
@@ -372,7 +372,9 @@ class callback
     f_ = invoker<F, R, A...>;
 
 #ifndef NDEBUG
-    type_id_ = type_id<std::tuple<detail::callback::class_ref_t<F>, A...>>();
+    type_id_ = type_id<
+      std::tuple<R, detail::callback::class_ref_t<F>, A...>
+    >();
 #endif // NDEBUG
   }
 
@@ -447,6 +449,11 @@ public:
     )
   {
     assert(f_);
+#ifndef NDEBUG
+    using test_t = std::tuple<R, arg_type_t<A>...>;
+    assert(type_id<test_t>() == type_id_);
+#endif // NDEBUG
+
     R r;
 
     auto const a(std::tuple<arg_type_t<A>...>{std::forward<A>(args)...});
@@ -468,6 +475,11 @@ public:
     )
   {
     assert(f_);
+#ifndef NDEBUG
+    using test_t = std::tuple<R, arg_type_t<A>...>;
+    assert(type_id<test_t>() == type_id_);
+#endif // NDEBUG
+
     auto const a(std::tuple<arg_type_t<A>...>{std::forward<A>(args)...});
 
     f_(const_cast<void*>(static_cast<void const*>(&store_)), &a, {});
