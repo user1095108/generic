@@ -21,12 +21,12 @@ template <typename C>
 struct has_find<C,
   decltype(
     sizeof(
-      (typename C::iterator(C::*)(
-        typename C::key_type const&))(&C::find)
+      static_cast<typename C::iterator(C::*)(
+        typename C::key_type const&)>(&C::find)
     ) |
     sizeof(
-      (typename C::const_iterator(C::*)(
-        typename C::key_type const&) const)(&C::find)
+      static_cast<typename C::const_iterator(C::*)(
+        typename C::key_type const&) const>(&C::find)
     )
   )
 > : std::true_type
@@ -37,14 +37,18 @@ struct has_find<C,
 
 template <class Container, class Key, typename F>
 inline std::enable_if_t<!has_find<Container>{}>
-find(Container& c, Key const& k, F&& f) noexcept
+find_first(Container& c, Key const& k, F&& f) noexcept(
+  noexcept(f(std::declval<typename Container::const_iterator>()))
+)
 {
   f(std::find(c.begin(), c.end(), k));
 }
 
 template <class Container, class Key, typename F>
 inline std::enable_if_t<has_find<Container>{}>
-find(Container& c, Key const& k, F&& f) noexcept
+find_first(Container& c, Key const& k, F&& f) noexcept(
+  noexcept(f(std::declval<typename Container::const_iterator>()))
+)
 {
   f(c.find(k));
 }
