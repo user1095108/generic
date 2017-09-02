@@ -38,7 +38,7 @@ struct has_find<C,
 template <class Container, class Key, typename F>
 inline std::enable_if_t<!has_find<Container>{}>
 find_first(Container& c, Key const& k, F&& f) noexcept(
-  noexcept(f(std::declval<typename Container::const_iterator>()))
+  noexcept(f(std::declval<typename Container::iterator>()))
 )
 {
   f(std::find(c.begin(), c.end(), k));
@@ -47,7 +47,7 @@ find_first(Container& c, Key const& k, F&& f) noexcept(
 template <class Container, class Key, typename F>
 inline std::enable_if_t<has_find<Container>{}>
 find_first(Container& c, Key const& k, F&& f) noexcept(
-  noexcept(f(std::declval<typename Container::const_iterator>()))
+  noexcept(f(std::declval<typename Container::iterator>()))
 )
 {
   f(c.find(k));
