@@ -4,53 +4,34 @@
 
 #include <algorithm>
 
-#include <type_traits>
-
 namespace gnr
 {
 
-namespace
+namespace detail
 {
 
-template <typename C, typename = std::size_t>
-struct has_find: std::false_type
+template <class Container, class Key>
+inline auto find(Container& c, Key const& k, int) noexcept ->
+  decltype(c.find(k))
 {
-};
+  return c.find(k);
+}
 
-template <typename C>
-struct has_find<C,
-  decltype(
-    sizeof(
-      static_cast<typename C::iterator(C::*)(
-        typename C::key_type const&)>(&C::find)
-    ) |
-    sizeof(
-      static_cast<typename C::const_iterator(C::*)(
-        typename C::key_type const&) const>(&C::find)
-    )
-  )
-> : std::true_type
+template <class Container, class Key>
+inline auto find(Container& c, Key const& k, char) noexcept ->
+  decltype(std::find(std::begin(c), std::end(c), k))
 {
-};
+  return std::find(std::begin(c), std::end(c), k);
+}
 
 }
 
 template <class Container, class Key, typename F>
-inline std::enable_if_t<!has_find<Container>{}>
-find_any(Container& c, Key const& k, F&& f) noexcept(
-  noexcept(f(std::declval<typename Container::iterator>()))
+inline void find_any(Container& c, Key const& k, F&& f) noexcept(
+  noexcept(f(detail::find(c, k, 0)))
 )
 {
-  f(std::find(c.begin(), c.end(), k));
-}
-
-template <class Container, class Key, typename F>
-inline std::enable_if_t<has_find<Container>{}>
-find_any(Container& c, Key const& k, F&& f) noexcept(
-  noexcept(f(std::declval<typename Container::iterator>()))
-)
-{
-  f(c.find(k));
+  f(detail::find(c, k, 0));
 }
 
 }
