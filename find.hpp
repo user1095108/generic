@@ -27,12 +27,12 @@ inline auto find(Container& c, Key const& k, char)
 
 }
 
-template <class Container, class Key, typename F>
+template <class Container, class Key>
 inline auto any_find(Container& c, Key const& k) noexcept(
-  noexcept(f(detail::find(c, k, 0)))
+  noexcept(detail::find(c, k, 0))
 )
 {
-  return f(detail::find(c, k, 0));
+  return detail::find(c, k, 0);
 }
 
 template <class Container, class Key, typename F>
