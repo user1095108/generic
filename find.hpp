@@ -11,14 +11,15 @@ namespace detail
 {
 
 template <class Container, class Key>
-inline auto find(Container& c, Key const& k, int) noexcept ->
-  decltype(c.find(k))
+inline auto find(Container& c, Key const& k, int)
+  noexcept(noexcept(c.find(k))) -> decltype(c.find(k))
 {
   return c.find(k);
 }
 
 template <class Container, class Key>
-inline auto find(Container& c, Key const& k, char) noexcept ->
+inline auto find(Container& c, Key const& k, char)
+  noexcept(noexcept(std::find(std::begin(c), std::end(c), k))) ->
   decltype(std::find(std::begin(c), std::end(c), k))
 {
   return std::find(std::begin(c), std::end(c), k);
@@ -27,7 +28,15 @@ inline auto find(Container& c, Key const& k, char) noexcept ->
 }
 
 template <class Container, class Key, typename F>
-inline void find_any(Container& c, Key const& k, F&& f) noexcept(
+inline auto any_find(Container& c, Key const& k) noexcept(
+  noexcept(f(detail::find(c, k, 0)))
+)
+{
+  return f(detail::find(c, k, 0));
+}
+
+template <class Container, class Key, typename F>
+inline void any_find(Container& c, Key const& k, F&& f) noexcept(
   noexcept(f(detail::find(c, k, 0)))
 )
 {
