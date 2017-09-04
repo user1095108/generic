@@ -12,14 +12,15 @@ namespace detail
 
 template <class Container, class Key>
 inline auto find(Container& c, Key const& k, int)
-  noexcept(noexcept(c.find(k)))
+  noexcept(noexcept(c.find(k))) -> decltype(c.find(k))
 {
   return c.find(k);
 }
 
 template <class Container, class Key>
 inline auto find(Container& c, Key const& k, char)
-  noexcept(noexcept(std::find(std::begin(c), std::end(c), k)))
+  noexcept(noexcept(std::find(std::begin(c), std::end(c), k))) ->
+  decltype(std::find(std::begin(c), std::end(c), k))
 {
   return std::find(std::begin(c), std::end(c), k);
 }
