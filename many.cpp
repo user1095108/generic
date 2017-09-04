@@ -4,9 +4,7 @@
 
 int main()
 {
-  auto t(gnr::many<int, int, int>{1, 2, 3});
+  gnr::many<int, int, int> t{1, 2, 3};
 
   std::cout << std::get<2>(t) << std::endl;
-
-  return 0;
 }
