@@ -63,7 +63,6 @@ inline auto find(Container& c, Key const& k, char,
   return std::find(begin(c), end(c), k);
 }
 
-
 }
 
 template <class Container, class Key>
