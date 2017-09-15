@@ -42,7 +42,7 @@ end(T (&array)[N]) noexcept
 
 template <class Container, class Key>
 inline auto find(Container& c, Key const& k, int)
-  noexcept(noexcept(c.find(k))) -> decltype(c.find(k))
+  noexcept(noexcept(c.find(k))) -> std::optional<decltype(c.find(k))>
 {
   auto const i(c.find(k));
 
