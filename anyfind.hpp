@@ -1,8 +1,10 @@
-#ifndef GNR_FIND_HPP
-# define GNR_FIND_HPP
+#ifndef GNR_ANYFIND_HPP
+# define GNR_ANYFIND_HPP
 # pragma once
 
 #include <algorithm>
+
+#include <optional>
 
 #include <type_traits>
 
@@ -49,7 +51,7 @@ template <class Container, class Key>
 inline auto find(Container& c, Key const& k, char,
   std::enable_if_t<!std::is_array<Container>{}>* = {})
   noexcept(noexcept(std::find(std::begin(c), std::end(c), k))) ->
-  decltype(std::find(std::begin(c), std::end(c), k))
+  std::optional<decltype(std::find(std::begin(c), std::end(c), k))>
 {
   return std::find(std::begin(c), std::end(c), k);
 }
@@ -58,7 +60,7 @@ template <class Container, class Key>
 inline auto find(Container& c, Key const& k, char,
   std::enable_if_t<std::is_array<Container>{}>* = {})
   noexcept(noexcept(std::find(begin(c), end(c), k))) ->
-  decltype(std::find(begin(c), end(c), k))
+  std::optional<decltype(std::find(begin(c), end(c), k))>
 {
   return std::find(begin(c), end(c), k);
 }
@@ -83,4 +85,4 @@ inline void any_find(Container& c, Key const& k, F&& f) noexcept(
 
 }
 
-#endif // GNR_FIND_HPP
+#endif // GNR_ANYFIND_HPP
