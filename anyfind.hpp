@@ -44,7 +44,11 @@ template <class Container, class Key>
 inline auto find(Container& c, Key const& k, int)
   noexcept(noexcept(c.find(k))) -> decltype(c.find(k))
 {
-  return c.find(k);
+  auto const i(c.find(k));
+
+  return c.end() == i ?
+    std::optional<decltype(c.find(k))>() :
+    i;
 }
 
 template <class Container, class Key>
@@ -53,7 +57,13 @@ inline auto find(Container& c, Key const& k, char,
   noexcept(noexcept(std::find(std::begin(c), std::end(c), k))) ->
   std::optional<decltype(std::find(std::begin(c), std::end(c), k))>
 {
-  return std::find(std::begin(c), std::end(c), k);
+  auto const e(std::end(c));
+
+  auto const i(std::find(std::begin(c), e, k));
+
+  return e == i ?
+    std::optional<decltype(std::find(std::begin(c), end, k))>() :
+    i;
 }
 
 template <class Container, class Key>
@@ -62,7 +72,13 @@ inline auto find(Container& c, Key const& k, char,
   noexcept(noexcept(std::find(begin(c), end(c), k))) ->
   std::optional<decltype(std::find(begin(c), end(c), k))>
 {
-  return std::find(begin(c), end(c), k);
+  auto const e(end(c));
+
+  auto const i(std::find(begin(c), e, k));
+
+  return e == i ?
+    std::optional<decltype(std::find(begin(c), e, k))>() :
+    i;
 }
 
 }
