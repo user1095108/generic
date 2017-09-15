@@ -62,7 +62,7 @@ inline auto find(Container& c, Key const& k, char,
   auto const i(std::find(std::begin(c), e, k));
 
   return e == i ?
-    std::optional<decltype(std::find(std::begin(c), end, k))>() :
+    std::optional<decltype(std::find(std::begin(c), e, k))>() :
     i;
 }
 

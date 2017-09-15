@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <vector>
+
 #include "anyfind.hpp"
 
 int main()
@@ -15,4 +17,12 @@ int main()
   };
 
   std::cout << *gnr::any_find(b, 2).value() << std::endl;
+
+  std::vector<std::string> v{
+    "a",
+    "b",
+    "c"
+  };
+
+  std::cout << *gnr::any_find(v, "c").value() << std::endl;
 }
