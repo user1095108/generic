@@ -358,7 +358,7 @@ class callback
   std::enable_if_t<!std::is_member_function_pointer<F>{}>
   assign(detail::callback::signature<R(A...)>) noexcept
   {
-    f_ = invoker<F, R, A...>;
+    f_ = invoker<std::decay_t<F>, R, A...>;
 
 #ifndef NDEBUG
     type_id_ = type_id<std::tuple<R, A...>>();
