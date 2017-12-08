@@ -12,7 +12,7 @@
 # include <malloc.h>
 #endif //
 
-#if (__cplusplus > 201402L)
+#if defined(__cplusplus) && (__cplusplus > 201402L)
 #include <cstring>
 
 #include <string_view>
@@ -49,7 +49,7 @@ inline void salloc(std::size_t const N, F&& f) noexcept(noexcept(f(nullptr)))
 #endif //
 }
 
-#if (__cplusplus > 201402L)
+#if defined(__cplusplus) && (__cplusplus > 201402L)
 
 template <typename F>
 inline void c_str(std::string_view const& sv, F&& f) noexcept(
