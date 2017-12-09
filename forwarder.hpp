@@ -69,8 +69,8 @@ public:
 
   forwarder(forwarder&&) = default;
 
-  template <typename F, typename =
-    std::enable_if_t<!std::is_same<std::decay_t<F>, forwarder>{}>
+  template <typename F,
+    typename = std::enable_if_t<!std::is_same<std::decay_t<F>, forwarder>{}>
   >
   forwarder(F&& f) noexcept
   {
@@ -81,8 +81,8 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  template <typename F, typename =
-    std::enable_if_t<!std::is_same<std::decay_t<F>, forwarder>{}>
+  template <typename F,
+    typename = std::enable_if_t<!std::is_same<std::decay_t<F>, forwarder>{}>
   >
   forwarder& operator=(F&& f) noexcept
   {
@@ -95,7 +95,8 @@ public:
 
   R operator()(A... args) const
     noexcept(
-        noexcept(stub_(const_cast<void*>(static_cast<void const*>(&store_)),
+      noexcept(
+        stub_(const_cast<void*>(static_cast<void const*>(&store_)),
           std::forward<A>(args)...
         )
       )
