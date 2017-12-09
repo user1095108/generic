@@ -4,7 +4,7 @@
 
 struct S
 {
-  void f() const
+  void f() const noexcept
   {
     std::cout << "Hello world!" << std::endl;
   }
