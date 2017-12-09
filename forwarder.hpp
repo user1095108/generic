@@ -81,7 +81,9 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  template <typename F>
+  template <typename F, typename =
+    std::enable_if_t<!std::is_same<std::decay_t<F>, forwarder>{}>
+  >
   forwarder& operator=(F&& f) noexcept
   {
     assign(std::forward<F>(f));
@@ -110,9 +112,7 @@ public:
     reset();
   }
 
-  template <typename F, typename =
-    std::enable_if_t<!std::is_same<std::decay_t<F>, forwarder>{}>
-  >
+  template <typename F>
   void assign(F&& f) noexcept
   {
     using functor_type = std::decay_t<F>;
