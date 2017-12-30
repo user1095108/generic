@@ -12,5 +12,11 @@ int main()
     [](char const* const p) noexcept{ std::cout << p << std::endl; }
   );
 
+  std::string_view s("Hello");
+
+  gnr::c_str(s,
+    [](char const* const p) noexcept{ std::cout << p << std::endl; }
+  );
+
   return 0;
 }
