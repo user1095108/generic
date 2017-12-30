@@ -8,6 +8,9 @@
 
 #if defined(__linux__)
 # include <alloca.h>
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) ||\
+  defined(__bsdi__) || defined(__DragonFly__)
+# include <stdlib.h>
 #elif defined(_WIN32)
 # include <malloc.h>
 #endif //
@@ -24,7 +27,8 @@ namespace gnr
 template <std::size_t N, typename T = char, typename F>
 inline void salloc(F&& f) noexcept(noexcept(f(nullptr)))
 {
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) ||\
+  defined(__NetBSD__) || defined(__bsdi__) || defined(__DragonFly__)
   f(static_cast<T*>(alloca(N * sizeof(T))));
 #elif defined(_WIN32)
   f(static_cast<T*>(_alloca(N * sizeof(T))));
@@ -38,7 +42,8 @@ inline void salloc(F&& f) noexcept(noexcept(f(nullptr)))
 template <typename T = char, typename F>
 inline void salloc(std::size_t const N, F&& f) noexcept(noexcept(f(nullptr)))
 {
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) ||\
+  defined(__NetBSD__) || defined(__bsdi__) || defined(__DragonFly__)
   f(static_cast<T*>(alloca(N * sizeof(T))));
 #elif defined(_WIN32)
   f(static_cast<T*>(_alloca(N * sizeof(T))));
