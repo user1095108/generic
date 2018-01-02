@@ -50,16 +50,16 @@ class composer<F1, F2, true, A1...>
 
 public:
   explicit composer(F1&& f1, F2&& f2) noexcept :
-    f1_(::std::forward<F1>(f1)),
-    f2_(::std::forward<F2>(f2))
+    f1_(std::forward<F1>(f1)),
+    f2_(std::forward<F2>(f2))
   {
   }
 
   auto operator()(A1&& ...args) const noexcept(
-    noexcept(f2_(f1_(::std::forward<A1>(args)...)))
+    noexcept(f2_(f1_(std::forward<A1>(args)...)))
   )
   {
-    return f2_(f1_(::std::forward<A1>(args)...));
+    return f2_(f1_(std::forward<A1>(args)...));
   }
 };
 
@@ -71,16 +71,16 @@ class composer<F1, F2, false, A1...>
 
 public:
   explicit composer(F1&& f1, F2&& f2) noexcept :
-    f1_(::std::forward<F1>(f1)),
-    f2_(::std::forward<F2>(f2))
+    f1_(std::forward<F1>(f1)),
+    f2_(std::forward<F2>(f2))
   {
   }
 
   auto operator()(A1&& ...args) const noexcept(
-    noexcept(f1_(::std::forward<A1>(args)...), f2_())
+    noexcept(f1_(std::forward<A1>(args)...), f2_())
   )
   {
-    return f1_(::std::forward<A1>(args)...), f2_();
+    return f1_(std::forward<A1>(args)...), f2_();
   }
 };
 
@@ -93,14 +93,14 @@ inline auto compose(
   F1&& f1, signature<R1, A1...> const,
   F2&& f2, signature<R2, A2...> const) noexcept(
   noexcept(
-    composer<F1, F2, sizeof...(A2), A1...>(::std::forward<F1>(f1),
-      ::std::forward<F2>(f2)
+    composer<F1, F2, sizeof...(A2), A1...>(std::forward<F1>(f1),
+      std::forward<F2>(f2)
     )
   )
 )
 {
-  return composer<F1, F2, sizeof...(A2), A1...>(::std::forward<F1>(f1),
-    ::std::forward<F2>(f2)
+  return composer<F1, F2, sizeof...(A2), A1...>(std::forward<F1>(f1),
+    std::forward<F2>(f2)
   );
 }
 
@@ -110,15 +110,15 @@ template <typename F1, typename F2>
 inline auto operator|(F1&& f1, F2&& f2) noexcept(
   noexcept(
     compose(
-      ::std::forward<F1>(f1), extract_signature(f1),
-      ::std::forward<F2>(f2), extract_signature(f2)
+      std::forward<F1>(f1), extract_signature(f1),
+      std::forward<F2>(f2), extract_signature(f2)
     )
   )
 )
 {
   return compose(
-    ::std::forward<F1>(f1), extract_signature(f1),
-    ::std::forward<F2>(f2), extract_signature(f2)
+    std::forward<F1>(f1), extract_signature(f1),
+    std::forward<F2>(f2), extract_signature(f2)
   );
 }
 
