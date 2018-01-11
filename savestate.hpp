@@ -50,7 +50,7 @@ inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
-    : "r0", "memory"
+    : "memory"
   );
 #endif
 
