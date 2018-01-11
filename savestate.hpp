@@ -39,16 +39,16 @@ inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
 	);
 #elif defined(__arm__)
   asm volatile (
-    "push {r0}\n\t" // push r0
+    "push {r11}\n\t" // push r0
     "str sp, %0\n\t" // store sp
     "ldr r0, =1f\n\t" // load label into r0
     "str r0, %1\n\t" // store r0 into label
     "mov %2, $0\n\t" // store 0 into result
     "b 2f\n\t"
-    "1:pop {r0}\n\t"
+    "1:pop {r11}\n\t"
     "mov %2, $1\n\t" // store 1 into result
     "2:"
-    : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
+    : "r0", "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
     : "memory"
   );
