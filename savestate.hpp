@@ -41,7 +41,7 @@ inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
   asm volatile (
     "push {r0}\n\t" // push r0
     "str sp, %0\n\t" // store sp
-    "ldr r0, $1f\n\t" // load label into r0
+    "ldr r0, =1f\n\t" // load label into r0
     "str r0, %1\n\t" // store r0 into label
     "mov %2, $0\n\t" // store 0 into result
     "b 2f\n\t"
