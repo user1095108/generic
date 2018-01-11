@@ -15,9 +15,8 @@ struct A
 
 int main()
 {
-  gnr::coroutine<> c;
-
-  c = [](auto& c)
+  gnr::coroutine<> c(
+    [](auto& c)
     {
       A a;
 
@@ -27,7 +26,8 @@ int main()
 
         c.yield();
       }
-    };
+    }
+  );
 
   while (!c.is_terminated())
   {
