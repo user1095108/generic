@@ -11,7 +11,7 @@ struct statebuf
 #if defined(__GNUC__)
 inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
 {
-	bool r;
+	bool volatile r;
 
 #if defined(i386) || defined(__i386) || defined(__i386__)
 	asm volatile (
@@ -59,7 +59,7 @@ inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
 #elif defined(_MSC_VER)
 __forceinline bool savestate(statebuf& ssb) noexcept
 {
-	bool r;
+	bool volatile r;
 
 	__asm {
 		push ebp
