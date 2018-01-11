@@ -94,7 +94,7 @@ __forceinline bool savestate(statebuf& ssb) noexcept
 #define restorestate(SSB)          \
   asm volatile (                   \
     "ldr sp, %0\n\t"               \
-    "mov %1, pc"                   \
+    "ldr pc, %1"                   \
     :                              \
     : "m" (SSB.sp), "m" (SSB.label)\
   );
