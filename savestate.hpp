@@ -53,7 +53,7 @@ static inline bool __attribute__((always_inline)) savestate(
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
-    : "=r3", "memory"
+    : "r3", "memory"
   );
 #endif
 
