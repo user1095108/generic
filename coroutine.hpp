@@ -171,7 +171,7 @@ public:
       );
 #elif defined(__arm__)
       asm volatile(
-        ""
+        "ldr sp, %0"
         :
         : "r" (stack_.get() + stack_size)
       );

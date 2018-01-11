@@ -46,6 +46,7 @@ inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
     "mov %2, $0\n\t" // store 0 into result
     "b 2f\n\t"
     "1:pop {r0}\n\t"
+    "mov %2, $1\n\t" // store 1 into result
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
