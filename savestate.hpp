@@ -5,6 +5,7 @@
 struct statebuf
 {
   void* sp;
+  void* bp;
   void* label;
 };
 
@@ -16,42 +17,44 @@ static inline bool __attribute__((always_inline)) savestate(
 
 #if defined(i386) || defined(__i386) || defined(__i386__)
   asm volatile (
-    "push %%ebp\n\t"
     "movl %%esp, %0\n\t" // store sp
-    "movl $1f, %1\n\t" // store label
-    "movb $0, %2\n\t" // return false
+    "movl %%ebp, %1\n\t" // store bp
+    "movl $1f, %2\n\t" // store label
+    "movb $0, %3\n\t" // return false
     "jmp 2f\n\t"
-    "1:pop %%ebp\n\t"
-    "movb $1, %2\n\t" // return true
+    "1:\n\t"
+    "movb $1, %3\n\t" // return true
     "2:"
-    : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
+    : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
     : "memory"
   );
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
   asm volatile (
     "movq %%rsp, %0\n\t" // store sp
-    "movq $1f, %1\n\t" // store label
-    "movb $0, %2\n\t" // return false
+    "movq %%rbp, %1\n\t" // store bp
+    "movq $1f, %2\n\t" // store label
+    "movb $0, %3\n\t" // return false
     "jmp 2f\n\t"
-    "1:movb $1, %2\n\t" // return true
+    "1:\n\t"
+    "movb $1, %3\n\t" // return true
     "2:"
-    : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
+    : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
     : "memory"
   );
 #elif defined(__arm__)
   asm volatile (
-    "push {fp}\n\t" // push fp
     "str sp, %0\n\t" // store sp
-    "ldr r3, =1f\n\t" // load label into r0
-    "str r3, %1\n\t" // store r0 into label
-    "mov %2, $0\n\t" // store 0 into result
+    "str fp, %1\n\t" // store fp
+    "ldr r3, =1f\n\t"// load label into r3
+    "str r3, %2\n\t" // store r3 into label
+    "mov %3, $0\n\t" // store 0 into result
     "b 2f\n\t"
-    "1:pop {fp}\n\t" // restore fp
-    "mov %2, $1\n\t" // store 1 into result
+    "1:"             // restore fp
+    "mov %3, $1\n\t" // store 1 into result
     "2:"
-    : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
+    : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
     : "r3", "memory"
   );
@@ -65,14 +68,14 @@ __forceinline bool savestate(statebuf& ssb) noexcept
   bool r;
 
   __asm {
-    push ebp
     mov ebx, ssb
     mov [ebx]ssb.sp, esp
+    mov [ebx]ssb.bp, ebp
     mov [ebx]ssb.label, offset _1f
     mov r, 0x0
     jmp _2f
-    _1f: pop ebp
-       mov r, 0x1
+    _1f:
+    mov r, 0x1
     _2f:
   }
 
@@ -84,28 +87,31 @@ __forceinline bool savestate(statebuf& ssb) noexcept
 
 #if defined(__GNUC__)
 #if defined(i386) || defined(__i386) || defined(__i386__)
-#define restorestate(SSB)          \
-  asm volatile (                   \
-    "movl %0, %%esp\n\t"           \
-    "jmp *%1"                      \
-    :                              \
-    : "m" (SSB.sp), "m" (SSB.label)\
+#define restorestate(SSB)                        \
+  asm volatile (                                 \
+    "movl %0, %%esp\n\t"                         \
+    "movl %1, %%ebp\n\t"                         \
+    "jmp *%2"                                    \
+    :                                            \
+    : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
   );
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
-#define restorestate(SSB)          \
-  asm volatile (                   \
-    "movq %0, %%rsp\n\t"           \
-    "jmp *%1"                      \
-    :                              \
-    : "m" (SSB.sp), "m" (SSB.label)\
+#define restorestate(SSB)                        \
+  asm volatile (                                 \
+    "movq %0, %%rsp\n\t"                         \
+    "movq %1, %%rbp\n\t"                         \
+    "jmp *%2"                                    \
+    :                                            \
+    : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
   );
 #elif defined(__arm__)
 #define restorestate(SSB)          \
   asm volatile (                   \
     "ldr sp, %0\n\t"               \
-    "ldr pc, %1"                   \
+    "ldr bp, %1\n\t"               \
+    "ldr pc, %2"                   \
     :                              \
-    : "m" (SSB.sp), "m" (SSB.label)\
+    : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
   );
 #else
 # error "unsupported architecture"
@@ -115,6 +121,7 @@ __forceinline bool savestate(statebuf& ssb) noexcept
   __asm mov ebx, this       \
   __asm add ebx, [SSB]      \
   __asm mov esp, [ebx]SSB.sp\
+  __asm mov ebp, [ebx]SSB.bp\
   __asm jmp [ebx]SSB.label
 #else
 # error "unsupported compiler"
