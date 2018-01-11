@@ -102,7 +102,7 @@ public:
   }
 
 #if defined(__GNUC__)
-  void yield() noexcept __attribute__ ((noinline))
+  void yield() noexcept __attribute__ ((noinline),optimize("-Ofast"))
 #elif defined(_MSC_VER)
   __declspec(noinline) void yield() noexcept
 #else
@@ -127,7 +127,7 @@ public:
   }
 
 #if defined(__GNUC__)
-  void resume() noexcept __attribute__ ((noinline))
+  void resume() noexcept __attribute__ ((noinline,optimize("-Ofast")))
 #elif defined(_MSC_VER)
   __declspec(noinline) void resume() noexcept
 #else
