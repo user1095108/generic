@@ -51,9 +51,9 @@ static inline bool __attribute__((always_inline)) savestate(
     "1:pop {fp}\n\t" // restore fp
     "mov %2, $1\n\t" // store 1 into result
     "2:"
-    : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
+    : "=r3", "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
-    : "r3", "memory"
+    : "memory"
   );
 #endif
 
