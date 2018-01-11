@@ -15,8 +15,7 @@ struct A
 
 int main()
 {
-  gnr::coroutine<> c(
-    [](auto& c)
+  gnr::coroutine<> c([](auto& c)
     {
       A a;
 
