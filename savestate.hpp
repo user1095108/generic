@@ -47,7 +47,7 @@ static inline bool __attribute__((always_inline)) savestate(
   asm volatile (
     "str sp, %0\n\t" // store sp
     "str fp, %1\n\t" // store fp
-    "ldr r3, =1f\n\t"// load label into r3
+    "ldr r3, =1f\n\t" // load label into r3
     "str r3, %2\n\t" // store r3 into label
     "mov %3, $0\n\t" // store 0 into result
     "b 2f\n\t"
@@ -105,12 +105,12 @@ __forceinline bool savestate(statebuf& ssb) noexcept
     : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
   );
 #elif defined(__arm__)
-#define restorestate(SSB)          \
-  asm volatile (                   \
-    "ldr sp, %0\n\t"               \
-    "ldr fp, %1\n\t"               \
-    "ldr pc, %2"                   \
-    :                              \
+#define restorestate(SSB)                        \
+  asm volatile (                                 \
+    "ldr sp, %0\n\t"                             \
+    "ldr fp, %1\n\t"                             \
+    "ldr pc, %2"                                 \
+    :                                            \
     : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
   );
 #else
