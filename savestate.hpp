@@ -40,10 +40,7 @@ inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
 #elif defined(__arm__)
   asm volatile (
     "mov sp, %0\n\t" // store sp
-    "mov $1f, %1\n\t" // store label
-		"mov $0, %2\n\t" // return false
     "b 2f\n\t"
-    "1:mov $1, %2\n\t" // return true
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
