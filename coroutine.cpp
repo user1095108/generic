@@ -2,6 +2,8 @@
 
 #include "coroutine.hpp"
 
+#warning "if compiling this example does not work, try the -static option"
+
 struct A
 {
   ~A()
