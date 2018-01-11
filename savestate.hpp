@@ -44,8 +44,8 @@ static inline bool __attribute__((always_inline)) savestate(
   asm volatile (
     "push {fp}\n\t" // push fp
     "str sp, %0\n\t" // store sp
-    "ldr r0, =1f\n\t" // load label into r0
-    "str r0, %1\n\t" // store r0 into label
+    "ldr r9, =1f\n\t" // load label into r0
+    "str r9, %1\n\t" // store r0 into label
     "mov %2, $0\n\t" // store 0 into result
     "b 2f\n\t"
     "1:pop {fp}\n\t" // restore fp
@@ -53,7 +53,7 @@ static inline bool __attribute__((always_inline)) savestate(
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
     :
-    : "memory"
+    : "=r9", "memory"
   );
 #endif
 
