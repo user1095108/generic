@@ -16,11 +16,13 @@ static inline bool __attribute__((always_inline)) savestate(
 
 #if defined(i386) || defined(__i386) || defined(__i386__)
 	asm volatile (
+    "push %%ebp\n\t"
 		"movl %%esp, %0\n\t" // store sp
 		"movl $1f, %1\n\t" // store label
 		"movb $0, %2\n\t" // return false
 		"jmp 2f\n\t"
-		"1:movb $1, %2\n\t" // return true
+		"1:pop %%ebp\n\t"
+    "movb $1, %2\n\t" // return true
 		"2:"
 		: "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
 		:
