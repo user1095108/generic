@@ -114,6 +114,8 @@ public:
     asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
     asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15");
+#elif define(__arm__)
+    asm volatile ("":::"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15")
 #endif
 #endif
 
@@ -137,6 +139,8 @@ public:
     asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi");
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
     asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15");
+#elif define(__arm__)
+    asm volatile ("":::"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15")
 #endif
 #endif
 
@@ -162,6 +166,12 @@ public:
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
       asm volatile(
         "movq %0, %%rsp"
+        :
+        : "r" (stack_.get() + stack_size)
+      );
+#elif defined(__arm__)
+      asm volatile(
+        "mov sp, %0"
         :
         : "r" (stack_.get() + stack_size)
       );

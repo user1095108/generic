@@ -24,19 +24,31 @@ inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
 		: "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
 		:
 		: "memory"
-		);
+	);
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
 	asm volatile (
 		"movq %%rsp, %0\n\t" // store sp
 		"movq $1f, %1\n\t" // store label
 		"movb $0, %2\n\t" // return false
-		"jmp 2f\n\r"
+		"jmp 2f\n\t"
 		"1:movb $1, %2\n\t" // return true
 		"2:"
 		: "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
 		:
 		: "memory"
-		);
+	);
+#elif defined(__arm__)
+  asm volatile (
+    "mov %0, %%sp\nt" // store sp
+    "mov %1, $1f\n\t" // store label
+		"mov %2, $0\n\t" // return false
+    "b 2f\n\t"
+    "1:mov %2, $1\n\t" // return true
+    "2:"
+    : "=m (ssb.sp)" "=m" (ssb.label), "=r" (r)
+    :
+    : "memory"
+  );
 #endif
 
 	return r;
@@ -78,6 +90,14 @@ __forceinline bool savestate(statebuf& ssb) noexcept
   asm volatile (                   \
     "movq %0, %%rsp\n\t"           \
     "jmp *%1"                      \
+    :                              \
+    : "m" (SSB.sp), "m" (SSB.label)\
+  );
+#elif defined(__arm__)
+#define restorestate(SSB)          \
+  asm volatile (                   \
+    "mov %%sp, %0\n\t"             \
+    "b *%1"                        \
     :                              \
     : "m" (SSB.sp), "m" (SSB.label)\
   );
