@@ -9,7 +9,8 @@ struct statebuf
 };
 
 #if defined(__GNUC__)
-inline bool __attribute__((always_inline)) savestate(statebuf& ssb) noexcept
+static inline bool __attribute__((always_inline)) savestate(
+  statebuf& ssb) noexcept
 {
 	bool r;
 
