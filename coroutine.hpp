@@ -18,6 +18,7 @@ namespace gnr
 namespace
 {
 
+// half a megabyte stack default
 enum : std::size_t { anon_default_stack_size = 512 * 1024 };
 
 }
