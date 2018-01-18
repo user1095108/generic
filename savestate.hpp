@@ -22,7 +22,7 @@ static inline bool __attribute__((always_inline)) savestate(
     "movl $1f, %2\n\t" // store label
     "movb $0, %3\n\t" // return false
     "jmp 2f\n\t"
-    "1:\n\t"
+    "1:"
     "movb $1, %3\n\t" // return true
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
@@ -36,7 +36,7 @@ static inline bool __attribute__((always_inline)) savestate(
     "movq $1f, %2\n\t" // store label
     "movb $0, %3\n\t" // return false
     "jmp 2f\n\t"
-    "1:\n\t"
+    "1:"
     "movb $1, %3\n\t" // return true
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
