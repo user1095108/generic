@@ -108,7 +108,7 @@ __forceinline bool savestate(statebuf& ssb) noexcept
     "movl %1, %%ebp\n\t"                         \
     "jmp *%2"                                    \
     :                                            \
-    : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
+    : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
   );
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
 #define restorestate(SSB)                        \
@@ -117,7 +117,7 @@ __forceinline bool savestate(statebuf& ssb) noexcept
     "movq %1, %%rbp\n\t"                         \
     "jmp *%2"                                    \
     :                                            \
-    : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
+    : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
   );
 #elif defined(__arm__) && !defined(__ARM_ARCH_7__)
 #define restorestate(SSB)                        \
@@ -126,7 +126,7 @@ __forceinline bool savestate(statebuf& ssb) noexcept
     "ldr fp, %1\n\t"                             \
     "ldr pc, %2"                                 \
     :                                            \
-    : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
+    : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
   );
 #elif defined(__arm__) && defined(__ARM_ARCH_7__)
 #define restorestate(SSB)                        \
@@ -135,7 +135,7 @@ __forceinline bool savestate(statebuf& ssb) noexcept
     "ldr r7, %1\n\t"                             \
     "ldr pc, %2"                                 \
     :                                            \
-    : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
+    : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
   );
 #else
 # error "unsupported architecture"
