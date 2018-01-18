@@ -43,10 +43,10 @@ static inline bool __attribute__((always_inline)) savestate(
     :
     : "memory"
   );
-#elif defined(__arm__) && !defined(__ARM_ARCH_7__)
+#elif defined(__arm__) && defined(__ARM_ARCH_7__)
   asm volatile (
     "str sp, %0\n\t" // store sp
-    "str fp, %1\n\t" // store fp
+    "str r7, %1\n\t" // store fp
     "ldr r3, =1f\n\t" // load label into r3
     "str r3, %2\n\t" // store r3 into label
     "mov %3, $0\n\t" // store 0 into result
@@ -58,10 +58,10 @@ static inline bool __attribute__((always_inline)) savestate(
     :
     : "r3", "memory"
   );
-#elif defined(__arm__) && defined(__ARM_ARCH_7__)
+#elif defined(__arm__)
   asm volatile (
     "str sp, %0\n\t" // store sp
-    "str r7, %1\n\t" // store fp
+    "str fp, %1\n\t" // store fp
     "ldr r3, =1f\n\t" // load label into r3
     "str r3, %2\n\t" // store r3 into label
     "mov %3, $0\n\t" // store 0 into result
@@ -119,20 +119,20 @@ __forceinline bool savestate(statebuf& ssb) noexcept
     :                                            \
     : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
   );
-#elif defined(__arm__) && !defined(__ARM_ARCH_7__)
-#define restorestate(SSB)                        \
-  asm volatile (                                 \
-    "ldr sp, %0\n\t"                             \
-    "mov fp, %1\n\t"                             \
-    "mov pc, %2"                                 \
-    :                                            \
-    : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
-  );
 #elif defined(__arm__) && defined(__ARM_ARCH_7__)
 #define restorestate(SSB)                        \
   asm volatile (                                 \
     "ldr sp, %0\n\t"                             \
     "mov r7, %1\n\t"                             \
+    "mov pc, %2"                                 \
+    :                                            \
+    : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
+  );
+#elif defined(__arm__)
+#define restorestate(SSB)                        \
+  asm volatile (                                 \
+    "ldr sp, %0\n\t"                             \
+    "mov fp, %1\n\t"                             \
     "mov pc, %2"                                 \
     :                                            \
     : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
