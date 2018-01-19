@@ -116,7 +116,7 @@ public:
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
     asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15");
 #elif defined(__aarch64__)
-    asm volatile ("":::"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r8", "r9", "r10");
+    asm volatile ("":::"x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9");
 #elif defined(__arm__) && defined(__ARM_ARCH_7__)
     asm volatile ("":::"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r8", "r9", "r10", "lr");
 #elif defined(__arm__)
@@ -145,7 +145,7 @@ public:
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
     asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15");
 #elif defined(__aarch64__)
-    asm volatile ("":::"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r8", "r9", "r10");
+    asm volatile ("":::"x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9");
 #elif defined(__arm__) && defined(__ARM_ARCH_7__)
     asm volatile ("":::"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r8", "r9", "r10", "lr");
 #elif defined(__arm__)
