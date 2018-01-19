@@ -50,10 +50,10 @@ static inline bool __attribute__((always_inline)) savestate(
     "str x7, %1\n\t" // store fp
     "ldr x3, =1f\n\t" // load label into x3
     "str x3, %2\n\t" // store x3 into label
-    "mov %3, $0\n\t" // store 0 into result
+    "mov %3, #0\n\t" // store 0 into result
     "b 2f\n\t"
     "1:"
-    "mov %3, $1\n\t" // store 1 into result
+    "mov %3, #1\n\t" // store 1 into result
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
