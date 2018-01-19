@@ -59,7 +59,7 @@ static inline bool __attribute__((always_inline)) savestate(
     :
     : "x7", "memory"
   );
-#elif defined(__arm__) && defined(__ARM_ARCH_7__)
+#elif defined(__ARM_ARCH) && (7 == __ARM_ARCH)
   asm volatile (
     "str sp, %0\n\t" // store sp
     "str r7, %1\n\t" // store fp
@@ -144,7 +144,7 @@ __forceinline bool savestate(statebuf& ssb) noexcept
     :                                            \
     : "r" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
   );
-#elif defined(__arm__) && defined(__ARM_ARCH_7__)
+#elif defined(__ARM_ARCH) && (7 == __ARM_ARCH)
 #define restorestate(SSB)                        \
   asm volatile (                                 \
     "ldr sp, %0\n\t"                             \
