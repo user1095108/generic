@@ -45,7 +45,8 @@ static inline bool __attribute__((always_inline)) savestate(
   );
 #elif defined(__aarch64__)
   asm volatile (
-    "str sp, %0\n\t" // store sp
+    "mov x3, sp\n\t"
+    "str x3, %0\n\t" // store sp
     "str x7, %1\n\t" // store fp
     "ldr x3, =1f\n\t" // load label into x3
     "str x3, %2\n\t" // store x3 into label
@@ -56,7 +57,7 @@ static inline bool __attribute__((always_inline)) savestate(
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
-    : "r3", "memory"
+    : "x3", "memory"
   );
 #elif defined(__arm__) && defined(__ARM_ARCH_7__)
   asm volatile (
@@ -137,11 +138,11 @@ __forceinline bool savestate(statebuf& ssb) noexcept
 #elif defined(__aarch64__)
 #define restorestate(SSB)                        \
   asm volatile (                                 \
-    "ldr sp, %0\n\t"                             \
+    "mov sp, %0\n\t"                             \
     "mov x7, %1\n\t"                             \
-    "ret %2"                                 \
+    "ret %2"                                     \
     :                                            \
-    : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
+    : "r" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
   );
 #elif defined(__arm__) && defined(__ARM_ARCH_7__)
 #define restorestate(SSB)                        \
