@@ -139,7 +139,7 @@ __forceinline bool savestate(statebuf& ssb) noexcept
   asm volatile (                                 \
     "ldr sp, %0\n\t"                             \
     "mov r7, %1\n\t"                             \
-    "mov pc, %2"                                 \
+    "ret %2"                                 \
     :                                            \
     : "m" (SSB.sp), "r" (SSB.bp), "r" (SSB.label)\
   );
