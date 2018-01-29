@@ -61,10 +61,10 @@ inline auto c_str(C&& c, F&& f) noexcept(noexcept(f(nullptr))) ->
   decltype(c.data(), c.size(), void(0))
 {
   salloc(c.size() + 1,
-    [&](char* const p) noexcept(noexcept(f(nullptr)))
+    [&c, &f, s = c.size()](char* const p) noexcept(noexcept(f(nullptr)))
     {
-      std::memcpy(p, c.data(), c.size());
-      p[c.size()] = '\0';
+      std::memcpy(p, c.data(), s);
+      p[s] = '\0';
 
       f(p);
     }
