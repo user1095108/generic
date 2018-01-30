@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__CYGWIN__)
 # include <alloca.h>
 #elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) ||\
   defined(__bsdi__) || defined(__DragonFly__)
