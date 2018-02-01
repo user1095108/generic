@@ -21,7 +21,7 @@ static constexpr T* begin(T& value) noexcept
 }
 
 template <typename T, std::size_t N>
-static constexpr typename std::remove_all_extents<T>::type*
+static constexpr typename std::remove_all_extents_t<T>*
 begin(T (&array)[N]) noexcept
 {
   return begin(*array);
@@ -34,7 +34,7 @@ static constexpr T* end(T& value) noexcept
 }
 
 template <typename T, std::size_t N>
-static constexpr typename std::remove_all_extents<T>::type*
+static constexpr typename std::remove_all_extents_t<T>*
 end(T (&array)[N]) noexcept
 {
   return end(array[N - 1]);
