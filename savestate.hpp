@@ -1,5 +1,5 @@
-#ifndef SAVE_STATE_H
-# define SAVE_STATE_H
+#ifndef SAVESTATE_H
+# define SAVESTATE_H
 # pragma once
 
 struct statebuf
@@ -176,4 +176,4 @@ __forceinline bool savestate(statebuf& ssb) noexcept
 # error "unsupported compiler"
 #endif
 
-#endif // SAVE_STATE_H
+#endif // SAVESTATE_H
