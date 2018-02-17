@@ -48,8 +48,6 @@ template <typename T,
 inline auto stoi(S const& s) noexcept ->
   decltype(std::begin(s), std::end(s), std::size(s), std::optional<T>())
 {
-  T r{};
-
   auto i(std::begin(s)), end(std::end(s));
 
   if (i == end)
@@ -80,6 +78,8 @@ inline auto stoi(S const& s) noexcept ->
       default:
         return {};
     }
+
+    T r{};
 
     for (; i != end; i = std::next(i))
     {
@@ -129,8 +129,6 @@ inline auto stoi(S const& s) noexcept ->
 template <typename T>
 inline std::optional<T> stoi(char const* s) noexcept
 {
-  T r{};
-
   bool positive;
 
   switch (*s)
@@ -153,6 +151,8 @@ inline std::optional<T> stoi(char const* s) noexcept
     default:
       return {};
   }
+
+  T r{};
 
   for (; *s; ++s)
   {
