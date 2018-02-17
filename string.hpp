@@ -6,9 +6,15 @@
 
 #include <algorithm>
 
+#include <iterator>
+
 #include <sstream>
 
 #include <string>
+
+#include <optional>
+
+#include <type_traits>
 
 #include <vector>
 
@@ -27,6 +33,94 @@ inline constexpr std::size_t cstrlen(char const (&)[N]) noexcept
 inline constexpr std::size_t cstrlen(char const* const p) noexcept
 {
   return *p ? 1 + cstrlen(p + 1) : 0;
+}
+
+// stoi
+//////////////////////////////////////////////////////////////////////////////
+template <typename T,
+  typename S,
+  typename = std::enable_if_t<
+    std::is_same_v<char, typename S::value_type>
+  >
+>
+inline auto stoi(S const& s) noexcept ->
+  decltype(std::size(s), s[0], std::optional<T>())
+{
+  T r{};
+
+  for (typename S::size_type i{}, sz(std::size(s)); i != sz; ++i)
+  {
+    r *= 10;
+
+    switch (s[i])
+    {
+      case '+':
+      case '-':
+        if (i)
+        {
+          return {};
+        }
+        break;
+
+      case '0': case '1': case '2': case '3': case '4':
+      case '5': case '6': case '7': case '8': case '9':
+        r += s[i] - '0';
+        break;
+
+      default:
+        return {};
+    }
+  }
+
+  if (std::size(s) && ('-' == s[0]))
+  {
+    return std::is_signed_v<T> ? -r : std::optional<T>();
+  }
+  else
+  {
+    return r;
+  }
+}
+
+template <typename T>
+inline std::optional<T> stoi(char const* const s) noexcept
+{
+  T r{};
+
+  auto p(s);
+
+  for (; *p; ++p)
+  {
+    r *= 10;
+
+    switch (*p)
+    {
+      case '+':
+      case '-':
+        if (p - s)
+        {
+          return {};
+        }
+        break;
+
+      case '0': case '1': case '2': case '3': case '4':
+      case '5': case '6': case '7': case '8': case '9':
+        r += *p - '0';
+        break;
+
+      default:
+        return {};
+    }
+  }
+
+  if ((p > s) && ('-' == *s))
+  {
+    return std::is_signed_v<T> ? -r : std::optional<T>();
+  }
+  else
+  {
+    return r;
+  }
 }
 
 // join
