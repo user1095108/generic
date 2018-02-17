@@ -50,64 +50,90 @@ inline auto stoi(S const& s) noexcept ->
 {
   T r{};
 
-  for (auto i(std::begin(s)), end(std::end(s)); i != end; i = std::next(i))
+  auto i(std::begin(s)), end(std::end(s));
+
+  if (i == end)
   {
-    r *= 10;
+    return {};
+  }
+  else
+  {
+    bool negative;
 
     switch (*i)
     {
-      case '+': case '-':
-        if (std::begin(s) != i)
-        {
-          return {};
-        }
-        // else do nothing
+      case '+':
+        negative = true;
+        i = std::next(i);
+        break;
+
+      case '-':
+        negative = false;
+        i = std::next(i);
         break;
 
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        r += *i - '0';
+        negative = false;
         break;
 
       default:
         return {};
     }
-  }
 
-  if (std::size(s) && ('-' == *std::begin(s)))
-  {
-    return std::is_signed_v<T> ? -r : std::optional<T>();
-  }
-  else
-  {
-    return r;
+    for (; i != end; i = std::next(i))
+    {
+      switch (*i)
+      {
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+          r = 10 * r + *i - '0';
+          break;
+
+        default:
+          return {};
+      }
+    }
+
+    return negative ? -r : r;
   }
 }
 
 template <typename T>
-inline std::optional<T> stoi(char const* const s) noexcept
+inline std::optional<T> stoi(char const* s) noexcept
 {
   T r{};
 
-  auto p(s);
+  bool negative;
 
-  for (; *p; ++p)
+  switch (*s)
   {
-    r *= 10;
+    case '+':
+      negative = false;
+      ++s;
+      break;
 
-    switch (*p)
+    case '-':
+      negative = true;
+      ++s;
+      break;
+
+    case '0': case '1': case '2': case '3': case '4':
+    case '5': case '6': case '7': case '8': case '9':
+      negative = false;
+      break;
+
+    default:
+      return {};
+  }
+
+  for (; *s; ++s)
+  {
+    switch (*s)
     {
-      case '+': case '-':
-        if (p - s)
-        {
-          return {};
-        }
-        // else do nothing
-        break;
-
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        r += *p - '0';
+        r = 10 * r + *s - '0';
         break;
 
       default:
@@ -115,14 +141,7 @@ inline std::optional<T> stoi(char const* const s) noexcept
     }
   }
 
-  if ((p > s) && ('-' == *s))
-  {
-    return std::is_signed_v<T> ? -r : std::optional<T>();
-  }
-  else
-  {
-    return r;
-  }
+  return negative ? -r : r;
 }
 
 // join
