@@ -81,8 +81,8 @@ inline auto stoi(S const& s) noexcept ->
         return {};
     }
 
-    auto const max(std::numeric_limits<T>::max());
-    auto const min(std::numeric_limits<T>::min());
+    constexpr auto max(std::numeric_limits<T>::max());
+    constexpr auto min(std::numeric_limits<T>::min());
 
     T r{};
 
@@ -163,8 +163,8 @@ inline std::optional<T> stoi(char const* s) noexcept
       return {};
   }
 
-  auto const max(std::numeric_limits<T>::max());
-  auto const min(std::numeric_limits<T>::min());
+  constexpr auto max(std::numeric_limits<T>::max());
+  constexpr auto min(std::numeric_limits<T>::min());
 
   T r{};
 
