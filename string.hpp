@@ -58,23 +58,23 @@ inline auto stoi(S const& s) noexcept ->
   }
   else
   {
-    bool negative;
+    bool positive;
 
     switch (*i)
     {
       case '+':
-        negative = true;
+        positive = true;
         i = std::next(i);
         break;
 
       case '-':
-        negative = false;
+        positive = false;
         i = std::next(i);
         break;
 
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        negative = false;
+        positive = true;
         break;
 
       default:
@@ -95,7 +95,7 @@ inline auto stoi(S const& s) noexcept ->
       }
     }
 
-    return negative ? -r : r;
+    return positive ? r : -r;
   }
 }
 
@@ -104,23 +104,23 @@ inline std::optional<T> stoi(char const* s) noexcept
 {
   T r{};
 
-  bool negative;
+  bool positive;
 
   switch (*s)
   {
     case '+':
-      negative = false;
+      positive = true;
       ++s;
       break;
 
     case '-':
-      negative = true;
+      positive = true;
       ++s;
       break;
 
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
-      negative = false;
+      positive = true;
       break;
 
     default:
@@ -141,7 +141,7 @@ inline std::optional<T> stoi(char const* s) noexcept
     }
   }
 
-  return negative ? -r : r;
+  return positive ? r : -r;
 }
 
 // join
