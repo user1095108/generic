@@ -16,6 +16,8 @@
 
 #include <type_traits>
 
+#include <utility>
+
 #include <vector>
 
 namespace gnr
@@ -40,31 +42,31 @@ inline constexpr std::size_t cstrlen(char const* const p) noexcept
 template <typename T,
   typename S,
   typename = std::enable_if_t<
-    std::is_same_v<char, typename S::value_type>
+    std::is_same_v<char, std::decay_t<decltype(std::declval<S>()[0])>>
   >
 >
 inline auto stoi(S const& s) noexcept ->
-  decltype(std::size(s), s[0], std::optional<T>())
+  decltype(std::begin(s), std::end(s), std::size(s), std::optional<T>())
 {
   T r{};
 
-  for (typename S::size_type i{}, sz(std::size(s)); i != sz; ++i)
+  for (auto i(std::begin(s)), end(std::end(s)); i != end; i = std::next(i))
   {
     r *= 10;
 
-    switch (s[i])
+    switch (*i)
     {
-      case '+':
-      case '-':
-        if (i)
+      case '+': case '-':
+        if (std::begin(s) != i)
         {
           return {};
         }
+        // else do nothing
         break;
 
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        r += s[i] - '0';
+        r += *i - '0';
         break;
 
       default:
@@ -72,7 +74,7 @@ inline auto stoi(S const& s) noexcept ->
     }
   }
 
-  if (std::size(s) && ('-' == s[0]))
+  if (std::size(s) && ('-' == *std::begin(s)))
   {
     return std::is_signed_v<T> ? -r : std::optional<T>();
   }
@@ -95,12 +97,12 @@ inline std::optional<T> stoi(char const* const s) noexcept
 
     switch (*p)
     {
-      case '+':
-      case '-':
+      case '+': case '-':
         if (p - s)
         {
           return {};
         }
+        // else do nothing
         break;
 
       case '0': case '1': case '2': case '3': case '4':
