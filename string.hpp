@@ -114,7 +114,7 @@ inline std::optional<T> stoi(char const* s) noexcept
       break;
 
     case '-':
-      positive = true;
+      positive = false;
       ++s;
       break;
 
