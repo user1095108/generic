@@ -90,7 +90,7 @@ inline auto stoi(S const& s) noexcept ->
         {
           if (positive)
           {
-            T const t(10 * r + *i - '0');
+            T const t(10 * r + (*i - '0'));
 
             if (t < r)
             {
@@ -103,7 +103,7 @@ inline auto stoi(S const& s) noexcept ->
           }
           else
           {
-            T const t(10 * r - *i + '0');
+            T const t(10 * r - (*i - '0'));
 
             if (t > r)
             {
@@ -163,7 +163,7 @@ inline std::optional<T> stoi(char const* s) noexcept
         {
           if (positive)
           {
-            T const t(10 * r + *s - '0');
+            T const t(10 * r + (*s - '0'));
 
             if (t < r)
             {
@@ -176,7 +176,7 @@ inline std::optional<T> stoi(char const* s) noexcept
           }
           else
           {
-            T const t(10 * r - *s + '0');
+            T const t(10 * r - (*s - '0'));
 
             if (t > r)
             {
