@@ -87,8 +87,19 @@ inline auto stoi(S const& s) noexcept ->
       {
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
-          r = 10 * r + *i - '0';
+        {
+          auto const t(10 * r + *i - '0');
+
+          if (t < r)
+          {
+            return {};
+          }
+          else
+          {
+            r = t;
+          }
           break;
+        }
 
         default:
           return {};
@@ -133,7 +144,18 @@ inline std::optional<T> stoi(char const* s) noexcept
     {
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        r = 10 * r + *s - '0';
+        {
+          auto const t(10 * r + *s - '0');
+
+          if (t < r)
+          {
+            return {};
+          }
+          else
+          {
+            r = t;
+          }
+        }
         break;
 
       default:
