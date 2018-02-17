@@ -8,6 +8,8 @@
 
 #include <iterator>
 
+#include <limits>
+
 #include <sstream>
 
 #include <string>
@@ -79,6 +81,9 @@ inline auto stoi(S const& s) noexcept ->
         return {};
     }
 
+    auto const max(std::numeric_limits<T>::max());
+    auto const min(std::numeric_limits<T>::min());
+
     T r{};
 
     for (; i != end; i = std::next(i))
@@ -88,31 +93,37 @@ inline auto stoi(S const& s) noexcept ->
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
         {
-          if (positive)
-          {
-            T const t(10 * r + (*i - '0'));
+          unsigned char const d(*i - '0');
 
-            if (t < r)
+          if (positive && (r <= max / 10))
+          {
+            auto const t(10 * r);
+
+            if (t <= max - d)
             {
-              return {};
+              r = t + d;
             }
             else
             {
-              r = t;
+              return {};
+            }
+          }
+          else if (!positive && (r >= min / 10))
+          {
+            auto const t(10 * r);
+
+            if (t >= min + d)
+            {
+              r = t - d;
+            }
+            else
+            {
+              return {};
             }
           }
           else
           {
-            T const t(10 * r - (*i - '0'));
-
-            if (t > r)
-            {
-              return {};
-            }
-            else
-            {
-              r = t;
-            }
+            return {};
           }
           break;
         }
@@ -152,6 +163,9 @@ inline std::optional<T> stoi(char const* s) noexcept
       return {};
   }
 
+  auto const max(std::numeric_limits<T>::max());
+  auto const min(std::numeric_limits<T>::min());
+
   T r{};
 
   for (; *s; ++s)
@@ -161,31 +175,37 @@ inline std::optional<T> stoi(char const* s) noexcept
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
         {
-          if (positive)
-          {
-            T const t(10 * r + (*s - '0'));
+          unsigned char const d(*s - '0');
 
-            if (t < r)
+          if (positive && (r <= max / 10))
+          {
+            auto const t(10 * r);
+
+            if (t <= max - d)
             {
-              return {};
+              r = t + d;
             }
             else
             {
-              r = t;
+              return {};
+            }
+          }
+          else if (!positive && (r >= min / 10))
+          {
+            auto const t(10 * r);
+
+            if (t >= min + d)
+            {
+              r = t - d;
+            }
+            else
+            {
+              return {};
             }
           }
           else
           {
-            T const t(10 * r - (*s - '0'));
-
-            if (t > r)
-            {
-              return {};
-            }
-            else
-            {
-              r = t;
-            }
+            return {};
           }
         }
         break;
