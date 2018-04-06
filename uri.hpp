@@ -4,6 +4,8 @@
 
 #include <regex>
 
+#include <ostream>
+
 #include <string_view>
 
 #include <utility>
@@ -73,7 +75,7 @@ public:
 
   bool is_valid() const noexcept;
 
-  std::string to_string() const noexcept;
+  auto to_string() const;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -125,9 +127,9 @@ inline bool uri::is_valid() const noexcept
 }
 
 //////////////////////////////////////////////////////////////////////////////
-inline std::string uri::to_string() const noexcept
+inline auto uri::to_string() const
 {
-  return data_ ? data_->uri : std::string();
+  return data_ ? data_->uri : decltype(data_->uri)();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -233,6 +235,11 @@ inline void uri::assign(std::string const& u)
   {
     data_.reset();
   }
+}
+
+inline std::ostream& operator<<(std::ostream& os, uri const& uri)
+{
+  return os << uri.to_string();
 }
 
 }
