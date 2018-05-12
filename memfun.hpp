@@ -113,13 +113,13 @@ inline auto member_delegate(C& object,
 template <typename FP, FP fp, class C>
 inline auto mem_fun(C* const object) noexcept
 {
-  return detail::mem_fun::member_delegate<FP, fp>(object, fp);
+  return member_delegate<FP, fp>(object, fp);
 }
 
 template <typename FP, FP fp, class C>
 inline auto mem_fun(C& object) noexcept
 {
-  return detail::mem_fun::member_delegate<FP, fp>(object, fp);
+  return member_delegate<FP, fp>(object, fp);
 }
 
 }
