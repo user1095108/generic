@@ -277,7 +277,6 @@ inline auto member_delegate(REF* ref, signature<R(A...)>) noexcept
   };
 }
 
-
 }
 
 }
