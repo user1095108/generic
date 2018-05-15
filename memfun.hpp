@@ -369,7 +369,6 @@ inline auto memfun_ref() noexcept
     mem_fun::detail::extract_signature(fp));
 }
 
-
 }
 
 #endif // GNR_MEMFUN_HPP
