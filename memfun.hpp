@@ -315,7 +315,7 @@ constexpr inline auto extract_signature(F const&) noexcept ->
 template <typename FP, FP fp, typename REF, typename R, typename ...A>
 inline auto member_delegate(REF& ref, signature<R(A...)>) noexcept
 {
-  return [&ref](A&& ...args) noexcept(
+  return [&ref](A ...args) noexcept(
     noexcept(std::invoke(fp, ref, std::forward<A>(args)...))
   )
   {
@@ -326,7 +326,7 @@ inline auto member_delegate(REF& ref, signature<R(A...)>) noexcept
 template <typename FP, FP fp, typename REF, typename R, typename ...A>
 inline auto member_delegate(REF* ref, signature<R(A...)>) noexcept
 {
-  return [ref](A&& ...args) noexcept(
+  return [ref](A ...args) noexcept(
     noexcept(std::invoke(fp, ref, std::forward<A>(args)...))
   )
   {
@@ -337,7 +337,7 @@ inline auto member_delegate(REF* ref, signature<R(A...)>) noexcept
 template <typename FP, FP fp, typename R, typename ...A>
 inline auto member_delegate_ref(signature<R(A...)>) noexcept
 {
-  return [](class_ref_t<FP> ref, A&& ...args) noexcept(
+  return [](class_ref_t<FP> ref, A ...args) noexcept(
     noexcept(std::invoke(fp, ref, std::forward<A>(args)...))
   )
   {
