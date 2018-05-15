@@ -2,72 +2,283 @@
 # define GNR_MEMFUN_HPP
 # pragma once
 
+#include <functional>
+
+#include <type_traits>
+
 #include <utility>
 
-#define MEM_FUN(f) decltype(&f),&f
+#define MEMFUN(f) decltype(&f),&f
 
 namespace gnr
 {
 
-namespace
+namespace mem_fun
 {
 
-#define GNR_GEN_MEM_DELEGATE(OBJECT, MEMFUN, CAPTURE, CALL)	   \
-template <typename FP, FP fp, typename R, class C, typename ...A>  \
-inline auto member_delegate(OBJECT, MEMFUN) noexcept               \
-{                                                                  \
-  return [CAPTURE](A&& ...args) noexcept(                          \
-      noexcept((CALL)(::std::forward<A>(args)...))                 \
-    )                                                              \
-    {                                                              \
-      return (CALL)(::std::forward<A>(args)...);                   \
-    };                                                             \
-}
-
-GNR_GEN_MEM_DELEGATE(C* const       object, R (C::* const)(A...) const,           object, object->*fp)
-GNR_GEN_MEM_DELEGATE(C* const       object, R (C::* const)(A...) const volatile,  object, object->*fp)
-GNR_GEN_MEM_DELEGATE(C* const       object, R (C::* const)(A...)       volatile,  object, object->*fp)
-GNR_GEN_MEM_DELEGATE(C* const       object, R (C::* const)(A...),                 object, object->*fp)
-
-GNR_GEN_MEM_DELEGATE(const C* const object, R (C::* const)(A...) const,           object, object->*fp)
-GNR_GEN_MEM_DELEGATE(const C* const object, R (C::* const)(A...) const volatile,  object, object->*fp)
-GNR_GEN_MEM_DELEGATE(const C* const object, R (C::* const)(A...)       volatile,  object, object->*fp)
-GNR_GEN_MEM_DELEGATE(const C* const object, R (C::* const)(A...),                 object, object->*fp)
-
-GNR_GEN_MEM_DELEGATE(C&             object, R (C::* const)(A...) const,          &object, object.*fp)
-GNR_GEN_MEM_DELEGATE(C&             object, R (C::* const)(A...) const volatile, &object, object.*fp)
-GNR_GEN_MEM_DELEGATE(C&             object, R (C::* const)(A...)       volatile, &object, object.*fp)
-GNR_GEN_MEM_DELEGATE(C&             object, R (C::* const)(A...),                &object, object.*fp)
-
-GNR_GEN_MEM_DELEGATE(const       C& object, R (C::* const)(A...) const,          &object, object.*fp)
-GNR_GEN_MEM_DELEGATE(const       C& object, R (C::* const)(A...) const volatile, &object, object.*fp)
-GNR_GEN_MEM_DELEGATE(const       C& object, R (C::* const)(A...)       volatile, &object, object.*fp)
-GNR_GEN_MEM_DELEGATE(const       C& object, R (C::* const)(A...),                &object, object.*fp)
-    
-}
-
-template <typename FP, FP fp, class C>
-inline auto mem_fun(C* const object) noexcept
+namespace detail
 {
-  return member_delegate<FP, fp>(object, fp);
+
+template <typename>
+struct signature
+{
+};
+
+//
+template <typename>
+struct class_ref;
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...)>
+{
+  using type = C&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const>
+{
+  using type = C const&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile>
+{
+  using type = C const volatile&;
+};
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) &>
+{
+  using type = C&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const &>
+{
+  using type = C const&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile &>
+{
+  using type = C const volatile&;
+};
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) &&>
+{
+  using type = C&&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const &&>
+{
+  using type = C const&&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile &&>
+{
+  using type = C const volatile&&;
+};
+
+template <typename F>
+using class_ref_t = typename class_ref<F>::type;
+
+//
+template <typename>
+struct remove_cv_seq;
+
+//
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...)>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) volatile>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const volatile>
+{
+  using type = R(A...);
+};
+
+//
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const noexcept>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) volatile noexcept>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const volatile noexcept>
+{
+  using type = R(A...);
+};
+
+//
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) &>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const &>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) volatile &>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const volatile &>
+{
+  using type = R(A...);
+};
+
+//
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) & noexcept>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const & noexcept >
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) volatile & noexcept>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const volatile & noexcept>
+{
+  using type = R(A...);
+};
+
+//
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) &&>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const &&>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) volatile &&>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const volatile &&>
+{
+  using type = R(A...);
+};
+
+//
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) && noexcept>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const && noexcept>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) volatile && noexcept>
+{
+  using type = R(A...);
+};
+
+template <typename R, typename ...A>
+struct remove_cv_seq<R(A...) const volatile && noexcept>
+{
+  using type = R(A...);
+};
+
+template <typename F>
+constexpr inline auto extract_signature(F* const) noexcept
+{
+  return signature<typename remove_cv_seq<F>::type>();
 }
 
-template <typename FP, FP fp, class C>
-inline auto mem_fun(const C* const object) noexcept
+template <typename C, typename F>
+constexpr inline auto extract_signature(F C::* const) noexcept
 {
-  return member_delegate<FP, fp>(object, fp);
+  return signature<typename remove_cv_seq<F>::type>();
 }
 
-template <typename FP, FP fp, class C>
-inline auto mem_fun(C& object) noexcept
+template <typename F>
+constexpr inline auto extract_signature(F const&) noexcept ->
+  decltype(&F::operator(), extract_signature(&F::operator()))
 {
-  return member_delegate<FP, fp>(object, fp);
+  return extract_signature(&F::operator());
 }
 
-template <typename FP, FP fp, class C>
-inline auto mem_fun(const C& object) noexcept
+template <typename FP, FP fp, typename REF, typename R, typename ...A>
+inline auto member_delegate(REF&& ref, signature<R(A...)>) noexcept
 {
-  return member_delegate<FP, fp>(object, fp);
+  return [ref = std::forward<REF>(ref)](A&& ...args) noexcept(
+    noexcept(std::invoke(fp, ref, std::forward<A>(args)...))
+  )
+  {
+    return std::invoke(fp, ref, std::forward<A>(args)...);
+  };
+}
+
+}
+
+}
+
+template <typename FP, FP fp, typename REF,
+  typename = std::enable_if_t<std::is_member_function_pointer<FP>{} ||
+    std::is_reference<REF>{} || std::is_pointer<REF>{}
+  >
+>
+inline auto memfun(REF&& ref) noexcept
+{
+  return mem_fun::detail::member_delegate<FP, fp>(std::forward<REF>(ref),
+    mem_fun::detail::extract_signature(fp));
 }
 
 }
