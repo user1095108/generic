@@ -23,5 +23,9 @@ int main()
 
   g();
 
+  auto const h(gnr::memfun_ref<MEMFUN(S::f)>());
+
+  h(s);
+
   return 0;
 }

@@ -85,6 +85,63 @@ struct class_ref<R (C::*)(A...) const volatile &&>
   using type = C const volatile&&;
 };
 
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) noexcept>
+{
+  using type = C&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const noexcept>
+{
+  using type = C const&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile noexcept>
+{
+  using type = C const volatile&;
+};
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) & noexcept>
+{
+  using type = C&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const & noexcept>
+{
+  using type = C const&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile & noexcept>
+{
+  using type = C const volatile&;
+};
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) && noexcept>
+{
+  using type = C&&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const && noexcept>
+{
+  using type = C const &&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile && noexcept>
+{
+  using type = C const volatile &&;
+};
+
 template <typename F>
 using class_ref_t = typename class_ref<F>::type;
 
@@ -277,6 +334,17 @@ inline auto member_delegate(REF* ref, signature<R(A...)>) noexcept
   };
 }
 
+template <typename FP, FP fp, typename R, typename ...A>
+inline auto member_delegate_ref(signature<R(A...)>) noexcept
+{
+  return [](class_ref_t<FP> ref, A&& ...args) noexcept(
+    noexcept(std::invoke(fp, ref, std::forward<A>(args)...))
+  )
+  {
+    return std::invoke(fp, ref, std::forward<A>(args)...);
+  };
+}
+
 }
 
 }
@@ -291,6 +359,16 @@ inline auto memfun(REF&& ref) noexcept
   return mem_fun::detail::member_delegate<FP, fp>(std::forward<REF>(ref),
     mem_fun::detail::extract_signature(fp));
 }
+
+template <typename FP, FP fp,
+  typename = std::enable_if_t<std::is_member_function_pointer<FP>{}>
+>
+inline auto memfun_ref() noexcept
+{
+  return mem_fun::detail::member_delegate_ref<FP, fp>(
+    mem_fun::detail::extract_signature(fp));
+}
+
 
 }
 

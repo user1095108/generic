@@ -99,6 +99,63 @@ struct class_ref<R (C::*)(A...) const volatile &&>
   using type = C const volatile&&;
 };
 
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) noexcept>
+{
+  using type = C&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const noexcept>
+{
+  using type = C const&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile noexcept>
+{
+  using type = C const volatile&;
+};
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) & noexcept>
+{
+  using type = C&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const & noexcept>
+{
+  using type = C const&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile & noexcept>
+{
+  using type = C const volatile&;
+};
+
+//
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) && noexcept>
+{
+  using type = C&&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const && noexcept>
+{
+  using type = C const &&;
+};
+
+template <typename R, typename C, typename ...A>
+struct class_ref<R (C::*)(A...) const volatile && noexcept>
+{
+  using type = C const volatile &&;
+};
+
 template <typename F>
 using class_ref_t = typename class_ref<F>::type;
 
