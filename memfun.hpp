@@ -363,7 +363,7 @@ inline auto memfun(REF&& ref) noexcept
 template <typename FP, FP fp,
   typename = std::enable_if_t<std::is_member_function_pointer<FP>{}>
 >
-inline auto memfun_ref() noexcept
+inline auto memfun() noexcept
 {
   return mem_fun::detail::member_delegate_ref<FP, fp>(
     mem_fun::detail::extract_signature(fp));

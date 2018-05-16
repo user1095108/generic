@@ -28,11 +28,11 @@ int main()
 
   g();
 
-  auto const h(gnr::memfun_ref<MEMFUN(S::f)>());
+  auto const h(gnr::memfun<MEMFUN(S::f)>());
 
   h(s);
 
-  auto const i(gnr::memfun_ref<MEMFUN(S::g)>());
+  auto const i(gnr::memfun<MEMFUN(S::g)>());
 
   i(s, 10);
 
