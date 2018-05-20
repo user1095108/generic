@@ -531,7 +531,7 @@ public:
 
     if (detail::some::get_meta<user_type>() == meta_)
     {
-      *reinterpret_cast<user_type*>(&store_) = u;
+      *reinterpret_cast<user_type*>(&store_) = std::forward<U>(u);
     }
     else
     {
