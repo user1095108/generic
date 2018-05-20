@@ -1123,7 +1123,7 @@ public:
 
     if (detail::variant::index_of<user_type, T...>{} == type_id_)
     {
-      *reinterpret_cast<user_type*>(store_) = u;
+      *reinterpret_cast<user_type*>(store_) = std::forward<U>(u);
     }
     else
     {
