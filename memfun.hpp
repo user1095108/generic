@@ -345,6 +345,18 @@ inline auto member_delegate_ref(signature<R(A...)>) noexcept
   };
 }
 
+template <typename FP, FP fp, typename R, typename ...A>
+inline auto member_delegate_ptr(signature<R(A...)>) noexcept
+{
+  return [](decltype(&std::declval<class_ref_t<FP>>()) ptr,
+    A ...args) noexcept(
+      noexcept(std::invoke(fp, ptr, std::forward<A>(args)...))
+  )
+  {
+    return std::invoke(fp, ptr, std::forward<A>(args)...);
+  };
+}
+
 }
 
 }
@@ -366,6 +378,15 @@ template <typename FP, FP fp,
 inline auto memfun() noexcept
 {
   return mem_fun::detail::member_delegate_ref<FP, fp>(
+    mem_fun::detail::extract_signature(fp));
+}
+
+template <typename FP, FP fp,
+  typename = std::enable_if_t<std::is_member_function_pointer<FP>{}>
+>
+inline auto memfun_ptr() noexcept
+{
+  return mem_fun::detail::member_delegate_ptr<FP, fp>(
     mem_fun::detail::extract_signature(fp));
 }
 
