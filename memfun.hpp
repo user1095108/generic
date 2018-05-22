@@ -335,26 +335,28 @@ inline auto member_delegate(REF* ref, signature<R(A...)>) noexcept
 }
 
 template <typename FP, FP fp, typename R, typename ...A>
-inline auto member_delegate_ref(signature<R(A...)>) noexcept
+struct member_functor
 {
-  return [](class_ref_t<FP> ref, A ...args) noexcept(
-    noexcept(std::invoke(fp, ref, std::forward<A>(args)...))
-  )
+  auto operator()(class_ref_t<FP> ref, A ...args) const noexcept(
+      noexcept(std::invoke(fp, ref, std::forward<A>(args)...))
+    )
   {
     return std::invoke(fp, ref, std::forward<A>(args)...);
-  };
-}
+  }
 
-template <typename FP, FP fp, typename R, typename ...A>
-inline auto member_delegate_ptr(signature<R(A...)>) noexcept
-{
-  return [](decltype(&std::declval<class_ref_t<FP>>()) ptr,
-    A ...args) noexcept(
-      noexcept(std::invoke(fp, ptr, std::forward<A>(args)...))
-  )
+  auto operator()(decltype(&std::declval<class_ref_t<FP>>()) ptr,
+      A ...args) const noexcept(
+        noexcept(std::invoke(fp, ptr, std::forward<A>(args)...))
+    )
   {
     return std::invoke(fp, ptr, std::forward<A>(args)...);
-  };
+  }
+};
+
+template <typename FP, FP fp, typename R, typename ...A>
+inline auto gen_member_functor(signature<R(A...)>) noexcept
+{
+  return member_functor<FP, fp, R, A...>();
 }
 
 }
@@ -377,16 +379,7 @@ template <typename FP, FP fp,
 >
 inline auto memfun() noexcept
 {
-  return mem_fun::detail::member_delegate_ref<FP, fp>(
-    mem_fun::detail::extract_signature(fp));
-}
-
-template <typename FP, FP fp,
-  typename = std::enable_if_t<std::is_member_function_pointer<FP>{}>
->
-inline auto memfun_ptr() noexcept
-{
-  return mem_fun::detail::member_delegate_ptr<FP, fp>(
+  return mem_fun::detail::gen_member_functor<FP, fp>(
     mem_fun::detail::extract_signature(fp));
 }
 

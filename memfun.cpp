@@ -36,7 +36,7 @@ int main()
 
   i(s, 10);
 
-  auto const j(gnr::memfun_ptr<MEMFUN(S::g)>());
+  auto const j(gnr::memfun<MEMFUN(S::g)>());
 
   j(&s, 10);
 
