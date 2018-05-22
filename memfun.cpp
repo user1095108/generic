@@ -35,10 +35,7 @@ int main()
   auto const i(gnr::memfun<MEMFUN(S::g)>());
 
   i(s, 10);
-
-  auto const j(gnr::memfun<MEMFUN(S::g)>());
-
-  j(&s, 10);
+  i(&s, 10);
 
   return 0;
 }
