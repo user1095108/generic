@@ -15,7 +15,6 @@ struct S
   }
 };
 
-
 int main()
 {
   S s;
