@@ -14,7 +14,6 @@ int main()
 {
   S const s;
 
-/*
   gnr::forwarder<void(S const&)> f(&S::f);
 
   f(s);
@@ -22,7 +21,6 @@ int main()
   gnr::forwarder<void(S const*)> g(&S::f);
 
   g(&s);
-*/
 
   gnr::forwarder<void()> h([&]() { s.f(); });
 
