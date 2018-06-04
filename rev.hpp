@@ -15,7 +15,12 @@ class rev
   T ref_;
 
 public:
-  explicit rev(T&& r) noexcept :
+  explicit rev(T& r) noexcept(noexcept(T(std::forward<T>(r)))) :
+    ref_(std::forward<T>(r))
+  {
+  };
+
+  explicit rev(T&& r) noexcept(noexcept(T(std::forward<T>(r)))) :
     ref_(std::forward<T>(r))
   {
   };
