@@ -25,28 +25,28 @@ public:
 
   auto begin() const noexcept(noexcept(std::rbegin(ref_)))
   {
-    return std::rbegin(std::forward<T>(ref_));
+    return std::rbegin(ref_);
   }
 
   auto end() const noexcept(noexcept(std::rend(ref_)))
   {
-    return std::rend(std::forward<T>(ref_));
+    return std::rend(ref_);
   }
 
   auto cbegin() const noexcept(noexcept(std::crbegin(ref_)))
   {
-    return std::crbegin(std::forward<T>(ref_));
+    return std::crbegin(ref_);
   }
 
   auto cend() const noexcept(noexcept(std::crend(ref_)))
   {
-    return std::crend(std::forward<T>(ref_));
+    return std::crend(ref_);
   }
 };
 
 }
 
-template <typename T, typename = std::enable_if_t<std::is_reference<T>{}>>
+template <typename T>
 auto rev(T&& r) noexcept(noexcept(detail::rev_impl<T>(std::forward<T>(r))))
 {
   return detail::rev_impl<T>(std::forward<T>(r));
