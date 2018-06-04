@@ -9,16 +9,13 @@
 namespace gnr
 {
 
-namespace detail
-{
-
 template <typename T>
-class rev_impl
+class rev
 {
   T ref_;
 
 public:
-  explicit rev_impl(T&& r) noexcept :
+  explicit rev(T&& r) noexcept :
     ref_(std::forward<T>(r))
   {
   };
@@ -43,14 +40,6 @@ public:
     return std::crend(ref_);
   }
 };
-
-}
-
-template <typename T>
-auto rev(T&& r) noexcept(noexcept(detail::rev_impl<T>(std::forward<T>(r))))
-{
-  return detail::rev_impl<T>(std::forward<T>(r));
-}
 
 }
 
