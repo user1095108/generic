@@ -47,10 +47,9 @@ public:
 }
 
 template <typename T, typename = std::enable_if_t<std::is_reference<T>{}>>
-auto rev(T&& ref) noexcept(noexcept(
-  detail::rev_impl<T&&>(std::forward<T>(ref))))
+auto rev(T&& r) noexcept(noexcept(detail::rev_impl<T>(std::forward<T>(r))))
 {
-  return detail::rev_impl<T&&>(std::forward<T>(ref));
+  return detail::rev_impl<T>(std::forward<T>(r));
 }
 
 }
