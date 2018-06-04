@@ -23,22 +23,22 @@ public:
   {
   };
 
-  auto begin() const noexcept(noexcept(std::rbegin(ref_)))
+  auto begin() noexcept(noexcept(std::rbegin(ref_)))
   {
     return std::rbegin(ref_);
   }
 
-  auto end() const noexcept(noexcept(std::rend(ref_)))
+  auto end() noexcept(noexcept(std::rend(ref_)))
   {
     return std::rend(ref_);
   }
 
-  auto cbegin() const noexcept(noexcept(std::crbegin(ref_)))
+  auto cbegin() noexcept(noexcept(std::crbegin(ref_)))
   {
     return std::crbegin(ref_);
   }
 
-  auto cend() const noexcept(noexcept(std::crend(ref_)))
+  auto cend() noexcept(noexcept(std::crend(ref_)))
   {
     return std::crend(ref_);
   }
