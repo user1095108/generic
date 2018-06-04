@@ -12,11 +12,11 @@ namespace gnr
 template <typename T>
 class rev
 {
-  T ref_;
+  T const ref_;
 
 public:
-  explicit rev(T& r) noexcept(noexcept(T(std::forward<T>(r)))) :
-    ref_(std::forward<T>(r))
+  explicit rev(T& r) noexcept(noexcept(T(r))) :
+    ref_(r)
   {
   };
 
