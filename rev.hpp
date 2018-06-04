@@ -32,16 +32,6 @@ public:
   {
     return std::rend(ref_);
   }
-
-  auto cbegin() noexcept(noexcept(std::crbegin(ref_)))
-  {
-    return std::crbegin(ref_);
-  }
-
-  auto cend() noexcept(noexcept(std::crend(ref_)))
-  {
-    return std::crend(ref_);
-  }
 };
 
 }
