@@ -9,19 +9,17 @@
 namespace gnr
 {
 
+namespace detail
+{
+
 template <typename T>
 class rev
 {
-  T const ref_;
+  T ref_;
 
 public:
-  explicit rev(T& r) noexcept(noexcept(T(r))) :
-    ref_(r)
-  {
-  };
-
   explicit rev(T&& r) noexcept(noexcept(T(std::forward<T>(r)))) :
-    ref_(std::forward<T>(r))
+    ref_(r)
   {
   };
 
@@ -45,6 +43,14 @@ public:
     return std::crend(ref_);
   }
 };
+
+}
+
+template <typename T>
+auto rev(T&& r) noexcept(noexcept(detail::rev<T>(std::forward<T>(r))))
+{
+  return detail::rev<T>(std::forward<T>(r));
+}
 
 }
 
