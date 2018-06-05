@@ -4,8 +4,6 @@
 
 #include <iterator>
 
-#include <type_traits>
-
 namespace gnr
 {
 
