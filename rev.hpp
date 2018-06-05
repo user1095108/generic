@@ -21,7 +21,7 @@ public:
   explicit rev_impl(T&& r) noexcept(noexcept(T(std::forward<T>(r)))) :
     ref_(std::forward<T>(r))
   {
-  };
+  }
 
   auto begin() noexcept(noexcept(std::rbegin(ref_)))
   {
