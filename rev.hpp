@@ -13,12 +13,12 @@ namespace detail
 {
 
 template <typename T>
-class rev
+class rev_impl
 {
   T ref_;
 
 public:
-  explicit rev(T&& r) noexcept(noexcept(T(std::forward<T>(r)))) :
+  explicit rev_impl(T&& r) noexcept(noexcept(T(std::forward<T>(r)))) :
     ref_(std::forward<T>(r))
   {
   };
@@ -37,9 +37,9 @@ public:
 }
 
 template <typename T>
-auto rev(T&& r) noexcept(noexcept(detail::rev<T>(std::forward<T>(r))))
+auto rev(T&& r) noexcept(noexcept(detail::rev_impl<T>(std::forward<T>(r))))
 {
-  return detail::rev<T>(std::forward<T>(r));
+  return detail::rev_impl<T>(std::forward<T>(r));
 }
 
 }
