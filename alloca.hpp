@@ -58,15 +58,16 @@ inline void salloc(std::size_t const N, F&& f) noexcept(noexcept(f(nullptr)))
 
 template <typename C, typename F>
 inline auto c_str(C&& c, F&& f) noexcept(noexcept(f(nullptr))) ->
-  decltype(c.data(), c.size(), void(0))
+  decltype(c.data(), c.size(), void())
 {
-  salloc(c.size() + 1,
-    [&c, &f, s = c.size()](char* const p) noexcept(noexcept(f(nullptr)))
+  auto const s(c.size());
+
+  salloc(s,
+    [&c, &f, s](char* const p) noexcept(noexcept(f(nullptr)))
     {
       std::memcpy(p, c.data(), s);
-      p[s] = '\0';
 
-      f(p);
+      f(std::string_view(p, s));
     }
   );
 }

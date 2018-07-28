@@ -7,7 +7,7 @@
 int main()
 {
   auto const l(
-    [](char const* const p) noexcept{ std::cout << p << std::endl; }
+    [](std::string_view const& p) noexcept{ std::cout << p << std::endl; }
   );
 
   std::vector<char> c{'H', 'e', 'l', 'l', 'o'};
