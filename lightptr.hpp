@@ -257,7 +257,7 @@ public:
 
   void reset() noexcept { reset(nullptr); }
 
-  void reset(std::nullptr_t const) noexcept
+  void reset(std::nullptr_t)
   {
     if (counter_)
     {
