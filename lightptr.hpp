@@ -316,7 +316,8 @@ public:
 };
 
 template<class T, typename ...A>
-inline light_ptr<T> make_light(A&& ...args)
+inline light_ptr<T> make_light(A&& ...args) noexcept(
+  noexcept(new T(std::forward<A>(args)...)))
 {
   return light_ptr<T>(new T(std::forward<A>(args)...));
 }

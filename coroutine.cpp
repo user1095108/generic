@@ -2,7 +2,7 @@
 
 #include "coroutine.hpp"
 
-#warning "if compiling this example does not work, try the -static option"
+#warning "if compiling this example does not work, try the -static and -no-pie options"
 
 struct A
 {
