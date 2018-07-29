@@ -9,6 +9,7 @@ int main(int, char*[])
   for (auto& i: gnr::rev({1, 2, 3, 4}))
   {
     std::cout << i << std::endl;
+    i = 0;
   }
 
   std::vector<int> r{1, 2, 3, 4};
