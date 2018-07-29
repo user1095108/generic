@@ -2,6 +2,8 @@
 # define GENERIC_REV_HPP
 # pragma once
 
+#include <vector>
+
 #include <iterator>
 
 namespace gnr
@@ -16,8 +18,9 @@ class rev_impl
   T ref_;
 
 public:
-  explicit rev_impl(T&& r) noexcept(noexcept(T(std::forward<T>(r)))) :
-    ref_(std::forward<T>(r))
+  template <typename U>
+  explicit rev_impl(U&& r) noexcept(noexcept(T(std::forward<U>(r)))) :
+    ref_(std::forward<U>(r))
   {
   }
 
@@ -42,9 +45,9 @@ auto rev(T&& r) noexcept(noexcept(detail::rev_impl<T>(std::forward<T>(r))))
 
 template <typename T>
 auto rev(std::initializer_list<T> r) noexcept(
-  noexcept(detail::rev_impl<std::initializer_list<T>>(std::move(r))))
+  noexcept(detail::rev_impl<std::vector<T>>(r)))
 {
-  return detail::rev_impl<std::initializer_list<T>>(std::move(r));
+  return detail::rev_impl<std::vector<T>>(r);
 }
 
 }
