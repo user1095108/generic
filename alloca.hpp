@@ -62,12 +62,13 @@ inline auto c_str(C&& c, F&& f) noexcept(noexcept(f(nullptr))) ->
 {
   auto const s(c.size());
 
-  salloc(s,
+  salloc(s + 1,
     [&c, &f, s](char* const p) noexcept(noexcept(f(nullptr)))
     {
       std::memcpy(p, c.data(), s);
+      p[s] = '\0';
 
-      f(std::string_view(p, s));
+      f(p);
     }
   );
 }
