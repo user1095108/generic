@@ -40,6 +40,13 @@ auto rev(T&& r) noexcept(noexcept(detail::rev_impl<T>(std::forward<T>(r))))
   return detail::rev_impl<T>(std::forward<T>(r));
 }
 
+template <typename T>
+auto rev(std::initializer_list<T> r) noexcept(
+  noexcept(detail::rev_impl<std::initializer_list<T>>(std::move(r))))
+{
+  return detail::rev_impl<std::initializer_list<T>>(std::move(r));
+}
+
 }
 
 #endif // GENERIC_REV_HPP
