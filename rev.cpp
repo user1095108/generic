@@ -12,6 +12,13 @@ int main(int, char*[])
     i = 0;
   }
 
+  int const a[]{1, 2, 3, 4};
+
+  for (auto i: gnr::rev(a))
+  {
+    std::cout << i << std::endl;
+  }
+
   std::vector<int> r{1, 2, 3, 4};
 
   for (auto& i: gnr::rev(r))
