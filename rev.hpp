@@ -53,7 +53,7 @@ auto rev(T&& r) noexcept(noexcept(detail::rev_impl<T>(std::forward<T>(r)))) ->
 
 template <typename T, std::size_t N>
 auto rev(T(&&a)[N]) noexcept(noexcept(detail::rev_impl<T[N]>(std::move(a))))->
-  decltype(std::begin(a), std::end(a), detail::rev_impl<T[N]>(std::move(a)))
+  decltype(detail::rev_impl<T[N]>(std::move(a)))
 {
   return detail::rev_impl<T[N]>(std::move(a));
 }
