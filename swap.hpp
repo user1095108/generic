@@ -16,7 +16,7 @@ namespace gnr
 {
 
 template <class Dst, class Src>
-inline Dst bit_cast(Src const src) noexcept
+inline Dst bit_cast(Src const& src) noexcept
 {
   Dst dst;
 
@@ -129,7 +129,7 @@ swap(T const v) noexcept
 
 #else
 
-namespace
+namespace detail
 {
 
 template<class T, std::size_t ...I>
@@ -152,7 +152,7 @@ constexpr inline std::enable_if_t<
 >
 swap(T const v) noexcept
 {
-  return swap_impl<T>(v, std::make_index_sequence<sizeof(T)>{});
+  return detail::swap_impl<T>(v, std::make_index_sequence<sizeof(T)>{});
 }
 
 #endif
