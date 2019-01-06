@@ -9,7 +9,10 @@
 namespace gnr
 {
 
-namespace
+namespace cify_
+{
+
+namespace detail
 {
 
 template <typename>
@@ -154,20 +157,22 @@ inline auto cify_once(F&& f, signature<R(A...)>) noexcept
 
 }
 
+}
+
 //////////////////////////////////////////////////////////////////////////////
 template <int I = 0, typename F>
 auto cify(F&& f) noexcept
 {
-  return cify<I>(std::forward<F>(f),
-    extract_signature(std::forward<F>(f))
+  return cify_::detail::cify<I>(std::forward<F>(f),
+    cify_::detail::extract_signature(std::forward<F>(f))
   );
 }
 
 template <int I = 0, typename F>
 auto cify_once(F&& f) noexcept
 {
-  return cify_once<I>(std::forward<F>(f),
-    extract_signature(std::forward<F>(f))
+  return cify_::detail::cify_once<I>(std::forward<F>(f),
+    cify_::detail::extract_signature(std::forward<F>(f))
   );
 }
 
