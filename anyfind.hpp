@@ -69,15 +69,17 @@ inline auto find(Container& c, Key const& k, char,
 template <class Container, class Key>
 inline auto find(Container& c, Key const& k, char,
   std::enable_if_t<std::is_array<Container>{}>* = {})
-  noexcept(noexcept(std::find(begin(c), end(c), k))) ->
-  std::optional<decltype(std::find(begin(c), end(c), k))>
+  noexcept(
+    noexcept(std::find(::gnr::detail::begin(c), ::gnr::detail::end(c), k))
+  ) -> std::optional<decltype(
+    std::find(::gnr::detail::begin(c), ::gnr::detail::end(c), k))>
 {
-  auto const e(end(c));
+  auto const e(::gnr::detail::end(c));
 
-  auto const i(std::find(begin(c), e, k));
+  auto const i(std::find(::gnr::detail::begin(c), e, k));
 
   return e == i ?
-    std::optional<decltype(std::find(begin(c), e, k))>() :
+    std::optional<decltype(std::find(::gnr::detail::begin(c), e, k))>() :
     i;
 }
 
