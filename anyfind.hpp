@@ -86,7 +86,7 @@ inline auto find(Container& c, Key const& k, char,
 }
 
 template <class Container, class Key>
-inline auto any_find(Container& c, Key const& k) noexcept(
+inline auto anyfind(Container& c, Key const& k) noexcept(
   noexcept(detail::find(c, k, 0))
 )
 {
@@ -94,7 +94,7 @@ inline auto any_find(Container& c, Key const& k) noexcept(
 }
 
 template <class Container, class Key, typename F>
-inline void any_find(Container& c, Key const& k, F&& f) noexcept(
+inline void anyfind(Container& c, Key const& k, F&& f) noexcept(
   noexcept(f(detail::find(c, k, 0)))
 )
 {
