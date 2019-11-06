@@ -493,6 +493,49 @@ public:
   }
 
   explicit operator bool() const noexcept { return f_; }
+  template <typename R, typename ...A>
+  std::enable_if_t<!std::is_void<R>{}, R>
+  operator()(A&&... args) const noexcept(
+    noexcept(std::declval<callback>().template invoke<R>(
+        std::forward<A>(args)...
+      )
+    )
+  )
+  {
+    return invoke<R>(std::forward<A>(args)...);
+  }
+
+  template <typename R = void, typename ...A>
+  std::enable_if_t<std::is_void<R>{}, R>
+  operator()(A&&... args) const noexcept(
+    noexcept(std::declval<callback>().template invoke<R>(
+        std::forward<A>(args)...
+      )
+    )
+  )
+  {
+    invoke<R>(std::forward<A>(args)...);
+  }
+
+  void assign(std::nullptr_t) noexcept
+  {
+    reset();
+  }
+
+  template <typename F>
+  void assign(F&& f) noexcept
+  {
+    using functor_type = std::decay_t<F>;
+
+    static_assert(sizeof(functor_type) <= sizeof(store_),
+      "functor too large");
+    static_assert(std::is_trivially_copyable<functor_type>{},
+      "functor not trivially copyable");
+
+    ::new (static_cast<void*>(&store_)) functor_type(std::forward<F>(f));
+
+    assign<F>(detail::callback::extract_signature(std::forward<F>(f)));
+  }
 
   template <typename R, typename ...A>
   std::enable_if_t<!std::is_void<R>{}, R>
@@ -540,50 +583,6 @@ public:
     auto const a(std::tuple<arg_type_t<A>...>{std::forward<A>(args)...});
 
     f_(const_cast<void*>(static_cast<void const*>(&store_)), &a, {});
-  }
-
-  template <typename R, typename ...A>
-  std::enable_if_t<!std::is_void<R>{}, R>
-  operator()(A&&... args) const noexcept(
-    noexcept(std::declval<callback>().template invoke<R>(
-        std::forward<A>(args)...
-      )
-    )
-  )
-  {
-    return invoke<R>(std::forward<A>(args)...);
-  }
-
-  template <typename R = void, typename ...A>
-  std::enable_if_t<std::is_void<R>{}, R>
-  operator()(A&&... args) const noexcept(
-    noexcept(std::declval<callback>().template invoke<R>(
-        std::forward<A>(args)...
-      )
-    )
-  )
-  {
-    invoke<R>(std::forward<A>(args)...);
-  }
-
-  void assign(std::nullptr_t) noexcept
-  {
-    reset();
-  }
-
-  template <typename F>
-  void assign(F&& f) noexcept
-  {
-    using functor_type = std::decay_t<F>;
-
-    static_assert(sizeof(functor_type) <= sizeof(store_),
-      "functor too large");
-    static_assert(std::is_trivially_copyable<functor_type>{},
-      "functor not trivially copyable");
-
-    ::new (static_cast<void*>(&store_)) functor_type(std::forward<F>(f));
-
-    assign<F>(detail::callback::extract_signature(std::forward<F>(f)));
   }
 
   void reset() noexcept { f_ = {}; }
