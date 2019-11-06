@@ -435,16 +435,6 @@ class callback
 #endif // NDEBUG
   }
 
-  template <std::size_t M>
-  friend bool operator==(callback<M> const&, std::nullptr_t) noexcept;
-  template<std::size_t M>
-  friend bool operator==(std::nullptr_t, callback<M> const&) noexcept;
-
-  template<std::size_t M>
-  friend bool operator!=(callback<M> const&, std::nullptr_t) noexcept;
-  template<std::size_t M>
-  friend bool operator!=(std::nullptr_t, callback<M> const&) noexcept;
-
 public:
   enum : std::size_t { size = N };
 
@@ -476,6 +466,16 @@ public:
   callback(F&& f) noexcept
   {
     assign(std::forward<F>(f));
+  }
+
+  bool operator==(std::nullptr_t) const noexcept
+  {
+    return f_;
+  }
+
+  bool operator!=(std::nullptr_t) const noexcept
+  {
+    return !operator==(nullptr);
   }
 
   callback& operator=(callback const&) = default;
@@ -610,30 +610,6 @@ public:
     return reinterpret_cast<T const*>(&store_);
   }
 };
-
-template <std::size_t N>
-bool operator==(callback<N> const& f, std::nullptr_t const) noexcept
-{
-  return nullptr == f.stub_ ;
-}
-
-template<std::size_t N>
-bool operator==(std::nullptr_t, callback<N> const& f) noexcept
-{
-  return nullptr == f.stub_;
-}
-
-template<std::size_t N>
-bool operator!=(callback<N> const& f, std::nullptr_t const) noexcept
-{
-  return !operator==(nullptr, f);
-}
-
-template<std::size_t N>
-bool operator!=(std::nullptr_t, callback<N> const& f) noexcept
-{
-  return !operator==(nullptr, f);
-}
 
 }
 
