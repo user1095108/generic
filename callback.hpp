@@ -343,7 +343,7 @@ class callback
     return typeid_t(type_id<T>);
   }
 
-  void (*f_)(void*, void const*, void*) noexcept(NE) {};
+  void (*f_)(void*, void const*, void*) {};
 
   std::aligned_storage_t<N> store_;
 
