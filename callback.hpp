@@ -24,13 +24,6 @@ namespace detail
 namespace callback
 {
 
-constexpr auto default_noexcept =
-#if defined(__cpp_exceptions) && __cpp_exceptions
-false;
-#else
-true;
-#endif // __cpp_exceptions
-
 constexpr auto default_size = 4 * sizeof(void*);
 
 template <typename>
@@ -330,9 +323,7 @@ constexpr inline auto extract_signature(F const&) noexcept ->
 
 }
 
-template <std::size_t N = detail::callback::default_size,
-  bool NE = detail::callback::default_noexcept
->
+template <std::size_t N = detail::callback::default_size>
 class callback
 {
   using typeid_t = void(*)();
@@ -356,9 +347,7 @@ class callback
     !std::is_member_function_pointer<F>{} &&
     !std::is_void<R>{}
   >
-  invoker(void* const store,
-    void const* const v,
-    void* const r) noexcept(noexcept(NE))
+  invoker(void* const store, void const* const v, void* const r)
   {
     *static_cast<R*>(r) = std::apply(*static_cast<F*>(store),
       *static_cast<std::tuple<A...> const*>(v)
@@ -370,9 +359,7 @@ class callback
     !std::is_member_function_pointer<F>{} &&
     std::is_void<R>{}
   >
-  invoker(void* const store,
-    void const* const v,
-    void*) noexcept(noexcept(NE))
+  invoker(void* const store, void const* const v, void*)
   {
     std::apply(*static_cast<F*>(store),
       *static_cast<std::tuple<A...> const*>(v)
@@ -384,9 +371,7 @@ class callback
     std::is_member_function_pointer<F>{} &&
     !std::is_void<R>{}
   >
-  invoker(void* const store,
-    void const* const v,
-    void* const r) noexcept(noexcept(NE))
+  invoker(void* const store, void const* const v, void* const r)
   {
     *static_cast<R*>(r) = std::apply(*static_cast<F*>(store),
       *static_cast<
@@ -400,9 +385,7 @@ class callback
     std::is_member_function_pointer<F>{} &&
     std::is_void<R>{}
   >
-  invoker(void* const store,
-    void const* const v,
-    void*) noexcept(noexcept(NE))
+  invoker(void* const store, void const* const v, void*)
   {
     std::apply(*static_cast<F*>(store),
       *static_cast<
