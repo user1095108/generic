@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "anyfunction.hpp"
+#include "anyfunc.hpp"
 
 struct S
 {
@@ -12,7 +12,7 @@ struct S
 
 int main()
 {
-  gnr::any_function<> f(
+  gnr::anyfunc<> f(
     []()
     {
       std::cout << "hello world" << std::endl;
@@ -21,20 +21,20 @@ int main()
     }
   );
 
-  std::cout << std::get<int>(f()) << std::endl;
+  std::cout << f.template operator()<int>() << std::endl;
 
   f = [](int a, int b, int c)
     {
       std::cout << a << " " << b << " " << c << std::endl;
     };
 
-  f(1, 2, 3);
+  f.invoke<void>(1, 2, 3);
 
   S s;
 
   f = &S::apply;
 
-  f(std::ref(s));
+  f.invoke<void>(std::ref(s));
 
   return 0;
 }
