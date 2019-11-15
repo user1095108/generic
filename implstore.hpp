@@ -33,9 +33,16 @@ public:
 
   ~implstore() { get()->~U(); }
 
-  implstore(implstore const& other) : implstore(other, nullptr) { }
+  implstore(implstore const&) = delete;
+  implstore(implstore&&) = delete;
 
-  implstore(implstore&& other) : implstore(std::move(other), nullptr) { }
+  implstore& operator=(implstore const&) = delete;
+  implstore& operator=(implstore&&) = delete;
+
+/*
+  implstore(implstore const& other) : implstore(other, {}) { }
+
+  implstore(implstore&& other) : implstore(std::move(other), {}) { }
 
   template <std::size_t M, typename K = U>
   implstore(implstore<U, M> const& other,
@@ -46,7 +53,7 @@ public:
 
   template <std::size_t M, typename K = U>
   implstore(implstore<U, M>&& other,
-    std::enable_if_t<std::is_move_constructible<K>{}>* = nullptr)
+    std::enable_if_t<std::is_move_constructible<K>{}>* = {})
   {
     ::new (static_cast<void*>(&store_)) U(std::move(*other));
   }
@@ -82,6 +89,7 @@ public:
 
     return *this;
   }
+*/
 
   auto operator->() noexcept
   {
