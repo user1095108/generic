@@ -481,7 +481,7 @@ public:
 
   explicit operator bool() const noexcept
   {
-    return any_.has_value();
+    return f_;
   }
 
   template <typename R, typename ...A>
