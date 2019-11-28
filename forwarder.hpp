@@ -141,14 +141,16 @@ public:
 
   template <typename F,
     typename = std::enable_if_t<
-      !std::is_same_v<std::decay_t<F>, forwarder> &&
-      std::is_invocable_v<
-        decltype(&inherited_t::template assign<F>), inherited_t&, F
-      >
+      !std::is_same_v<std::decay_t<F>, forwarder>
     >
   >
   forwarder& operator=(F&& f) noexcept
   {
+    static_assert(std::is_invocable_v<
+        decltype(&inherited_t::template assign<F>), inherited_t&, F
+      >
+    );
+
     inherited_t::assign(std::forward<F>(f));
 
     return *this;

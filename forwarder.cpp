@@ -22,10 +22,12 @@ int main()
   f(s);
 
   gnr::forwarder<void(S const*) noexcept> g(&S::f);
+  assert(noexcept(g(&s)));
 
   g(&s);
 
   gnr::forwarder<void()> h([&]() { s.f(); });
+  assert(!noexcept(h()));
 
   h();
 
