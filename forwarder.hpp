@@ -118,11 +118,7 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  template <typename F,
-    typename = std::enable_if_t<
-      !std::is_same_v<std::decay_t<F>, forwarder>
-    >
-  >
+  template <typename F>
   forwarder& operator=(F&& f) noexcept
   {
     static_assert(std::is_invocable_v<
