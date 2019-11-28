@@ -21,22 +21,16 @@ namespace
 
 constexpr auto const default_size = 4 * sizeof(void*);
 
-template <typename F, typename ...A>
-constexpr bool is_noexcept() noexcept
-{
-  return noexcept(std::declval<F>()(std::declval<A>()...));
 }
 
-}
-
-template <typename F, std::size_t N, typename O>
+template <typename F, std::size_t N>
 class forwarder_impl;
 
-template <typename R, typename ...A, std::size_t N, typename O>
-class forwarder_impl<R (A...), N, O>
+template <typename R, typename ...A, std::size_t N>
+class forwarder_impl<R (A...), N>
 {
 protected:
-  R (*stub_)(void*, A&&...) noexcept(is_noexcept<O, A...>()) {};
+  R (*stub_)(void*, A&&...) {};
 
   std::aligned_storage_t<N> store_;
 
@@ -44,7 +38,7 @@ public:
   using result_type = R;
 
 public:
-  R operator()(A... args) const noexcept(is_noexcept<O, A...>())
+  R operator()(A... args) const
   {
     //assert(stub_);
     return stub_(const_cast<decltype(store_)*>(std::addressof(store_)),
@@ -65,8 +59,48 @@ public:
 
     ::new (std::addressof(store_)) functor_type(std::forward<F>(f));
 
-    stub_ = [](void* const ptr, A&&... args) noexcept(
-      is_noexcept<O, A...>())-> R
+    stub_ = [](void* const ptr, A&&... args) -> R
+    {
+      return std::invoke(*static_cast<functor_type*>(ptr),
+        std::forward<A>(args)...);
+    };
+  }
+};
+
+template <typename R, typename ...A, std::size_t N>
+class forwarder_impl<R (A...) noexcept, N>
+{
+protected:
+  R (*stub_)(void*, A&&...) noexcept {};
+
+  std::aligned_storage_t<N> store_;
+
+public:
+  using result_type = R;
+
+public:
+  R operator()(A... args) const noexcept
+  {
+    //assert(stub_);
+    return stub_(const_cast<decltype(store_)*>(std::addressof(store_)),
+      std::forward<A>(args)...);
+  }
+
+  template <typename F,
+    typename = std::enable_if_t<std::is_invocable_r_v<R, F, A...>>
+  >
+  void assign(F&& f) noexcept
+  {
+    using functor_type = std::decay_t<F>;
+
+    static_assert(sizeof(functor_type) <= sizeof(store_),
+      "functor too large");
+    static_assert(std::is_trivially_copyable<functor_type>{},
+      "functor not trivially copyable");
+
+    ::new (std::addressof(store_)) functor_type(std::forward<F>(f));
+
+    stub_ = [](void* const ptr, A&&... args) noexcept -> R
     {
       return std::invoke(*static_cast<functor_type*>(ptr),
         std::forward<A>(args)...);
@@ -75,9 +109,9 @@ public:
 };
 
 template <typename A, std::size_t N = default_size>
-class forwarder : public forwarder_impl<A, N, A>
+class forwarder : public forwarder_impl<A, N>
 {
-  using inherited_t = forwarder_impl<A, N, A>;
+  using inherited_t = forwarder_impl<A, N>;
 
 public:
   enum : std::size_t { size = N };
