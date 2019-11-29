@@ -26,7 +26,7 @@ enum : std::size_t { default_size = 4 * sizeof(void*) };
 namespace detail
 {
 
-template <typename F, std::size_t N, bool E>
+template <typename, std::size_t, bool>
 class forwarder_impl2;
 
 template <typename R, typename ...A, std::size_t N, bool E>
@@ -70,7 +70,7 @@ public:
   }
 };
 
-template <typename F, std::size_t N>
+template <typename, std::size_t>
 class forwarder_impl;
 
 template <typename R, typename ...A, std::size_t N>
