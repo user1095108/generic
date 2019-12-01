@@ -104,7 +104,8 @@ public:
       >
     >
   >
-  forwarder(F&& f) noexcept
+  forwarder(F&& f) noexcept(
+    noexcept(inherited_t::assign(std::forward<F>(f))))
   {
     inherited_t::assign(std::forward<F>(f));
   }
@@ -114,7 +115,8 @@ public:
   forwarder& operator=(forwarder&&) = default;
 
   template <typename F>
-  forwarder& operator=(F&& f) noexcept
+  forwarder& operator=(F&& f) noexcept(
+    noexcept(inherited_t::assign(std::forward<F>(f))))
   {
     static_assert(std::is_invocable_v<
         decltype(&inherited_t::template assign<F>), inherited_t&, F
