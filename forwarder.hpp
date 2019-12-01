@@ -16,15 +16,10 @@
 namespace gnr
 {
 
-namespace
+namespace detail::forwarder
 {
 
 enum : std::size_t { default_size = 4 * sizeof(void*) };
-
-}
-
-namespace detail
-{
 
 template <typename, std::size_t, bool>
 class forwarder_impl2;
@@ -87,10 +82,10 @@ class forwarder_impl<R (A...) noexcept, N> :
 
 }
 
-template <typename A, std::size_t N = default_size>
-class forwarder : public detail::forwarder_impl<A, N>
+template <typename A, std::size_t N = detail::forwarder::default_size>
+class forwarder : public detail::forwarder::forwarder_impl<A, N>
 {
-  using inherited_t = detail::forwarder_impl<A, N>;
+  using inherited_t = detail::forwarder::forwarder_impl<A, N>;
 
 public:
   enum : std::size_t { size = N };
