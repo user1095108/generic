@@ -46,7 +46,7 @@ public:
   template <typename F,
     typename = std::enable_if_t<std::is_invocable_r_v<R, F, A...>>
   >
-  void assign(F&& f) noexcept
+  void assign(F&& f) noexcept(noexcept(std::decay_t<F>(std::forward<F>(f))))
   {
     using functor_type = std::decay_t<F>;
 
