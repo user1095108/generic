@@ -47,7 +47,7 @@ public:
     typename = std::enable_if_t<std::is_invocable_r_v<R, F, A...>>
   >
   void assign(F&& f)
-#ifndef __GNUC__
+#if !defined(__GNUC__) || defined(__clang__)
   noexcept(noexcept(std::decay_t<F>(std::forward<F>(f))))
 #endif
   {
