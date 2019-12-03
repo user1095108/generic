@@ -46,10 +46,7 @@ public:
   template <typename F,
     typename = std::enable_if_t<std::is_invocable_r_v<R, F, A...>>
   >
-  void assign(F&& f)
-#if !defined(__GNUC__) || defined(__clang__)
-  noexcept(noexcept(std::decay_t<F>(std::forward<F>(f))))
-#endif
+  void assign(F&& f) noexcept(noexcept(std::decay_t<F>(std::forward<F>(f))))
   {
     using functor_type = std::decay_t<F>;
 
@@ -99,12 +96,23 @@ public:
 
   forwarder(forwarder&&) = default;
 
+  template <typename F>
+  static constexpr auto has_assign(int) ->
+    decltype(inherited_t::template assign<F>(std::declval<F>()), bool())
+  {
+    return true;
+  }
+
+  template <typename F>
+  static constexpr auto has_assign(...)
+  {
+    return false;
+  }
+
   template <typename F,
     typename = std::enable_if_t<
       !std::is_same_v<std::decay_t<F>, forwarder> &&
-      std::is_invocable_v<
-        decltype(&inherited_t::template assign<F>), inherited_t&, F
-      >
+      has_assign<F>(int())
     >
   >
   forwarder(F&& f) noexcept(noexcept(inherited_t::assign(std::forward<F>(f))))
