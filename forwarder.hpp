@@ -121,10 +121,7 @@ public:
   forwarder& operator=(F&& f) noexcept(
     noexcept(inherited_t::assign(std::forward<F>(f))))
   {
-    static_assert(std::is_invocable_v<
-        decltype(&inherited_t::template assign<F>), inherited_t&, F
-      >
-    );
+    static_assert(inherited_t::template is_invocable<F>());
 
     inherited_t::assign(std::forward<F>(f));
 
