@@ -97,14 +97,14 @@ public:
   forwarder(forwarder&&) = default;
 
   template <typename F>
-  static constexpr auto has_assign(int) ->
+  static constexpr auto have_assign(int) ->
     decltype(inherited_t::template assign<F>(std::declval<F>()), bool())
   {
     return true;
   }
 
   template <typename F>
-  static constexpr auto has_assign(...)
+  static constexpr auto have_assign(...)
   {
     return false;
   }
@@ -112,7 +112,7 @@ public:
   template <typename F,
     typename = std::enable_if_t<
       !std::is_same_v<std::decay_t<F>, forwarder> &&
-      has_assign<F>(int())
+      have_assign<F>(int())
     >
   >
   forwarder(F&& f) noexcept(noexcept(inherited_t::assign(std::forward<F>(f))))
