@@ -32,6 +32,12 @@ protected:
 
   std::aligned_storage_t<N> store_;
 
+  template <typename F>
+  static constexpr auto is_invocable()
+  {
+    return std::is_invocable_r_v<R, F, A...>;
+  }
+
 public:
   using result_type = R;
 
@@ -46,10 +52,7 @@ public:
   template <typename F,
     typename = std::enable_if_t<std::is_invocable_r_v<R, F, A...>>
   >
-  void assign(F&& f)
-#if !defined(__GNUC__) || defined(__clang__)
-  noexcept(noexcept(std::decay_t<F>(std::forward<F>(f))))
-#endif
+  void assign(F&& f) noexcept(noexcept(std::decay_t<F>(std::forward<F>(f))))
   {
     using functor_type = std::decay_t<F>;
 
@@ -99,23 +102,10 @@ public:
 
   forwarder(forwarder&&) = default;
 
-  template <typename F>
-  static constexpr auto have_assign(int) ->
-    decltype(std::declval<inherited_t>().assign(std::declval<F>()), bool())
-  {
-    return true;
-  }
-
-  template <typename F>
-  static constexpr auto have_assign(...)
-  {
-    return false;
-  }
-
   template <typename F,
     typename = std::enable_if_t<
       !std::is_same_v<std::decay_t<F>, forwarder> &&
-      have_assign<F>(int())
+      inherited_t::template is_invocable<F>()
     >
   >
   forwarder(F&& f) noexcept(noexcept(inherited_t::assign(std::forward<F>(f))))
