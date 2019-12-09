@@ -1,5 +1,5 @@
-#ifndef GENERIC_REV_HPP
-# define GENERIC_REV_HPP
+#ifndef GNR_REV_HPP
+# define GNR_REV_HPP
 # pragma once
 
 #include <iterator>
@@ -59,4 +59,4 @@ auto rev(T(&&a)[N]) noexcept(noexcept(detail::rev_impl<T[N]>(std::forward<T[N]>(
 
 }
 
-#endif // GENERIC_REV_HPP
+#endif // GNR_REV_HPP
