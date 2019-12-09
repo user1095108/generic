@@ -24,13 +24,6 @@ public:
   {
   }
 
-  template <typename U, std::size_t N>
-  explicit rev_impl(U(&&a)[N]) noexcept(
-    noexcept(std::move(std::begin(a), std::end(a), std::begin(ref_))))
-  {
-    std::move(std::begin(a), std::end(a), std::begin(ref_));
-  }
-
   auto begin() noexcept(noexcept(std::rbegin(ref_)))
   {
     return std::rbegin(ref_);
@@ -52,10 +45,9 @@ auto rev(T&& r) noexcept(noexcept(detail::rev_impl<T>(std::forward<T>(r)))) ->
 }
 
 template <typename T, std::size_t N>
-auto rev(T(&&a)[N]) noexcept(
-  noexcept(detail::rev_impl<T[N]>(std::move(a)))) -> detail::rev_impl<T[N]>
+auto rev(T(&&a)[N]) noexcept(noexcept(detail::rev_impl<T(&&)[N]>(std::move(a))))
 {
-  return detail::rev_impl<T[N]>(std::move(a));
+  return detail::rev_impl<T(&&)[N]>(std::move(a));
 }
 
 }
