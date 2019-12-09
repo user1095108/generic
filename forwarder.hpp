@@ -2,8 +2,6 @@
 # define GNR_FORWARDER_HPP
 # pragma once
 
-#include <cassert>
-
 // std::size_t
 #include <cstddef>
 
