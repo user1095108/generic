@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <iostream>
 
 #include "forwarder.hpp"
@@ -17,17 +15,17 @@ int main()
   S const s;
 
   gnr::forwarder<void(S const&) noexcept> f(&S::f);
-  assert(noexcept(f(s)));
+  static_assert(noexcept(f(s)));
 
   f(s);
 
   gnr::forwarder<void(S const*) noexcept> g(&S::f);
-  assert(noexcept(g(&s)));
+  static_assert(noexcept(g(&s)));
 
   g(&s);
 
   gnr::forwarder<void()> h([&]() { s.f(); });
-  assert(!noexcept(h()));
+  static_assert(!noexcept(h()));
 
   h();
 
