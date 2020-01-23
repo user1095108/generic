@@ -133,6 +133,7 @@ struct many : detail::many::many_impl<
 >
 {
   many() = default;
+
   ~many() = default;
   many(many&&) = default;
   many(many const&) = default;
