@@ -44,11 +44,12 @@ struct tuple_base
 template<std::size_t I, class T>
 struct tuple_base<I, T, TupleValue::Reference>
 {
-  std::add_pointer_t<std::remove_reference_t<T>> value;
+  T value;
 
   tuple_base() = delete;
 
-  constexpr tuple_base(T value) : value{&value}
+  template <typename A>
+  constexpr tuple_base(A&& value) : value{std::move(value)}
   {
   }
 
@@ -84,7 +85,7 @@ auto& get(tuple_base<I, T, TupleValue::Scalar> const& obj)
 template <std::size_t I, class T>
 auto& get(tuple_base<I, T, TupleValue::Reference> const& obj)
 {
-  return *obj.value;
+  return obj.value;
 }
 
 template <std::size_t I, class T>
