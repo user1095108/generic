@@ -40,10 +40,10 @@ struct tuple_base
   {
   }
 
-  tuple_base(tuple_base&&) = default;
   tuple_base(tuple_base const&) = default;
-  tuple_base& operator=(tuple_base&&) = default;
+  tuple_base(tuple_base&&) = default;
   tuple_base& operator=(tuple_base const&) = default;
+  tuple_base& operator=(tuple_base&&) = default;
 };
 
 template <std::size_t I, class T>
@@ -58,10 +58,10 @@ struct tuple_base<I, T, TupleValue::Reference>
   {
   }
 
-  tuple_base(tuple_base&&) = default;
   tuple_base(tuple_base const&) = default;
-  tuple_base& operator=(tuple_base&&) = default;
+  tuple_base(tuple_base&&) = default;
   tuple_base& operator=(tuple_base const&) = default;
+  tuple_base& operator=(tuple_base&&) = default;
 };
 
 template <std::size_t I, class T>
@@ -74,10 +74,10 @@ struct tuple_base<I, T, TupleValue::Class> : T
   {
   }
 
-  tuple_base(tuple_base&&) = default;
   tuple_base(tuple_base const&) = default;
-  tuple_base& operator=(tuple_base&&) = default;
+  tuple_base(tuple_base&&) = default;
   tuple_base& operator=(tuple_base const&) = default;
+  tuple_base& operator=(tuple_base&&) = default;
 };
 
 template <std::size_t I, class T, enum detail::many::TupleValue E>
