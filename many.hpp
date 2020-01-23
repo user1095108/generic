@@ -21,7 +21,7 @@ namespace many
 
 enum TupleValue { Scalar, Reference, Class };
 
-template<std::size_t I,
+template <std::size_t I,
   class T,
   TupleValue = std::is_class<T>{} ?
     TupleValue::Class :
@@ -41,7 +41,7 @@ struct tuple_base
   }
 };
 
-template<std::size_t I, class T>
+template <std::size_t I, class T>
 struct tuple_base<I, T, TupleValue::Reference>
 {
   T value;
@@ -49,7 +49,7 @@ struct tuple_base<I, T, TupleValue::Reference>
   tuple_base() = delete;
 
   template <typename A>
-  constexpr tuple_base(A&& value) : value{std::move(value)}
+  constexpr tuple_base(A&& value) : value{std::forward<A>(value)}
   {
   }
 
@@ -59,7 +59,7 @@ struct tuple_base<I, T, TupleValue::Reference>
   tuple_base& operator=(tuple_base const&) = default;
 };
 
-template<std::size_t I, class T>
+template <std::size_t I, class T>
 struct tuple_base<I, T, TupleValue::Class> : T
 {
   tuple_base() = default;
@@ -70,20 +70,8 @@ struct tuple_base<I, T, TupleValue::Class> : T
   }
 };
 
-template <std::size_t I, class T>
-auto& get(tuple_base<I, T, TupleValue::Scalar>& obj)
-{
-  return obj.value;
-}
-
-template <std::size_t I, class T>
-auto& get(tuple_base<I, T, TupleValue::Scalar> const& obj)
-{
-  return obj.value;
-}
-
-template <std::size_t I, class T>
-auto& get(tuple_base<I, T, TupleValue::Reference> const& obj)
+template <std::size_t I, class T, enum detail::many::TupleValue E>
+auto& get(tuple_base<I, T, E> const& obj)
 {
   return obj.value;
 }
@@ -141,7 +129,7 @@ struct many : detail::many::many_impl<
   many& operator=(many const&) = default;
 
 #if !__cpp_aggregate_bases
-  template<class... U>
+  template <class... U>
   constexpr many(U&& ...u) : many::many_impl{std::forward<U>(u)...}
   {
   }
@@ -180,6 +168,13 @@ auto& get(gnr::many<Types...> const& m) noexcept
 
 template<size_t I, typename ...Types> 
 auto& get(gnr::many<Types...>&& m) noexcept
+{
+  // m is now a lvalue
+  return gnr::detail::many::get<I>(m);
+}
+
+template<size_t I, typename ...Types> 
+auto& get(gnr::many<Types...> const&& m) noexcept
 {
   // m is now a lvalue
   return gnr::detail::many::get<I>(m);
