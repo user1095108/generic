@@ -106,11 +106,12 @@ struct many_impl<std::index_sequence<Is...>, Types...> :
   tuple_base<Is, Types>...
 {
   many_impl() = default;
+
   ~many_impl() = default;
-  many_impl(many_impl&&) = default;
   many_impl(many_impl const&) = default;
-  many_impl& operator=(many_impl&&) = default;
+  many_impl(many_impl&&) = default;
   many_impl& operator=(many_impl const&) = default;
+  many_impl& operator=(many_impl&&) = default;
 
 #if !__cpp_aggregate_bases
   template<typename ...U>
