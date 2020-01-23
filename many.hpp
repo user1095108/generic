@@ -71,19 +71,19 @@ struct tuple_base<I, T, TupleValue::Class> : T
 };
 
 template <std::size_t I, class T, enum detail::many::TupleValue E>
-auto& get(tuple_base<I, T, E> const& obj)
+auto& get(tuple_base<I, T, E> const& obj) noexcept
 {
   return obj.value;
 }
 
 template <std::size_t I, class T>
-auto get(tuple_base<I, T, TupleValue::Class>& obj) -> T&
+auto get(tuple_base<I, T, TupleValue::Class>& obj) noexcept -> T&
 {
   return obj;
 }
 
 template <std::size_t I, class T>
-auto get(tuple_base<I, T, TupleValue::Class> const& obj) -> T const&
+auto get(tuple_base<I, T, TupleValue::Class> const& obj) noexcept -> T const&
 {
   return obj;
 }
@@ -166,14 +166,14 @@ auto& get(gnr::many<Types...> const& m) noexcept
   return gnr::detail::many::get<I>(m);
 }
 
-template<size_t I, typename ...Types> 
+template<size_t I, typename ...Types>
 auto& get(gnr::many<Types...>&& m) noexcept
 {
   // m is now a lvalue
   return gnr::detail::many::get<I>(m);
 }
 
-template<size_t I, typename ...Types> 
+template<size_t I, typename ...Types>
 auto& get(gnr::many<Types...> const&& m) noexcept
 {
   // m is now a lvalue
