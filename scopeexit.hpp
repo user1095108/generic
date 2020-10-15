@@ -92,8 +92,8 @@ inline auto operator+(scope_exit_helper&&, T&& f) noexcept
   (scope_exit::make_scope_exit([POP_LAST(__VA_ARGS__)]() noexcept   \
     { LAST(__VA_ARGS__); }))
 #define SCOPE_EXIT_ auto const CAT(scope_exit_, __LINE__) =      \
-  scope_exit_helper()+[&]() noexcept
+  scope_exit::scope_exit_helper()+[&]() noexcept
 #define SCOPE_EXIT__(...) auto const CAT(scope_exit_, __LINE__) =\
-  scope_exit_helper()+[__VA_ARGS__]() noexcept
+  scope_exit::scope_exit_helper()+[__VA_ARGS__]() noexcept
 
 #endif // GNR_SCOPEEXIT_HPP
