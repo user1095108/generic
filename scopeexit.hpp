@@ -66,8 +66,8 @@ public:
   ~scope_exit() noexcept { f_(); }
 
   //
-  scope_exit& operator=(scope_exit const&) = delete;
-  scope_exit& operator=(scope_exit&&) = delete;
+  template <typename U>
+  scope_exit& operator=(U&&) = delete;
 };
 
 }
