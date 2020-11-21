@@ -62,8 +62,8 @@ public:
 
     stub_ = [](void const* const ptr, A&&... args) noexcept(E) -> R
     {
-      return std::invoke(*static_cast<functor_type*>(
-        const_cast<decltype(&store_)>(ptr)), std::forward<A>(args)...);
+      return std::invoke(*static_cast<functor_type*>(const_cast<void*>(ptr)),
+        std::forward<A>(args)...);
     };
   }
 };
