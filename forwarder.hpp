@@ -52,7 +52,6 @@ public:
   void assign(F&& f) noexcept(noexcept(std::decay_t<F>(std::forward<F>(f))))
   {
     using functor_type = std::decay_t<F>;
-
     static_assert(sizeof(functor_type) <= sizeof(store_),
       "functor too large");
     static_assert(std::is_trivially_copyable<functor_type>{},
@@ -61,10 +60,11 @@ public:
     ::new (std::addressof(store_)) functor_type(std::forward<F>(f));
 
     stub_ = [](void const* const ptr, A&&... args) noexcept(E) -> R
-    {
-      return std::invoke(*static_cast<functor_type*>(const_cast<void*>(ptr)),
-        std::forward<A>(args)...);
-    };
+      {
+        return std::invoke(
+          *static_cast<functor_type*>(const_cast<void*>(ptr)),
+          std::forward<A>(args)...);
+      };
   }
 };
 
