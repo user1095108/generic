@@ -35,12 +35,7 @@ int main()
 
   h();
 
-  gnr::fwdref<void(S const&) noexcept> i(&S::f);
-  static_assert(noexcept(i(s)));
-
-  i(s);
-
-  auto const message("message\n");
+  auto const message("");
   std::cout << std::addressof(message) << std::endl;
 
   test([&]{

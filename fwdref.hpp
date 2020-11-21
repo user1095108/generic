@@ -5,8 +5,6 @@
 // std::memcpy
 #include <cstring>
 
-#include <algorithm>
-
 #include <functional>
 
 #include <type_traits>
@@ -28,8 +26,7 @@ class fwdref_impl2<R (A...), E>
 protected:
   R (*stub_)(void*, A&&...) noexcept(E) {};
 
-  std::aligned_storage_t<std::max(sizeof(void*),
-    sizeof(&fwdref_impl2::stub_))> store_;
+  std::aligned_storage_t<sizeof(void*)> store_;
 
   template <typename F>
   static constexpr auto is_invocable() noexcept
@@ -56,28 +53,15 @@ public:
   {
     using functor_type = std::decay_t<F>;
 
-    if constexpr (std::is_member_function_pointer_v<F>)
-    {
-      std::memcpy(&store_, &f, sizeof(f));
+    // store a pointer to the function object
+    auto const ptr(&f);
+    std::memcpy(&store_, &ptr, sizeof(ptr));
 
-      stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
-      {
-        return std::invoke(*static_cast<functor_type*>(ptr),
-          std::forward<A>(args)...);
-      };
-    }
-    else
+    stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
     {
-      // store a pointer to the function object
-      auto const ptr(&f);
-      std::memcpy(&store_, &ptr, sizeof(ptr));
-
-      stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
-      {
-        return std::invoke(**static_cast<functor_type**>(ptr),
-          std::forward<A>(args)...);
-      };
-    }
+      return std::invoke(**static_cast<functor_type**>(ptr),
+        std::forward<A>(args)...);
+    };
   }
 };
 
