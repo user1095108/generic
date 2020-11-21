@@ -43,8 +43,7 @@ public:
   R operator()(A... args) const noexcept(E)
   {
     //assert(stub_);
-    return stub_(const_cast<decltype(store_)*>(std::addressof(store_)),
-      std::forward<A>(args)...);
+    return stub_(std::addressof(store_), std::forward<A>(args)...);
   }
 
   template <typename F,
@@ -61,10 +60,10 @@ public:
 
     ::new (std::addressof(store_)) functor_type(std::forward<F>(f));
 
-    stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
+    stub_ = [](void const* const ptr, A&&... args) noexcept(E) -> R
     {
-      return std::invoke(*static_cast<functor_type*>(ptr),
-        std::forward<A>(args)...);
+      return std::invoke(*static_cast<functor_type*>(
+        const_cast<decltype(&store_)>(ptr)), std::forward<A>(args)...);
     };
   }
 };
