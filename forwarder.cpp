@@ -11,6 +11,11 @@ struct S
   }
 };
 
+void test(gnr::fwdref<void()> const f)
+{
+  f();
+}
+
 int main()
 {
   S const s;
@@ -35,10 +40,13 @@ int main()
 
   i(s);
 
-  gnr::fwdref<void()> j([&] { s.f(); });
-  static_assert(!noexcept(j()));
+  auto const message("message\n");
+  std::cout << std::addressof(message) << std::endl;
 
-  j();
+  test([&]{
+      std::cout << std::addressof(message) << std::endl;
+    }
+  );
 
   return 0;
 }

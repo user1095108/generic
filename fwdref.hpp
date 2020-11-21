@@ -59,19 +59,25 @@ public:
     if constexpr (std::is_member_function_pointer_v<F>)
     {
       std::memcpy(&store_, &f, sizeof(f));
+
+      stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
+      {
+        return std::invoke(*static_cast<functor_type*>(ptr),
+          std::forward<A>(args)...);
+      };
     }
     else
     {
       // store a pointer to the function object
       auto const ptr(&f);
       std::memcpy(&store_, &ptr, sizeof(ptr));
-    }
 
-    stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
-    {
-      return std::invoke(*static_cast<functor_type*>(ptr),
-        std::forward<A>(args)...);
-    };
+      stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
+      {
+        return std::invoke(**static_cast<functor_type**>(ptr),
+          std::forward<A>(args)...);
+      };
+    }
   }
 };
 
