@@ -107,15 +107,17 @@ public:
 
   fwdref& operator=(fwdref&&) = default;
 
+  fwdref& operator=(std::nullptr_t) noexcept
+  {
+    return reset(), *this;
+  }
+
   template <typename F>
   fwdref& operator=(F&& f) noexcept(
     noexcept(inherited_t::assign(std::forward<F>(f))))
   {
     static_assert(inherited_t::template is_invocable<F>());
-
-    inherited_t::assign(std::forward<F>(f));
-
-    return *this;
+    return inherited_t::assign(std::forward<F>(f)), *this;
   }
 
   explicit operator bool() const noexcept
