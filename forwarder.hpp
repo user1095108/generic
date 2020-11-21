@@ -5,8 +5,6 @@
 // std::size_t
 #include <cstddef>
 
-#include <functional>
-
 #include <type_traits>
 
 #include <utility>

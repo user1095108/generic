@@ -5,7 +5,7 @@
 // std::memcpy
 #include <cstring>
 
-#include <functional>
+#include <algorithm>
 
 #include <type_traits>
 
