@@ -115,7 +115,7 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  fwdref& operator=(std::nullptr_t) noexcept
+  auto& operator=(std::nullptr_t) noexcept
   {
     return reset(), *this;
   }
@@ -125,7 +125,6 @@ public:
     noexcept(inherited_t::assign(std::forward<F>(f))))
   {
     static_assert(inherited_t::template is_invocable<F>());
-
     return inherited_t::assign(std::forward<F>(f)), *this;
   }
 

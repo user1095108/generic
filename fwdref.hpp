@@ -107,7 +107,7 @@ public:
 
   fwdref& operator=(fwdref&&) = default;
 
-  fwdref& operator=(std::nullptr_t) noexcept
+  auto& operator=(std::nullptr_t) noexcept
   {
     return reset(), *this;
   }
