@@ -26,7 +26,7 @@ class fwdref_impl2<R (A...), E>
 protected:
   R (*stub_)(void*, A&&...) noexcept(E) {};
 
-  std::aligned_storage_t<sizeof(void*)> store_;
+  void* store_;
 
   template <typename F>
   static constexpr auto is_invocable() noexcept
@@ -41,8 +41,7 @@ public:
   R operator()(A... args) const noexcept(E)
   {
     //assert(stub_);
-    return stub_(const_cast<decltype(store_)*>(std::addressof(store_)),
-      std::forward<A>(args)...);
+    return stub_(store_, std::forward<A>(args)...);
   }
 
   template <typename F, typename = std::enable_if_t<
@@ -53,13 +52,11 @@ public:
   {
     using functor_type = std::decay_t<F>;
 
-    // store a pointer to the function object
-    auto const ptr(&f);
-    std::memcpy(&store_, &ptr, sizeof(ptr));
+    store_ = &f;
 
     stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
     {
-      return std::invoke(**static_cast<functor_type**>(ptr),
+      return std::invoke(*static_cast<functor_type*>(ptr),
         std::forward<A>(args)...);
     };
   }
