@@ -7,6 +7,8 @@
 
 #include <algorithm>
 
+#include <functional>
+
 #include <type_traits>
 
 #include <utility>
@@ -47,22 +49,22 @@ public:
   }
 
   template <typename F, typename = std::enable_if_t<
-      std::is_invocable_r_v<R, F, A...> &&
-      (std::is_reference_v<F> || std::is_member_function_pointer_v<F>)
+      std::is_invocable_r_v<R, F, A...>
     >
   >
   void assign(F&& f) noexcept(noexcept(std::decay_t<F>(std::forward<F>(f))))
   {
     using functor_type = std::decay_t<F>;
 
-    if constexpr (std::is_reference_v<F>)
+    if constexpr (std::is_member_function_pointer_v<F>)
     {
-      auto const ptr(&f);
-      std::memcpy(&store_, &ptr, sizeof(ptr));
+      std::memcpy(&store_, &f, sizeof(f));
     }
     else
     {
-      std::memcpy(&store_, &f, sizeof(f));
+      // store a pointer to the function object
+      auto const ptr(&f);
+      std::memcpy(&store_, &ptr, sizeof(ptr));
     }
 
     stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
