@@ -25,7 +25,7 @@ int main()
 
   g(&s);
 
-  gnr::forwarder<void()> h([&]() { s.f(); });
+  gnr::forwarder<void()> h([&] { s.f(); });
   static_assert(!noexcept(h()));
 
   h();
@@ -34,6 +34,11 @@ int main()
   static_assert(noexcept(i(s)));
 
   i(s);
+
+  gnr::fwdref<void()> j([&] { s.f(); });
+  static_assert(!noexcept(j()));
+
+  j();
 
   return 0;
 }

@@ -28,8 +28,8 @@ class fwdref_impl2<R (A...), E>
 protected:
   R (*stub_)(void*, A&&...) noexcept(E) {};
 
-  std::aligned_storage_t<std::max(
-    sizeof(void*), sizeof(&fwdref_impl2::stub_))> store_;
+  std::aligned_storage_t<std::max(sizeof(void*),
+    sizeof(&fwdref_impl2::stub_))> store_;
 
   template <typename F>
   static constexpr auto is_invocable() noexcept
