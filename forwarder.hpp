@@ -26,7 +26,7 @@ template <typename R, typename ...A, std::size_t N, bool E>
 class forwarder_impl2<R (A...), N, E>
 {
 protected:
-  R (*stub_)(void*, A&&...) noexcept(E) {};
+  R (*stub_)(void const*, A&&...) noexcept(E) {};
 
   std::aligned_storage_t<N> store_;
 
