@@ -153,15 +153,9 @@ public:
   }
 
   template <typename T>
-  auto target() noexcept
-  {
-    return reinterpret_cast<T*>(std::addressof(inherited_t::store_));
-  }
-
-  template <typename T> 
   auto target() const noexcept
   {
-    return reinterpret_cast<T const*>(std::addressof(inherited_t::store_));
+    return reinterpret_cast<T*>(inherited_t::store_);
   }
 };
 
