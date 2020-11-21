@@ -114,17 +114,17 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  auto& operator=(std::nullptr_t) noexcept
-  {
-    return reset(), *this;
-  }
-
   template <typename F>
   forwarder& operator=(F&& f) noexcept(
     noexcept(inherited_t::assign(std::forward<F>(f))))
   {
     static_assert(inherited_t::template is_invocable<F>());
     return inherited_t::assign(std::forward<F>(f)), *this;
+  }
+
+  auto& operator=(std::nullptr_t) noexcept
+  {
+    return reset(), *this;
   }
 
   explicit operator bool() const noexcept
