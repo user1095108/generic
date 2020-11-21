@@ -52,13 +52,12 @@ public:
   {
     using functor_type = std::decay_t<F>;
 
-    store_ = &f;
-
     stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
       {
         return std::invoke(*static_cast<functor_type*>(ptr),
           std::forward<A>(args)...);
       };
+    store_ = &f;
   }
 };
 
