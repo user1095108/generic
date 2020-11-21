@@ -50,27 +50,16 @@ public:
   >
   void assign(F&& f) noexcept
   {
-    using functor_type = std::decay_t<F>;
+    using functor_ptr = decltype(&f);
 
     store_ = &f;
 
-    if constexpr (std::is_const_v<std::remove_reference_t<F>>)
-    {
-      stub_ = [](void const* const ptr, A&&... args) noexcept(E) -> R
-        {
-          return std::invoke(*static_cast<functor_type const*>(ptr),
-            std::forward<A>(args)...);
-        };
-    }
-    else
-    {
-      stub_ = [](void const* const ptr, A&&... args) noexcept(E) -> R
-        {
-          return std::invoke(*const_cast<functor_type*>(
-            static_cast<functor_type const*>(ptr)),
-            std::forward<A>(args)...);
-        };
-    }
+    stub_ = [](void const* const ptr, A&&... args) noexcept(E) -> R
+      {
+        return std::invoke(
+          *static_cast<functor_ptr>(const_cast<void*>(ptr)),
+          std::forward<A>(args)...);
+      };
   }
 };
 
