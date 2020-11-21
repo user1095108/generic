@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "forwarder.hpp"
+#include "fwdref.hpp"
 
 struct S
 {
@@ -28,6 +29,11 @@ int main()
   static_assert(!noexcept(h()));
 
   h();
+
+  gnr::fwdref<void(S const&) noexcept> i(&S::f);
+  static_assert(noexcept(i(s)));
+
+  i(s);
 
   return 0;
 }

@@ -1,9 +1,9 @@
-#ifndef GNR_FORWARDER_HPP
-# define GNR_FORWARDER_HPP
+#ifndef GNR_FORWARDERREF_HPP
+# define GNR_FORWARDERREF_HPP
 # pragma once
 
-// std::size_t
-#include <cstddef>
+// std::memcpy
+#include <cstring>
 
 #include <functional>
 
@@ -14,21 +14,20 @@
 namespace gnr
 {
 
-namespace detail::forwarder
+namespace detail::fwdref
 {
 
-enum : std::size_t { default_size = 4 * sizeof(void*) };
+template <typename, bool>
+class fwdref_impl2;
 
-template <typename, std::size_t, bool>
-class forwarder_impl2;
-
-template <typename R, typename ...A, std::size_t N, bool E>
-class forwarder_impl2<R (A...), N, E>
+template <typename R, typename ...A, bool E>
+class fwdref_impl2<R (A...), E>
 {
 protected:
   R (*stub_)(void*, A&&...) noexcept(E) {};
 
-  std::aligned_storage_t<N> store_;
+  std::aligned_storage_t<std::max(
+    sizeof(void*), sizeof(&fwdref_impl2::stub_))> store_;
 
   template <typename F>
   static constexpr auto is_invocable() noexcept
@@ -47,19 +46,24 @@ public:
       std::forward<A>(args)...);
   }
 
-  template <typename F,
-    typename = std::enable_if_t<std::is_invocable_r_v<R, F, A...>>
+  template <typename F, typename = std::enable_if_t<
+      std::is_invocable_r_v<R, F, A...> &&
+      (std::is_reference_v<F> || std::is_member_function_pointer_v<F>)
+    >
   >
   void assign(F&& f) noexcept(noexcept(std::decay_t<F>(std::forward<F>(f))))
   {
     using functor_type = std::decay_t<F>;
 
-    static_assert(sizeof(functor_type) <= sizeof(store_),
-      "functor too large");
-    static_assert(std::is_trivially_copyable<functor_type>{},
-      "functor not trivially copyable");
-
-    ::new (std::addressof(store_)) functor_type(std::forward<F>(f));
+    if constexpr (std::is_reference_v<F>)
+    {
+      auto const ptr(&f);
+      std::memcpy(&store_, &ptr, sizeof(ptr));
+    }
+    else
+    {
+      std::memcpy(&store_, &f, sizeof(f));
+    }
 
     stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
     {
@@ -69,54 +73,52 @@ public:
   }
 };
 
-template <typename, std::size_t>
-class forwarder_impl;
+template <typename>
+class fwdref_impl;
 
-template <typename R, typename ...A, std::size_t N>
-class forwarder_impl<R (A...), N> :
-  public forwarder_impl2<R (A...), N, false>
+template <typename R, typename ...A>
+class fwdref_impl<R (A...)> :
+  public fwdref_impl2<R (A...), false>
 {
 };
 
-template <typename R, typename ...A, std::size_t N>
-class forwarder_impl<R (A...) noexcept, N> :
-  public forwarder_impl2<R (A...), N, true>
+template <typename R, typename ...A>
+class fwdref_impl<R (A...) noexcept> :
+  public fwdref_impl2<R (A...), true>
 {
 };
 
 }
 
-template <typename A, std::size_t N = detail::forwarder::default_size>
-class forwarder : public detail::forwarder::forwarder_impl<A, N>
+template <typename A>
+class fwdref : public detail::fwdref::fwdref_impl<A>
 {
-  using inherited_t = detail::forwarder::forwarder_impl<A, N>;
+  using inherited_t = detail::fwdref::fwdref_impl<A>;
 
 public:
-  enum : std::size_t { size = N };
+  fwdref() = default;
 
-  forwarder() = default;
+  fwdref(fwdref const&) = default;
 
-  forwarder(forwarder const&) = default;
-
-  forwarder(forwarder&&) = default;
+  fwdref(fwdref&&) = default;
 
   template <typename F,
     typename = std::enable_if_t<
-      !std::is_same_v<std::decay_t<F>, forwarder> &&
+      !std::is_same_v<std::decay_t<F>, fwdref> &&
       inherited_t::template is_invocable<F>()
     >
   >
-  forwarder(F&& f) noexcept(noexcept(inherited_t::assign(std::forward<F>(f))))
+  fwdref(F&& f) noexcept(noexcept(inherited_t::assign(std::forward<F>(f))))
   {
     inherited_t::assign(std::forward<F>(f));
   }
 
-  forwarder& operator=(forwarder const&) = default;
+  fwdref& operator=(fwdref const&) = default;
 
-  forwarder& operator=(forwarder&&) = default;
+  fwdref& operator=(fwdref&&) = default;
 
   template <typename F>
-  forwarder& operator=(F&& f) noexcept(
+  fwdref& operator=(F&& f) noexcept(
     noexcept(inherited_t::assign(std::forward<F>(f))))
   {
     static_assert(inherited_t::template is_invocable<F>());
@@ -151,12 +153,12 @@ public:
     inherited_t::stub_ = {};
   }
 
-  void swap(forwarder& other) noexcept
+  void swap(fwdref& other) noexcept
   {
     std::swap(*this, other);
   }
 
-  void swap(forwarder&& other) noexcept
+  void swap(fwdref&& other) noexcept
   {
     std::swap(*this, std::move(other));
   }
