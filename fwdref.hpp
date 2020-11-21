@@ -55,10 +55,10 @@ public:
     store_ = &f;
 
     stub_ = [](void* const ptr, A&&... args) noexcept(E) -> R
-    {
-      return std::invoke(*static_cast<functor_type*>(ptr),
-        std::forward<A>(args)...);
-    };
+      {
+        return std::invoke(*static_cast<functor_type*>(ptr),
+          std::forward<A>(args)...);
+      };
   }
 };
 
