@@ -117,14 +117,14 @@ constexpr inline auto extract_signature(F const&) noexcept ->
 
 //////////////////////////////////////////////////////////////////////////////
 template <int I, typename F, typename R, typename ...A>
-inline auto cify(F&& f, signature<R(A...)>) noexcept
+inline auto cify(F&& fu, signature<R(A...)>) noexcept
 {
-  static auto f_(std::forward<F>(f));
+  static auto f(std::forward<F>(fu));
 
   if (static bool full; full)
   {
-    f_.~F();
-    new (std::addressof(f_)) F(std::forward<F>(f));
+    f.~F();
+    new (std::addressof(f)) F(std::forward<F>(fu));
   }
   else
   {
@@ -134,19 +134,19 @@ inline auto cify(F&& f, signature<R(A...)>) noexcept
   return +[](A... args) noexcept(noexcept(
     std::declval<F>()(std::forward<A>(args)...))) -> R
     {
-      return f_(std::forward<A>(args)...);
+      return f(std::forward<A>(args)...);
     };
 }
 
 template <int I, typename F, typename R, typename ...A>
-inline auto cify_once(F&& f, signature<R(A...)>) noexcept
+inline auto cify_once(F&& fu, signature<R(A...)>) noexcept
 {
-  static auto f_(std::forward<F>(f));
+  static auto f(std::forward<F>(fu));
 
   return +[](A... args) noexcept(noexcept(
     std::declval<F>()(std::forward<A>(args)...))) -> R
     {
-      return f_(std::forward<A>(args)...);
+      return f(std::forward<A>(args)...);
     };
 }
 
