@@ -120,9 +120,8 @@ template <int I, typename F, typename R, typename ...A>
 inline auto cify(F&& f, signature<R(A...)>) noexcept
 {
   static auto f_(std::forward<F>(f));
-  static bool full;
 
-  if (full)
+  if (static bool full; full)
   {
     f_.~F();
     new (std::addressof(f_)) F(std::forward<F>(f));
@@ -132,11 +131,11 @@ inline auto cify(F&& f, signature<R(A...)>) noexcept
     full = true;
   }
 
- return +[](A... args) noexcept(noexcept(
-  std::declval<F>()(std::forward<A>(args)...)))
-  {
-    return f_(std::forward<A>(args)...);
-  };
+  return +[](A... args) noexcept(noexcept(
+    std::declval<F>()(std::forward<A>(args)...)))
+    {
+      return f_(std::forward<A>(args)...);
+    };
 }
 
 template <int I, typename F, typename R, typename ...A>
@@ -145,7 +144,7 @@ inline auto cify_once(F&& f, signature<R(A...)>) noexcept
   static auto f_(std::forward<F>(f));
 
   return +[](A... args) noexcept(noexcept(
-      std::declval<F>()(std::forward<A>(args)...)))
+    std::declval<F>()(std::forward<A>(args)...)))
     {
       return f_(std::forward<A>(args)...);
     };
