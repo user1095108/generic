@@ -128,7 +128,7 @@ inline auto cify(F&& f, signature<R(A...)>) noexcept
   if (full)
   {
     f_.~F();
-     new (std::addressof(f_)) F(std::forward<F>(f));
+    new (std::addressof(f_)) F(std::forward<F>(f));
   }
   else
   {
