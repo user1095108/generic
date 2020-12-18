@@ -12,9 +12,6 @@ namespace gnr
 namespace cify_
 {
 
-namespace detail
-{
-
 template <typename>
 struct signature
 {
@@ -122,7 +119,7 @@ constexpr inline auto extract_signature(F const&) noexcept ->
 template <int I, typename F, typename R, typename ...A>
 inline auto cify(F&& f, signature<R(A...)>) noexcept
 {
-  static std::decay_t<F> f_(std::forward<F>(f));
+  static auto f_(std::forward<F>(f));
   static bool full;
 
   if (full)
@@ -145,7 +142,7 @@ inline auto cify(F&& f, signature<R(A...)>) noexcept
 template <int I, typename F, typename R, typename ...A>
 inline auto cify_once(F&& f, signature<R(A...)>) noexcept
 {
-  static F f_(std::forward<F>(f));
+  static auto f_(std::forward<F>(f));
 
   return +[](A... args) noexcept(noexcept(
       std::declval<F>()(std::forward<A>(args)...)))
@@ -156,22 +153,20 @@ inline auto cify_once(F&& f, signature<R(A...)>) noexcept
 
 }
 
-}
-
 //////////////////////////////////////////////////////////////////////////////
 template <int I = 0, typename F>
 auto cify(F&& f) noexcept
 {
-  return cify_::detail::cify<I>(std::forward<F>(f),
-    cify_::detail::extract_signature(std::forward<F>(f))
+  return cify_::cify<I>(std::forward<F>(f),
+    cify_::extract_signature(std::forward<F>(f))
   );
 }
 
 template <int I = 0, typename F>
 auto cify_once(F&& f) noexcept
 {
-  return cify_::detail::cify_once<I>(std::forward<F>(f),
-    cify_::detail::extract_signature(std::forward<F>(f))
+  return cify_::cify_once<I>(std::forward<F>(f),
+    cify_::extract_signature(std::forward<F>(f))
   );
 }
 
