@@ -132,7 +132,7 @@ inline auto cify(F&& f, signature<R(A...)>) noexcept
   }
 
   return +[](A... args) noexcept(noexcept(
-    std::declval<F>()(std::forward<A>(args)...)))
+    std::declval<F>()(std::forward<A>(args)...))) -> R
     {
       return f_(std::forward<A>(args)...);
     };
@@ -144,7 +144,7 @@ inline auto cify_once(F&& f, signature<R(A...)>) noexcept
   static auto f_(std::forward<F>(f));
 
   return +[](A... args) noexcept(noexcept(
-    std::declval<F>()(std::forward<A>(args)...)))
+    std::declval<F>()(std::forward<A>(args)...))) -> R
     {
       return f_(std::forward<A>(args)...);
     };
