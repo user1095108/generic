@@ -100,13 +100,13 @@ struct remove_cv_seq<R(A...) const volatile &&>
 };
 
 template <typename F>
-constexpr inline auto extract_signature(F* const) noexcept
+constexpr inline auto extract_signature(F*) noexcept
 {
   return signature<typename remove_cv_seq<F>::type>();
 }
 
 template <typename C, typename F>
-constexpr inline auto extract_signature(F C::* const) noexcept
+constexpr inline auto extract_signature(F C::*) noexcept
 {
   return signature<typename remove_cv_seq<F>::type>();
 }
@@ -122,25 +122,24 @@ constexpr inline auto extract_signature(F const&) noexcept ->
 template <int I, typename F, typename R, typename ...A>
 inline auto cify(F&& f, signature<R(A...)>) noexcept
 {
-  static F f_(std::forward<F>(f));
+  static std::decay_t<F> f_(std::forward<F>(f));
   static bool full;
 
   if (full)
   {
     f_.~F();
-
-    new (static_cast<void*>(&f_)) F(std::forward<F>(f));
+     new (std::addressof(f_)) F(std::forward<F>(f));
   }
   else
   {
     full = true;
   }
 
-  return +[](A... args) noexcept(noexcept(
-      std::declval<F>()(std::forward<A>(args)...)))
-    {
-      return f_(std::forward<A>(args)...);
-    };
+ return +[](A... args) noexcept(noexcept(
+  std::declval<F>()(std::forward<A>(args)...)))
+  {
+    return f_(std::forward<A>(args)...);
+  };
 }
 
 template <int I, typename F, typename R, typename ...A>
