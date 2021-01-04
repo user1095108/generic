@@ -26,8 +26,6 @@ namespace detail
 namespace anyfunc
 {
 
-constexpr auto default_size = 4 * sizeof(void*);
-
 template <typename>
 struct signature
 {
