@@ -45,5 +45,11 @@ int main()
 
   f.invoke<void>(std::make_unique<int>(10));
 
+  {
+    auto p(std::make_unique<int>(20));
+
+    f.invoke<void>(std::move(p));
+  }
+
   return 0;
 }
