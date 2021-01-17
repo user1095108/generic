@@ -419,14 +419,22 @@ class anyfunc
   }
 
 public:
-  template <typename T>
+  template <typename T, typename = std::void_t<>>
   struct arg_type
   {
     using type = std::decay_t<T>;
   };
 
   template <typename T>
-  struct arg_type<std::reference_wrapper<T> >
+  struct arg_type<T,
+    std::void_t<std::enable_if_t<std::is_class_v<std::decay_t<T>>>>
+  >
+  {
+    using type = T const&;
+  };
+
+  template <typename T>
+  struct arg_type<std::reference_wrapper<T>>
   {
     using type = T&;
   };
@@ -457,7 +465,7 @@ public:
 
   template <typename F,
     typename = std::enable_if_t<
-      !std::is_same<std::decay_t<F>, anyfunc>{}
+      !std::is_same_v<std::decay_t<F>, anyfunc>
     >
   >
   anyfunc& operator=(F&& f)
@@ -541,7 +549,7 @@ public:
 
     R r;
 
-    auto const a(std::tuple<arg_type_t<A>...>{std::forward<A>(args)...});
+    std::tuple<arg_type_t<A>...> const a{std::forward<A>(args)...};
 
     f_(any_, &a, &r);
 
@@ -558,7 +566,7 @@ public:
     assert(type_id<test_t>() == type_id_);
 #endif // NDEBUG
 
-    auto const a(std::tuple<arg_type_t<A>...>{std::forward<A>(args)...});
+    std::tuple<arg_type_t<A>...> const a{std::forward<A>(args)...};
 
     f_(any_, &a, {});
   }

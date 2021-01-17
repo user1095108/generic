@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <memory>
+
 #include "anyfunc.hpp"
 
 struct S
@@ -35,6 +37,13 @@ int main()
   f = &S::apply;
 
   f.invoke<void>(std::ref(s));
+
+  f = [](std::unique_ptr<int> const& a)
+    {
+      std::cout << *a << std::endl;
+    };
+
+  f.invoke<void>(std::make_unique<int>(10));
 
   return 0;
 }
