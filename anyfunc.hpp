@@ -425,6 +425,7 @@ public:
     using type = std::decay_t<T>;
   };
 
+  /*
   template <typename T>
   struct arg_type<T,
     std::void_t<std::enable_if_t<std::is_class_v<std::decay_t<T>>>>
@@ -432,6 +433,7 @@ public:
   {
     using type = T const&;
   };
+  */
 
   template <typename T>
   struct arg_type<std::reference_wrapper<T>>

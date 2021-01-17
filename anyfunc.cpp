@@ -38,18 +38,12 @@ int main()
 
   f.invoke<void>(std::ref(s));
 
-  f = [](std::unique_ptr<int> const& a)
+  f = [](std::shared_ptr<int> const a)
     {
       std::cout << *a << std::endl;
     };
 
-  f.invoke<void>(std::make_unique<int>(10));
-
-  {
-    auto p(std::make_unique<int>(20));
-
-    f.invoke<void>(std::move(p));
-  }
+  f.invoke<void>(std::make_shared<int>(10));
 
   return 0;
 }
