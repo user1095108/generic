@@ -15,7 +15,7 @@ int main()
 
   gnr::struct_range const r(s);
 
-  for (auto const& e: r)
+  for (auto const e: r)
   {
     std::cout << e << std::endl;
   }
