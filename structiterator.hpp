@@ -23,17 +23,16 @@ public:
   {
     return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> auto&&
       {
-        using accessor_t = reference(*)(S&);
+        pointer r{};
 
-        static constexpr accessor_t a[]{
-          [](S& s) noexcept -> auto&&
-          {
-            return boost::pfr::get<I>(s);
-          }
+        (
+          (
+            r = i == I ? &boost::pfr::get<I>(s) : r
+          ),
           ...
-        };
+        );
 
-        return a[i](s);
+        return *r;
       }(std::make_index_sequence<boost::pfr::tuple_size<S>{}>());
   }
 
