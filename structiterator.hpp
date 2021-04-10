@@ -60,10 +60,9 @@ public:
   }
 
   // arithmetic
-  constexpr difference_type operator-(
-    struct_iterator const other) const noexcept
+  constexpr auto operator-(struct_iterator const other) const noexcept
   {
-    return i_ - other.i_;
+    return difference_type(i_ - other.i_);
   }
 
   constexpr auto operator+(std::size_t const N) const noexcept
