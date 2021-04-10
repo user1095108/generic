@@ -23,19 +23,6 @@ public:
   {
     return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> auto&&
       {
-/*
-        using accessor_t = reference(*)(S&);
-
-        static constexpr accessor_t a[]{
-          [](S& s) noexcept -> auto&&
-          {
-            return boost::pfr::get<I>(s);
-          }
-          ...
-        };
-
-        return a[i](s);
-*/
         pointer r{};
 
         (
@@ -51,7 +38,7 @@ public:
 
 public:
   constexpr explicit struct_iterator(S& s,
-      std::size_t const i = boost::pfr::tuple_size<S>{}) :
+      std::size_t const i = boost::pfr::tuple_size<S>{}) noexcept:
     s_{s},
     i_{i}
   {
@@ -122,7 +109,7 @@ class struct_range
   S& s_;
 
 public:
-  constexpr explicit struct_range(S& s) : s_{s}
+  constexpr explicit struct_range(S& s) noexcept : s_{s}
   {
   }
 
