@@ -19,23 +19,6 @@ public:
   using reference = decltype(boost::pfr::get<0>(s_));
   using value_type = std::remove_reference_t<reference>;
 
-  static constexpr auto&& get(S& s, std::size_t const i) noexcept
-  {
-    return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> auto&&
-      {
-        pointer r{};
-
-        (
-          (
-            r = I == i ? &boost::pfr::get<I>(s) : r
-          ),
-          ...
-        );
-
-        return *r;
-      }(std::make_index_sequence<boost::pfr::tuple_size<S>{}>());
-  }
-
 public:
   constexpr explicit struct_iterator(S& s,
       std::size_t const i = boost::pfr::tuple_size<S>{}) noexcept:
@@ -94,7 +77,19 @@ public:
   //
   constexpr auto& operator*() const noexcept
   {
-    return get(s_, i_);
+    return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> auto&
+      {
+        pointer r{};
+
+        (
+          (
+            r = I == i_ ? &boost::pfr::get<I>(s_) : r
+          ),
+          ...
+        );
+
+        return *r;
+      }(std::make_index_sequence<boost::pfr::tuple_size<S>{}>());
   }
 
   constexpr auto& operator[](std::size_t const i) const noexcept
