@@ -21,7 +21,7 @@ public:
 
 public:
   constexpr explicit struct_iterator(S& s,
-      std::size_t const i = boost::pfr::tuple_size<S>{}) noexcept:
+    std::size_t const i = boost::pfr::tuple_size<S>{}) noexcept:
     s_{s},
     i_{i}
   {
