@@ -21,20 +21,17 @@ constexpr auto all_same() noexcept
   {
     return [&]<auto ...I>(std::index_sequence<I...>) noexcept
       {
-
         bool r{true};
 
-        {
+        (
           (
-            (
-              r = r && std::is_same_v<
-                    boost::pfr::tuple_element_t<I, S>,
-                    boost::pfr::tuple_element_t<I + 1, S>
-                  >
-            ),
-            ...
-          );
-        }
+            r = r && std::is_same_v<
+                  boost::pfr::tuple_element_t<I, S>,
+                  boost::pfr::tuple_element_t<I + 1, S>
+                >
+          ),
+          ...
+        );
 
         return r;
       }(std::make_index_sequence<N - 1>());
