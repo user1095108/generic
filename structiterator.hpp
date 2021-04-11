@@ -2,11 +2,11 @@
 # define GNR_STRUCTITERATOR_HPP
 # pragma once
 
-#include "boost/pfr.hpp"
-
 #include <iterator>
 
 #include <memory> //std::addressof()
+
+#include "boost/pfr.hpp"
 
 namespace gnr
 {
@@ -125,15 +125,21 @@ public:
 };
 
 template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
-auto begin(S& s) noexcept
+constexpr auto begin(S& s) noexcept
 {
   return struct_iterator{s, {}};
 }
 
 template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
-auto end(S& s) noexcept
+constexpr auto end(S& s) noexcept
 {
   return struct_iterator{s};
+}
+
+template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
+constexpr auto size(S& s) noexcept
+{
+  return boost::pfr::tuple_size<S>{};
 }
 
 }
