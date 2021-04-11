@@ -17,7 +17,7 @@ namespace detail::struct_iterator
 template <class S>
 constexpr auto all_same() noexcept
 {
-  if constexpr (constexpr auto N(boost::pfr::tuple_size<S>{}); bool(N))
+  if constexpr (constexpr auto N(boost::pfr::tuple_size_v<S>); bool(N))
   {
     return [&]<auto ...I>(std::index_sequence<I...>) noexcept
       {
@@ -131,7 +131,7 @@ public:
         );
 
         return *r;
-      }(std::make_index_sequence<boost::pfr::tuple_size<S>{}>());
+      }(std::make_index_sequence<boost::pfr::tuple_size_v<S>>());
   }
 
   constexpr auto& operator[](std::size_t const i) const noexcept
@@ -180,7 +180,7 @@ template <typename S, typename =
   std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
 constexpr auto size(S& s) noexcept
 {
-  return boost::pfr::tuple_size<S>{};
+  return boost::pfr::tuple_size_v<S>;
 }
 
 }
