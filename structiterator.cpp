@@ -13,9 +13,7 @@ int main()
     int a, b, c;
   } s{1, 2, 3};
 
-  gnr::range const r(s);
-
-  for (auto const e: r)
+  for (auto const e: gnr::range(s))
   {
     std::cout << e << std::endl;
   }
