@@ -11,7 +11,47 @@
 namespace gnr
 {
 
-template <typename S>
+namespace detail::struct_iterator
+{
+
+template <class S>
+constexpr auto all_same() noexcept
+{
+  if constexpr (constexpr auto N(boost::pfr::tuple_size<S>{}); bool(N))
+  {
+    return [&]<auto ...I>(std::index_sequence<I...>) noexcept
+      {
+
+        bool r{true};
+
+        {
+          (
+            (
+              r = r && std::is_same_v<
+                    boost::pfr::tuple_element_t<I, S>,
+                    boost::pfr::tuple_element_t<I + 1, S>
+                  >
+            ),
+            ...
+          );
+        }
+
+        return r;
+      }(std::make_index_sequence<N - 1>());
+  }
+  else
+  {
+    return false;
+  }
+}
+
+template <class S>
+static constexpr bool is_proper_v(std::is_class_v<S> && all_same<S>());
+
+}
+
+template <typename S, typename =
+  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
 class struct_iterator
 {
   S& s_;
@@ -103,7 +143,8 @@ public:
   }
 };
 
-template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
+template <typename S, typename =
+  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
 class range
 {
   S& s_;
@@ -124,19 +165,22 @@ public:
   }
 };
 
-template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
+template <typename S, typename =
+  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
 constexpr auto begin(S& s) noexcept
 {
   return struct_iterator{s, {}};
 }
 
-template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
+template <typename S, typename =
+  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
 constexpr auto end(S& s) noexcept
 {
   return struct_iterator{s};
 }
 
-template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
+template <typename S, typename =
+  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
 constexpr auto size(S& s) noexcept
 {
   return boost::pfr::tuple_size<S>{};

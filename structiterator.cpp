@@ -8,6 +8,22 @@
 
 int main()
 {
+  {
+    struct S
+    {
+      bool; int; char;
+    };
+
+    std::cout << gnr::detail::struct_iterator::is_proper_v<S> << std::endl;
+  }
+
+  {
+    struct S { };
+
+    std::cout << gnr::detail::struct_iterator::is_proper_v<S> << std::endl;
+  }
+
+
   struct
   {
     int a, b, c;
