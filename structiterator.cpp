@@ -13,7 +13,7 @@ int main()
     int a, b, c;
   } s{1, 2, 3};
 
-  gnr::struct_range const r(s);
+  gnr::range const r(s);
 
   for (auto const e: r)
   {
@@ -22,7 +22,7 @@ int main()
 
   int sum{};
 
-  std::for_each(std::execution::unseq, r.begin(), r.end(),
+  std::for_each(std::execution::unseq, gnr::begin(s), gnr::end(s),
     [&](auto const e) noexcept{ sum += e; });
 
   std::cout << sum << std::endl;

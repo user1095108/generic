@@ -5,6 +5,7 @@
 #include "boost/pfr.hpp"
 
 #include <iterator>
+
 #include <memory> //std::addressof()
 
 namespace gnr
@@ -102,13 +103,13 @@ public:
   }
 };
 
-template <typename S>
-class struct_range
+template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
+class range
 {
   S& s_;
 
 public:
-  constexpr explicit struct_range(S& s) noexcept : s_{s}
+  constexpr explicit range(S& s) noexcept : s_{s}
   {
   }
 
@@ -122,6 +123,18 @@ public:
     return struct_iterator{s_};
   }
 };
+
+template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
+auto begin(S& s) noexcept
+{
+  return struct_iterator{s, {}};
+}
+
+template <typename S, typename = std::enable_if_t<std::is_class_v<S>>>
+auto end(S& s) noexcept
+{
+  return struct_iterator{s};
+}
 
 }
 
