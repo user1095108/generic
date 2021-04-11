@@ -1,3 +1,7 @@
+#ifndef GNR_STRUCTITERATOR_HPP
+# define GNR_STRUCTITERATOR_HPP
+# pragma once
+
 #include "boost/pfr.hpp"
 
 #include <iterator>
@@ -120,3 +124,5 @@ public:
 };
 
 }
+
+#endif // GNR_STRUCTITERATOR_HPP
