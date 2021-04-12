@@ -116,19 +116,6 @@ public:
   {
     return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> auto&
       {
-/*
-        pointer r{};
-
-        (
-          (
-            r = I == i_ ? &boost::pfr::get<I>(s_) : r
-          ),
-          ...
-        );
-
-        return *r;
-*/
-
         auto const p0(&boost::pfr::get<0>(s_));
 
         return *(p0 +
