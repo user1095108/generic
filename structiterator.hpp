@@ -121,7 +121,7 @@ public:
         return *(p0 +
           (
             (
-              I == i_ ? (&boost::pfr::get<I>(s_) - p0) : std::ptrdiff_t{}
+              I == i_ ? &boost::pfr::get<I>(s_) - p0 : std::ptrdiff_t{}
             ) |
             ...
           )
