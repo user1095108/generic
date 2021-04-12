@@ -17,28 +17,23 @@ namespace detail::struct_iterator
 template <class S>
 constexpr auto all_same() noexcept
 {
-  if constexpr (constexpr auto N(boost::pfr::tuple_size_v<S>); bool(N))
+  if constexpr (constexpr auto N(boost::pfr::tuple_size_v<S>); N > 1)
   {
     return [&]<auto ...I>(std::index_sequence<I...>) noexcept
       {
-        bool r{true};
-
-        (
-          (
-            r = r && std::is_same_v<
-                  boost::pfr::tuple_element_t<I, S>,
-                  boost::pfr::tuple_element_t<I + 1, S>
-                >
-          ),
-          ...
-        );
-
-        return r;
+        return (
+            (
+              std::is_same_v<
+                boost::pfr::tuple_element_t<I, S>,
+                boost::pfr::tuple_element_t<I + 1, S>
+              >
+            ) && ...
+          );
       }(std::make_index_sequence<N - 1>());
   }
   else
   {
-    return false;
+    return true;
   }
 }
 

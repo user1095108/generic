@@ -11,7 +11,7 @@ int main()
   {
     struct S
     {
-      bool; int; char;
+      bool a; int b; char c;
     };
 
     std::cout << gnr::detail::struct_iterator::is_proper_v<S> << std::endl;
@@ -23,7 +23,6 @@ int main()
     std::cout << gnr::detail::struct_iterator::is_proper_v<S> << std::endl;
     std::cout << gnr::detail::struct_iterator::is_proper_v<int> << std::endl;
   }
-
 
   struct
   {
