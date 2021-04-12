@@ -27,7 +27,7 @@ int main()
   struct
   {
     int a, b, c;
-  } s{1, 2, 3};
+  } const s{1, 2, 3};
 
   for (auto const e: gnr::range(s))
   {
