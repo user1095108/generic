@@ -116,16 +116,16 @@ public:
   {
     return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> auto&
       {
-        auto const p0(&boost::pfr::get<0>(s_));
+        pointer r{};
 
-        return *(p0 +
+        (
           (
-            (
-              I == i_ ? &boost::pfr::get<I>(s_) - p0 : std::ptrdiff_t{}
-            ) |
-            ...
-          )
+            r = I == i_ ? &boost::pfr::get<I>(s_) : r
+          ),
+          ...
         );
+
+        return *r;
       }(std::make_index_sequence<boost::pfr::tuple_size_v<S>>());
   }
 
