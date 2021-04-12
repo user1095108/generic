@@ -47,8 +47,8 @@ static constexpr bool is_proper_v(std::is_class_v<S> && all_same<S>());
 
 }
 
-template <typename S, typename =
-  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
+template <typename S>
+  requires detail::struct_iterator::is_proper_v<S>
 class struct_iterator
 {
   S& s_;
@@ -140,8 +140,8 @@ public:
   }
 };
 
-template <typename S, typename =
-  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
+template <typename S>
+  requires detail::struct_iterator::is_proper_v<S>
 class range
 {
   S& s_;
@@ -162,22 +162,22 @@ public:
   }
 };
 
-template <typename S, typename =
-  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
+template <typename S>
+  requires detail::struct_iterator::is_proper_v<S>
 constexpr auto begin(S& s) noexcept
 {
   return struct_iterator{s, {}};
 }
 
-template <typename S, typename =
-  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
+template <typename S>
+  requires detail::struct_iterator::is_proper_v<S>
 constexpr auto end(S& s) noexcept
 {
   return struct_iterator{s};
 }
 
-template <typename S, typename =
-  std::enable_if_t<detail::struct_iterator::is_proper_v<S>>>
+template <typename S>
+  requires detail::struct_iterator::is_proper_v<S>
 constexpr auto size(S& s) noexcept
 {
   return boost::pfr::tuple_size_v<S>;
