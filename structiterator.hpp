@@ -38,7 +38,7 @@ constexpr auto all_same() noexcept
 }
 
 template <class S>
-static constexpr bool is_proper_v(std::is_class_v<S> && all_same<S>());
+static constexpr auto is_proper_v(std::is_class_v<S> && all_same<S>());
 
 }
 
@@ -95,13 +95,13 @@ public:
   }
 
   // comparison
-  constexpr bool operator==(struct_iterator const other) const noexcept
+  constexpr auto operator==(struct_iterator const other) const noexcept
   {
     return (std::addressof(other.s_) == std::addressof(s_)) &&
       (other.i_ == i_);
   }
 
-  constexpr bool operator!=(struct_iterator const other) const noexcept
+  constexpr auto operator!=(struct_iterator const other) const noexcept
   {
     return !(*this == other);
   }
