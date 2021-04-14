@@ -149,20 +149,22 @@ constexpr auto end(S& s) noexcept
   return struct_iterator{s};
 }
 
+//
 template <typename S>
   requires detail::struct_iterator::is_proper_v<S>
 constexpr auto cbegin(S const& s) noexcept
 {
-  return struct_iterator{s, {}};
+  return begin(s);
 }
 
 template <typename S>
   requires detail::struct_iterator::is_proper_v<S>
 constexpr auto cend(S const& s) noexcept
 {
-  return struct_iterator{s};
+  return end(s);
 }
 
+//
 template <typename S>
   requires detail::struct_iterator::is_proper_v<S>
 constexpr auto size(S& s) noexcept
