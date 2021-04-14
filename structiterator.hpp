@@ -170,12 +170,12 @@ public:
 
   constexpr auto begin() const noexcept
   {
-    return begin(s_);
+    return gnr::begin(s_);
   }
 
   constexpr auto end() const noexcept
   {
-    return end(s_);
+    return gnr::end(s_);
   }
 };
 
