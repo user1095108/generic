@@ -4,8 +4,6 @@
 
 #include <iterator>
 
-#include <memory> //std::addressof()
-
 #include "boost/pfr.hpp"
 
 namespace gnr
@@ -97,8 +95,7 @@ public:
   // comparison
   constexpr auto operator==(struct_iterator const other) const noexcept
   {
-    return (std::addressof(other.s_) == std::addressof(s_)) &&
-      (other.i_ == i_);
+    return i_ == other.i_;
   }
 
   constexpr auto operator!=(struct_iterator const other) const noexcept
