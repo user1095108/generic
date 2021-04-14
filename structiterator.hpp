@@ -2,6 +2,8 @@
 # define GNR_STRUCTITERATOR_HPP
 # pragma once
 
+#include <cstddef>
+
 #include <iterator>
 
 #include "boost/pfr.hpp"
