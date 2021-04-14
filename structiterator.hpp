@@ -134,28 +134,7 @@ public:
   }
 };
 
-template <typename S>
-  requires detail::struct_iterator::is_proper_v<S>
-class range
-{
-  S& s_;
-
-public:
-  constexpr explicit range(S& s) noexcept : s_{s}
-  {
-  }
-
-  constexpr auto begin() const noexcept
-  {
-    return struct_iterator{s_, {}};
-  }
-
-  constexpr auto end() const noexcept
-  {
-    return struct_iterator{s_};
-  }
-};
-
+//
 template <typename S>
   requires detail::struct_iterator::is_proper_v<S>
 constexpr auto begin(S& s) noexcept
@@ -176,6 +155,29 @@ constexpr auto size(S& s) noexcept
 {
   return boost::pfr::tuple_size_v<S>;
 }
+
+//
+template <typename S>
+  requires detail::struct_iterator::is_proper_v<S>
+class range
+{
+  S& s_;
+
+public:
+  constexpr explicit range(S& s) noexcept : s_{s}
+  {
+  }
+
+  constexpr auto begin() const noexcept
+  {
+    return begin(s_);
+  }
+
+  constexpr auto end() const noexcept
+  {
+    return end(s_);
+  }
+};
 
 }
 
