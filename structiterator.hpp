@@ -110,7 +110,12 @@ public:
     return i_ < other.i_;
   }
 
-  //
+  // member access
+  constexpr auto& operator[](std::size_t const i) const noexcept
+  {
+    return *(*this + i);
+  }
+
   constexpr auto& operator*() const noexcept
   {
     return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> auto&
@@ -126,11 +131,6 @@ public:
 
         return *r;
       }(std::make_index_sequence<boost::pfr::tuple_size_v<S>>());
-  }
-
-  constexpr auto& operator[](std::size_t const i) const noexcept
-  {
-    return *(*this + i);
   }
 };
 
