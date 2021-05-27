@@ -167,7 +167,7 @@ constexpr auto cend(S const& s) noexcept
 //
 template <typename S>
   requires detail::struct_iterator::is_proper_v<S>
-constexpr auto size(S& s) noexcept
+constexpr auto size(S&) noexcept
 {
   return boost::pfr::tuple_size_v<S>;
 }
