@@ -21,10 +21,10 @@ constexpr auto invoke_cond(F f, A&& ...a) noexcept(noexcept(
   return (f(std::forward<decltype(a)>(a)) || ...);
 }
 
-template <std::size_t M>
+template <std::size_t N>
 constexpr void invoke_split(auto f, auto&& ...a)
 {
-  constexpr auto split([]<std::size_t N>(auto&& t) noexcept requires (bool(N))
+  constexpr auto split([](auto&& t) noexcept requires (bool(N))
     {
       constexpr auto n(std::tuple_size_v<std::remove_cvref_t<decltype(t)>>);
       static_assert(n && !(n % N));
@@ -46,7 +46,7 @@ constexpr void invoke_split(auto f, auto&& ...a)
     {
       (std::apply(f, std::forward<decltype(t)>(t)), ...);
     },
-    split.template operator()<M>(std::forward_as_tuple(a...))
+    split(std::forward_as_tuple(a...))
   );
 }
 
