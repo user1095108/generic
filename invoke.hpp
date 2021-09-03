@@ -12,7 +12,7 @@ namespace detail::invoke
 
 constexpr bool is_nothrow_invocable(auto&& f, auto&& t) noexcept
 {
-  return [&]<auto ...I>(std::index_sequence<I...>)
+  return [&]<auto ...I>(std::index_sequence<I...>) noexcept
     {
       return noexcept(
         std::invoke(
@@ -54,7 +54,14 @@ constexpr decltype(auto) apply(auto&& f, auto&& t) noexcept(
   )
 )
 {
-  return [&]<auto ...I>(std::index_sequence<I...>)
+  return [&]<auto ...I>(std::index_sequence<I...>) noexcept(
+      noexcept(
+        std::invoke(
+          std::forward<decltype(f)>(f),
+          std::get<I>(std::forward<decltype(t)>(t))...
+        )
+      )
+    )
     {
       return std::invoke(
         std::forward<decltype(f)>(f),
