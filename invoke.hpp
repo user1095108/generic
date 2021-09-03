@@ -2,6 +2,8 @@
 # define GNR_INVOKE_HPP
 # pragma once
 
+#include <functional>
+
 #include <tuple>
 
 namespace gnr
@@ -33,7 +35,7 @@ constexpr auto split(auto&& t) noexcept requires(bool(N))
   static_assert(n && !(n % N));
   return [&]<auto ...I>(std::index_sequence<I...>) noexcept
   {
-    return std::make_tuple(
+    return std::tuple(
       [&]<auto ...J>(std::index_sequence<J...>) noexcept
       {
         constexpr auto K(N * I);
