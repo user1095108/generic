@@ -66,15 +66,13 @@ constexpr decltype(auto) apply(auto&& f, auto&& t) noexcept(
     );
 }
 
-template <typename F, typename ...A>
-constexpr auto invoke_all(F f, A&& ...a) noexcept(noexcept(
+constexpr auto invoke_all(auto f, auto&& ...a) noexcept(noexcept(
   (f(std::forward<decltype(a)>(a)), ...)))
 {
   (f(std::forward<decltype(a)>(a)), ...);
 }
 
-template <typename F, typename ...A>
-constexpr auto invoke_cond(F f, A&& ...a) noexcept(noexcept(
+constexpr auto invoke_cond(auto f, auto&& ...a) noexcept(noexcept(
   (f(std::forward<decltype(a)>(a)), ...)))
 {
   return (f(std::forward<decltype(a)>(a)) || ...);
