@@ -99,7 +99,9 @@ constexpr bool is_nothrow_split_invocable(auto f, auto&& ...a) noexcept
       {
         (::gnr::apply(f, std::forward<decltype(t)>(t)), ...);
       },
-      detail::invoke::split<N>(std::tuple(std::forward<decltype(a)>(a)...))
+      detail::invoke::split<N>(
+        std::forward_as_tuple(std::forward<decltype(a)>(a)...)
+      )
     )
   );
 }
@@ -121,7 +123,9 @@ constexpr void invoke_split(auto f, auto&& ...a) noexcept(
     {
       (::gnr::apply(f, std::forward<decltype(t)>(t)), ...);
     },
-    detail::invoke::split<N>(std::tuple(std::forward<decltype(a)>(a)...))
+    detail::invoke::split<N>(
+      std::forward_as_tuple(std::forward<decltype(a)>(a)...)
+    )
   );
 }
 
