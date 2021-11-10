@@ -2,9 +2,6 @@
 # define GNR_FORWARDERREF_HPP
 # pragma once
 
-// std::memcpy
-#include <cstring>
-
 #include <functional>
 
 #include <type_traits>
