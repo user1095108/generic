@@ -16,36 +16,24 @@ constexpr auto dispatch(auto const i, auto&& ...f)
   using tuple_t = std::tuple<decltype(f)...>;
   using R = decltype(std::declval<std::tuple_element_t<0, tuple_t>>()());
 
-  return [&]<auto ...I>(std::index_sequence<I...>)
+  using int_t = std::underlying_type_t<std::remove_cvref_t<decltype(i)>>;
+
+  return [&]<auto ...I>(std::integer_sequence<int_t, I...>)
     noexcept(noexcept((f(), ...)))
   {
     if constexpr(std::is_void_v<R>)
     {
-      (
-        (
-          I == std::underlying_type_t<std::remove_cvref_t<decltype(i)>>(i) ?
-          (f(), 0) :
-          0
-        ),
-        ...
-      );
+      ((I == int_t(i) ? (f(), 0) : 0), ...);
     }
     else
     {
       R r{};
 
-      (
-        (
-          I == std::underlying_type_t<std::remove_cvref_t<decltype(i)>>(i) ?
-          (r = f(), 0) :
-          0
-        ),
-        ...
-      );
+      ((I == int_t(i) ? (r = f(), 0) : 0), ...);
 
       return r;
     }
-  }(std::index_sequence_for<decltype(f)...>());
+  }(std::integer_sequence<int_t, sizeof...(f)>());
 }
 
 }
