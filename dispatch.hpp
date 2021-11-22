@@ -14,8 +14,8 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   requires(std::is_enum_v<std::remove_const_t<decltype(i)>>)
 {
   using int_t = std::underlying_type_t<std::remove_const_t<decltype(i)>>;
-
   using tuple_t = std::tuple<decltype(f)...>;
+
   using R = decltype(std::declval<std::tuple_element_t<0, tuple_t>>()());
 
   return [&]<auto ...I>(std::integer_sequence<int_t, I...>)
