@@ -2,6 +2,8 @@
 # define GNR_DISPATCH_HPP
 # pragma once
 
+#include <type_traits>
+
 #include <utility>
 
 namespace gnr
@@ -9,6 +11,7 @@ namespace gnr
 
 constexpr auto dispatch(auto const i, auto&& ...f)
   noexcept(noexcept((f(), ...)))
+  requires(std::is_enum_v<std::remove_const_t<decltype(i)>>)
 {
   using tuple_t = std::tuple<decltype(f)...>;
   using R = decltype(std::declval<std::tuple_element_t<0, tuple_t>>()());
