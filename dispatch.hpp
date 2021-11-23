@@ -29,8 +29,10 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     std::is_enum_v<std::remove_const_t<decltype(i)>> &&
     std::conjunction_v<
       std::is_same<
-        decltype(std::declval<detail::front_t<decltype(f)...>>()()),
-        decltype(std::declval<decltype(f)>()())
+        std::decay_t<
+          decltype(std::declval<detail::front_t<decltype(f)...>>()())
+        >,
+        std::decay_t<decltype(std::declval<decltype(f)>()())>
       >...
     >
   )
@@ -44,6 +46,14 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     if constexpr(std::is_void_v<R>)
     {
       ((I == int_t(i) ? (f(), 0) : 0), ...);
+    }
+    else if constexpr(std::is_array_v<std::remove_reference_t<R>>)
+    {
+      std::remove_extent_t<std::remove_reference_t<R>>(*r)[];
+
+      ((I == i ? (r = reinterpret_cast<decltype(r)>(&f()), 0) : 0), ...);
+
+      return *r;
     }
     else if constexpr(std::is_reference_v<R>)
     {

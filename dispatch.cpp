@@ -13,8 +13,8 @@ int main()
   std::cout <<
     gnr::dispatch(
       state,
-      []{ return "NORMAL"; },
-      []{ return "INVALID"; }
+      []() -> decltype(auto) { return "NORMAL"; },
+      []() -> decltype(auto) { return "INVALID"; }
     ) <<
     std::endl;
 
