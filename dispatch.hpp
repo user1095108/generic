@@ -141,8 +141,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
   if constexpr(std::is_void_v<R>)
   {
     gnr::invoke_split<2>(
-      [&](auto&& e, auto&& f)
-      noexcept(noexcept(f())) -> decltype(auto)
+      [&](auto&& e, auto&& f) noexcept(noexcept(f()))
       {
         if (e == i)
         {
@@ -158,8 +157,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
     detail::result_t<R> r;
 
     gnr::invoke_split<2>(
-      [&](auto&& e, auto&& f)
-      noexcept(noexcept(f())) -> decltype(auto)
+      [&](auto&& e, auto&& f) noexcept(noexcept(f()))
       {
         if (e == i)
         {
@@ -177,7 +175,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
 
     gnr::invoke_split<2>(
       [&](auto&& e, auto&& f)
-      noexcept(noexcept(f())) -> decltype(auto)
+      noexcept(noexcept(f()))
       {
         if (e == i)
         {
