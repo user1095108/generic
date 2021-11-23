@@ -23,6 +23,17 @@ struct front
 template <typename ...A>
 using front_t = typename front<A...>::type;
 
+template <typename R>
+using result_t = std::conditional_t<
+  std::is_array_v<std::remove_reference_t<R>>,
+  std::remove_extent_t<std::remove_reference_t<R>>(*)[],
+  std::conditional_t<
+    std::is_reference_v<R>,
+    std::remove_reference_t<R>*,
+    R
+  >
+>;
+
 }
 
 constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
@@ -120,16 +131,27 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
 }
 
 constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
+#ifndef __clang__
   noexcept(noexcept(
       gnr::invoke_split<2>(
         [](auto&& e, auto&& f)
         {
-          f();
+          if constexpr(std::is_void_v<decltype(f())> ||
+            std::is_reference_v<decltype(f())>)
+          {
+            f();
+          }
+          else
+          {
+            detail::result_t<decltype(f())> r;
+            r = reinterpret_cast<decltype(r)>(f());
+          }
         },
         std::forward<decltype(a)>(a)...
       )
     )
   )
+#endif // __clang__
 {
   using tuple_t = std::tuple<decltype(a)...>;
   using R = decltype(std::declval<std::tuple_element_t<1, tuple_t>>()());
