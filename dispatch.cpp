@@ -18,5 +18,7 @@ int main()
     ) <<
     std::endl;
 
+  std::cout << gnr::select(1, "NORMAL", "INVALID") << std::endl;
+
   return 0;
 }
