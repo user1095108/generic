@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "invoke.hpp"
+
 namespace gnr
 {
 
@@ -115,6 +117,91 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
       return *r;
     }
   }(std::make_index_sequence<sizeof...(v)>());
+}
+
+constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
+  noexcept(noexcept(
+      gnr::invoke_split<2>(
+        [](auto&& e, auto&& f)
+        {
+          f();
+        },
+        std::forward<decltype(a)>(a)...
+      )
+    )
+  )
+{
+  using tuple_t = std::tuple<decltype(a)...>;
+  using R = decltype(std::declval<std::tuple_element_t<1, tuple_t>>()());
+
+  if constexpr(std::is_void_v<R>)
+  {
+    gnr::invoke_split<2>(
+      [&](auto&& e, auto&& f)
+      noexcept(noexcept(f())) -> decltype(auto)
+      {
+        if (e == i)
+        {
+          f();
+        }
+      },
+      std::forward<decltype(a)>(a)...
+    );
+  }
+  else if constexpr(std::is_array_v<std::remove_reference_t<R>>)
+  {
+    std::remove_extent_t<std::remove_reference_t<R>>(*r)[];
+
+    gnr::invoke_split<2>(
+      [&](auto&& e, auto&& f)
+      noexcept(noexcept(f())) -> decltype(auto)
+      {
+        if (e == i)
+        {
+          r = reinterpret_cast<decltype(r)>(&f());
+        }
+      },
+      std::forward<decltype(a)>(a)...
+    );
+
+    return *r;
+  }
+  else if constexpr(std::is_reference_v<R>)
+  {
+    std::remove_reference_t<R>* r;
+
+    gnr::invoke_split<2>(
+      [&](auto&& e, auto&& f)
+      noexcept(noexcept(f())) -> decltype(auto)
+      {
+        if (e == i)
+        {
+          r = &f();
+        }
+      },
+      std::forward<decltype(a)>(a)...
+    );
+
+    return *r;
+  }
+  else
+  {
+    R r;
+
+    gnr::invoke_split<2>(
+      [&](auto&& e, auto&& f)
+      noexcept(noexcept(f())) -> decltype(auto)
+      {
+        if (e == i)
+        {
+          r = f();
+        }
+      },
+      std::forward<decltype(a)>(a)...
+    );
+
+    return r;
+  }
 }
 
 }
