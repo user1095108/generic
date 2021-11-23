@@ -51,7 +51,14 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     {
       std::remove_extent_t<std::remove_reference_t<R>>(*r)[];
 
-      ((I == i ? (r = reinterpret_cast<decltype(r)>(&f()), 0) : 0), ...);
+      (
+        (
+          I == int_t(i) ?
+            r = reinterpret_cast<decltype(r)>(&f()) :
+            nullptr
+        ),
+        ...
+      );
 
       return *r;
     }
@@ -59,7 +66,7 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     {
       std::remove_reference_t<R>* r;
 
-      ((I == int_t(i) ? (r = &f(), 0) : 0), ...);
+      ((I == int_t(i) ? r = &f() : nullptr), ...);
 
       return *r;
     }
@@ -95,7 +102,7 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
     {
       std::remove_extent_t<std::remove_reference_t<R>>(*r)[];
 
-      ((I == i ? (r = reinterpret_cast<decltype(r)>(&v), 0) : 0), ...);
+      ((I == i ? r = reinterpret_cast<decltype(r)>(&v) : nullptr), ...);
 
       return *r;
     }
@@ -103,7 +110,7 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
     {
       std::remove_reference_t<R>* r;
 
-      ((I == i ? (r = &v, 0) : 0), ...);
+      ((I == i ? r = &v : nullptr), ...);
 
       return *r;
     }
