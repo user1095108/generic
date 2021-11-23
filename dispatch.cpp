@@ -20,11 +20,9 @@ int main()
 
   std::cout << gnr::select(1, 0, 1, 4) << std::endl;
 
-  state = INVALID;
-
   std::cout <<
     gnr::dispatch2(
-      state,
+      state = INVALID,
       NORMAL,
       []() -> decltype(auto) { return "NORMAL"; },
       INVALID,
