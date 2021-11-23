@@ -30,5 +30,15 @@ int main()
     ) <<
     std::endl;
 
+  std::cout <<
+    gnr::select2(
+      state,
+      NORMAL,
+      "NORMAL",
+      INVALID,
+      "INVALID"
+    ) <<
+    std::endl;
+
   return 0;
 }

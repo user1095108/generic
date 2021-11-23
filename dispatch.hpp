@@ -87,30 +87,6 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   }(std::make_integer_sequence<int_t, sizeof...(f)>());
 }
 
-constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
-  requires(
-    std::conjunction_v<
-      std::is_same<
-        std::decay_t<
-          decltype(std::declval<detail::front_t<decltype(v)...>>())
-        >,
-        std::decay_t<decltype(std::declval<decltype(v)>())>
-      >...
-    >
-  )
-{
-  using R = detail::front_t<decltype(v)...>;
-
-  return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> decltype(auto)
-  {
-    detail::result_t<R> r;
-
-    ((I == i ? r = reinterpret_cast<decltype(r)>(&v) : nullptr), ...);
-
-    return *r;
-  }(std::make_index_sequence<sizeof...(v)>());
-}
-
 constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
 #ifndef __clang__
   noexcept(noexcept(
@@ -186,6 +162,51 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
 
     return r;
   }
+}
+
+constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
+  requires(
+    std::conjunction_v<
+      std::is_same<
+        std::decay_t<
+          decltype(std::declval<detail::front_t<decltype(v)...>>())
+        >,
+        std::decay_t<decltype(std::declval<decltype(v)>())>
+      >...
+    >
+  )
+{
+  using R = detail::front_t<decltype(v)...>;
+
+  return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> decltype(auto)
+  {
+    detail::result_t<R> r;
+
+    ((I == i ? r = reinterpret_cast<decltype(r)>(&v) : nullptr), ...);
+
+    return *r;
+  }(std::make_index_sequence<sizeof...(v)>());
+}
+
+constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
+{
+  using tuple_t = std::tuple<decltype(a)...>;
+  using R = decltype(std::declval<std::tuple_element_t<1, tuple_t>>());
+
+  detail::result_t<R> r;
+
+  gnr::invoke_split<2>(
+    [&](auto&& e, auto&& v) noexcept
+    {
+      if (e == i)
+      {
+        r = reinterpret_cast<decltype(r)>(&v);
+      }
+    },
+    std::forward<decltype(a)>(a)...
+  );
+
+  return *r;
 }
 
 }
