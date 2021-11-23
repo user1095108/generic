@@ -174,7 +174,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
 
     gnr::invoke_split<2>(
       [&](auto&& e, auto&& f)
-      noexcept(noexcept(std::declval<R&>() = f()))
+        noexcept(noexcept(std::declval<R&>() = f()))
       {
         if (e == i)
         {
