@@ -74,7 +74,8 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
           std::remove_const_t<std::remove_extent_t<std::remove_reference_t<R>>>
         >
       ) ||
-      std::is_reference_v<R>)
+      std::is_reference_v<R>
+    )
     {
       detail::result_t<R> r;
 
@@ -148,7 +149,8 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
         std::remove_const_t<std::remove_extent_t<std::remove_reference_t<R>>>
       >
     ) ||
-    std::is_reference_v<R>)
+    std::is_reference_v<R>
+  )
   {
     detail::result_t<R> r;
 
