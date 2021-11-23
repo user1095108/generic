@@ -25,7 +25,8 @@ using front_t = typename front<A...>::type;
 
 template <typename R>
 using result_t = std::conditional_t<
-  std::is_array_v<std::remove_reference_t<R>>,
+  (std::is_array_v<std::remove_reference_t<R>> &&
+    (1 == std::rank_v<std::remove_reference_t<R>>)),
   std::remove_extent_t<std::remove_reference_t<R>>(*)[],
   std::conditional_t<
     std::is_reference_v<R>,
