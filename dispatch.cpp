@@ -18,7 +18,7 @@ int main()
     ) <<
     std::endl;
 
-  std::cout << gnr::select(1, 0, 1, 4) << std::endl;
+  std::cout << gnr::select(state, "NORMAL", "INVALID") << std::endl;
 
   std::cout <<
     gnr::dispatch2(

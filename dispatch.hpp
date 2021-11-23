@@ -89,7 +89,6 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
 
 constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
   requires(
-    std::is_integral_v<std::remove_const_t<decltype(i)>> &&
     std::conjunction_v<
       std::is_same<
         std::decay_t<
