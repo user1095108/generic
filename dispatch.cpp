@@ -24,9 +24,9 @@ int main()
     gnr::dispatch2(
       state = INVALID,
       NORMAL,
-      []() -> decltype(auto) { return "NORMAL"; },
+      []{ return "NORMAL"; },
       INVALID,
-      []() -> decltype(auto) { return "INVALID"; }
+      []{ return "INVALID"; }
     ) <<
     std::endl;
 
