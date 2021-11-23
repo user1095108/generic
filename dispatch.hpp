@@ -174,7 +174,12 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
 
     gnr::invoke_split<2>(
       [&](auto&& e, auto&& f)
-      noexcept(noexcept(f()))
+#ifndef __clang__
+      noexcept(noexcept(
+          std::declval<R&>() = reinterpret_cast<decltype(r)>(f())
+        )
+      )
+#endif // __clang__
       {
         if (e == i)
         {
