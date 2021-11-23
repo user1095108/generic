@@ -2,8 +2,8 @@
 # define GNR_DISPATCH_HPP
 # pragma once
 
+#include <tuple>
 #include <type_traits>
-
 #include <utility>
 
 namespace gnr
