@@ -65,7 +65,15 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     {
       ((I == int_t(i) ? (f(), 0) : 0), ...);
     }
-    else if constexpr(std::is_array_v<std::remove_reference_t<R>> ||
+    else if constexpr(
+      (
+        std::is_array_v<std::remove_reference_t<R>> &&
+        (1 == std::rank_v<std::remove_reference_t<R>>) &&
+        std::is_same_v<
+          char,
+          std::remove_const_t<std::remove_extent_t<std::remove_reference_t<R>>>
+        >
+      ) ||
       std::is_reference_v<R>)
     {
       detail::result_t<R> r;
@@ -131,7 +139,15 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
       std::forward<decltype(a)>(a)...
     );
   }
-  else if constexpr(std::is_array_v<std::remove_reference_t<R>> ||
+  else if constexpr(
+    (
+      std::is_array_v<std::remove_reference_t<R>> &&
+      (1 == std::rank_v<std::remove_reference_t<R>>) &&
+      std::is_same_v<
+        char,
+        std::remove_const_t<std::remove_extent_t<std::remove_reference_t<R>>>
+      >
+    ) ||
     std::is_reference_v<R>)
   {
     detail::result_t<R> r;
