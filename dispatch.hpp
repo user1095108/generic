@@ -9,9 +9,31 @@
 namespace gnr
 {
 
+namespace detail
+{
+
+template <typename A, typename ...B>
+struct front
+{
+  using type = A;
+};
+
+template <typename ...A>
+using front_t = front<A...>::type;
+
+}
+
 constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   noexcept(noexcept((f(), ...)))
-  requires(std::is_enum_v<std::remove_const_t<decltype(i)>>)
+  requires(
+    std::is_enum_v<std::remove_const_t<decltype(i)>> &&
+    std::conjunction_v<
+      std::is_same<
+        decltype(std::declval<detail::front_t<decltype(f)...>>()()),
+        decltype(std::declval<decltype(f)>()())
+      >...
+    >
+  )
 {
   using int_t = std::underlying_type_t<std::remove_const_t<decltype(i)>>;
   using tuple_t = std::tuple<decltype(f)...>;
