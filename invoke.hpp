@@ -12,23 +12,16 @@ namespace gnr
 namespace detail::invoke
 {
 
-constexpr void is_nothrow_invocable(auto&& f, auto&& t)
+constexpr bool is_nothrow_invocable(auto&& f, auto&& t)
 {
-  [&]<auto ...I>(std::index_sequence<I...>)
-  {
-    if (!noexcept(
-        std::invoke(
-          std::forward<decltype(f)>(f),
-          std::get<I>(std::forward<decltype(t)>(t))...
-        )
-      )
-    )
+  return noexcept(
+    [&]<auto ...I>(std::index_sequence<I...>)
     {
-      throw;
-    }
-  }(std::make_index_sequence<
-      std::tuple_size_v<std::remove_reference_t<decltype(t)>>
-    >()
+      return (std::invoke(*f, std::get<I>(*t)...));
+    }(std::make_index_sequence<
+        std::tuple_size_v<std::remove_reference_t<decltype(*t)>>
+      >()
+    )
   );
 }
 
@@ -52,13 +45,12 @@ constexpr auto split(auto&& t) noexcept requires(bool(N))
 }
 
 constexpr decltype(auto) apply(auto&& f, auto&& t)
-  noexcept(noexcept(
+  noexcept(
     detail::invoke::is_nothrow_invocable(
-      std::forward<decltype(f)>(f),
-      std::forward<decltype(t)>(t)
+      static_cast<std::remove_reference_t<decltype(f)>*>(nullptr),
+      static_cast<std::remove_reference_t<decltype(t)>*>(nullptr)
     )
   )
-)
 {
   return [&]<auto ...I>(std::index_sequence<I...>)
     noexcept(noexcept(
@@ -95,34 +87,29 @@ namespace detail::invoke
 {
 
 template <std::size_t N>
-constexpr void is_nothrow_split_invocable(auto&& f, auto&& ...a)
+constexpr bool is_nothrow_split_invocable(auto&& f, auto&& ...a)
 {
-  if (!noexcept(
-      ::gnr::apply([f](auto&& ...t) noexcept(noexcept(
-        (::gnr::apply(f, std::forward<decltype(t)>(t)), ...)))
-        {
-          (::gnr::apply(f, std::forward<decltype(t)>(t)), ...);
-        },
-        detail::invoke::split<N>(std::forward_as_tuple(a...))
-      )
+  return noexcept(
+    ::gnr::apply([f](auto&& ...t) noexcept(noexcept(
+      (::gnr::apply(*f, std::forward<decltype(t)>(t)), ...)))
+      {
+        (::gnr::apply(*f, std::forward<decltype(t)>(t)), ...);
+      },
+      detail::invoke::split<N>(std::forward_as_tuple(*a...))
     )
-  )
-  {
-    throw;
-  }
+  );
 }
 
 }
 
 template <std::size_t N>
 constexpr void invoke_split(auto&& f, auto&& ...a)
-  noexcept(noexcept(
+  noexcept(
     detail::invoke::is_nothrow_split_invocable<N>(
-      std::forward<decltype(f)>(f),
-      std::forward<decltype(a)>(a)...
+      static_cast<std::remove_reference_t<decltype(f)>*>(nullptr),
+      static_cast<std::remove_reference_t<decltype(a)>*>(nullptr)...
     )
   )
-)
 {
   ::gnr::apply([f](auto&& ...t) noexcept(noexcept(
     (::gnr::apply(f, std::forward<decltype(t)>(t)), ...)))

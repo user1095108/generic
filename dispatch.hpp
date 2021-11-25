@@ -33,24 +33,26 @@ using result_t = std::conditional_t<
   >
 >;
 
-constexpr void is_nothrow_dispatchable(auto&& f)
+constexpr auto is_nothrow_dispatchable(auto&& f) noexcept
 {
-  if constexpr(std::is_void_v<decltype(f())> ||
-    std::is_reference_v<decltype(f())>)
+  if constexpr(std::is_void_v<decltype((*f)())> ||
+    std::is_reference_v<decltype((*f)())>)
   {
-    if (!noexcept(f())) throw;
+    return !noexcept((*f)());
   }
   else
   {
-    if (!noexcept(std::declval<decltype(f())&>() = f())) throw;
+    return !noexcept(std::declval<decltype((*f)())&>() = f());
   }
 }
 
 }
 
 constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
-  noexcept(noexcept(
-      (detail::is_nothrow_dispatchable(std::forward<decltype(f)>(f)), ...)
+  noexcept(
+    (
+      detail::is_nothrow_dispatchable(
+        static_cast<std::remove_cvref_t<decltype(f)>*>(nullptr)) && ...
     )
   )
   requires(
