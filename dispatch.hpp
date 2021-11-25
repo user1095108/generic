@@ -14,14 +14,8 @@ namespace gnr
 namespace detail
 {
 
-template <typename A, typename ...B>
-struct front
-{
-  using type = A;
-};
-
-template <typename ...A>
-using front_t = typename front<A...>::type;
+template <std::size_t I, typename ...T>
+using at_t = std::tuple_element_t<I, std::tuple<T...>>;
 
 template <typename R>
 using result_t = std::conditional_t<
@@ -64,7 +58,7 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     std::conjunction_v<
       std::is_same<
         std::decay_t<
-          decltype(std::declval<detail::front_t<decltype(f)...>>()())
+          decltype(std::declval<detail::at_t<0, decltype(f)...>>()())
         >,
         std::decay_t<decltype(std::declval<decltype(f)>()())>
       >...
@@ -72,7 +66,7 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   )
 {
   using int_t = std::underlying_type_t<std::remove_const_t<decltype(i)>>;
-  using R = decltype(std::declval<detail::front_t<decltype(f)...>>()());
+  using R = decltype(std::declval<detail::at_t<0, decltype(f)...>>()());
 
   return [&]<auto ...I>(std::integer_sequence<int_t, I...>)
     noexcept(noexcept((f(), ...))) -> decltype(auto)
@@ -131,8 +125,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
   )
 #endif // __clang__
 {
-  using tuple_t = std::tuple<decltype(a)...>;
-  using R = decltype(std::declval<std::tuple_element_t<1, tuple_t>>()());
+  using R = decltype(std::declval<detail::at_t<1, decltype(a)...>>()());
 
   if constexpr(std::is_void_v<R>)
   {
@@ -199,14 +192,14 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
     std::conjunction_v<
       std::is_same<
         std::decay_t<
-          decltype(std::declval<detail::front_t<decltype(v)...>>())
+          decltype(std::declval<detail::at_t<0, decltype(v)...>>())
         >,
         std::decay_t<decltype(std::declval<decltype(v)>())>
       >...
     >
   )
 {
-  using R = detail::front_t<decltype(v)...>;
+  using R = detail::at_t<0, decltype(v)...>;
 
   return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> decltype(auto)
   {
@@ -220,8 +213,7 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
 
 constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
 {
-  using tuple_t = std::tuple<decltype(a)...>;
-  using R = decltype(std::declval<std::tuple_element_t<1, tuple_t>>());
+  using R = decltype(std::declval<detail::at_t<1, decltype(a)...>>());
 
   detail::result_t<R> r;
 
