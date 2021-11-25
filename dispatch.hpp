@@ -52,9 +52,7 @@ constexpr auto is_noexcept_dispatchable() noexcept
 }
 
 constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
-  noexcept(
-    (detail::is_noexcept_dispatchable<decltype(f)>() && ...)
-  )
+  noexcept((detail::is_noexcept_dispatchable<decltype(f)>() && ...))
   requires(
     std::is_enum_v<std::remove_const_t<decltype(i)>> &&
     std::conjunction_v<
