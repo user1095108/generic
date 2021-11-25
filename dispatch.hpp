@@ -39,30 +39,32 @@ using result_t = std::conditional_t<
   >
 >;
 
+constexpr bool is_nothrow_dispatchable(auto&& f)
+{
+  if constexpr(std::is_void_v<decltype(f())> ||
+    std::is_reference_v<decltype(f())>)
+  {
+    if (!noexcept(f()))
+    {
+      throw;
+    }
+  }
+  else
+  {
+    if (!noexcept(std::declval<decltype(f())&>() = f()))
+    {
+      throw;
+    }
+  }
+}
+
 }
 
 constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
-#ifndef __clang__
   noexcept(noexcept(
-      gnr::apply(
-        [](auto&& f)
-        {
-          if constexpr(std::is_void_v<decltype(f())> ||
-            std::is_reference_v<decltype(f())>)
-          {
-            f();
-          }
-          else
-          {
-            detail::result_t<decltype(f())> r;
-            r = reinterpret_cast<decltype(r)>(f());
-          }
-        },
-        std::forward_as_tuple(std::forward<decltype(f)>(f)...)
-      )
+      (detail::is_nothrow_dispatchable(std::forward<decltype(f)>(f)), ...)
     )
   )
-#endif // __clang__
   requires(
     std::is_enum_v<std::remove_const_t<decltype(i)>> &&
     std::conjunction_v<
