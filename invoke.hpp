@@ -17,11 +17,12 @@ constexpr void is_nothrow_invocable(auto&& f, auto&& t)
   return [&]<auto ...I>(std::index_sequence<I...>)
   {
     if (!noexcept(
-      std::invoke(
-        std::forward<decltype(f)>(f),
-        std::get<I>(std::forward<decltype(t)>(t))...
+        std::invoke(
+          std::forward<decltype(f)>(f),
+          std::get<I>(std::forward<decltype(t)>(t))...
+        )
       )
-    ))
+    )
     {
       throw;
     }
