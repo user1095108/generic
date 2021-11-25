@@ -38,11 +38,11 @@ constexpr auto is_nothrow_dispatchable(auto&& f) noexcept
   if constexpr(std::is_void_v<decltype((*f)())> ||
     std::is_reference_v<decltype((*f)())>)
   {
-    return !noexcept((*f)());
+    return noexcept((*f)());
   }
   else
   {
-    return !noexcept(std::declval<decltype((*f)())&>() = f());
+    return noexcept(std::declval<decltype((*f)())&>() = f());
   }
 }
 
