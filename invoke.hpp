@@ -12,7 +12,7 @@ namespace gnr
 namespace detail::invoke
 {
 
-constexpr bool is_nothrow_invocable(auto&& f, auto&& t)
+constexpr bool is_nothrow_invocable(auto&& f, auto&& t) noexcept
 {
   return noexcept(
     [&]<auto ...I>(std::index_sequence<I...>)
@@ -87,7 +87,7 @@ namespace detail::invoke
 {
 
 template <std::size_t N>
-constexpr bool is_nothrow_split_invocable(auto&& f, auto&& ...a)
+constexpr bool is_nothrow_split_invocable(auto&& f, auto&& ...a) noexcept
 {
   return noexcept(
     ::gnr::apply([f](auto&& ...t) noexcept(noexcept(
