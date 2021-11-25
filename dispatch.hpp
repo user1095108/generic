@@ -39,7 +39,7 @@ using result_t = std::conditional_t<
   >
 >;
 
-constexpr bool is_nothrow_dispatchable(auto&& f)
+constexpr void is_nothrow_dispatchable(auto&& f)
 {
   if constexpr(std::is_void_v<decltype(f())> ||
     std::is_reference_v<decltype(f())>)
