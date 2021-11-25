@@ -33,8 +33,11 @@ using result_t = std::conditional_t<
   >
 >;
 
-constexpr auto is_nothrow_dispatchable(auto&& f) noexcept
+template <typename F>
+constexpr auto is_noexcept_dispatchable() noexcept
 {
+  auto const f(static_cast<std::remove_reference_t<F>*>(nullptr));
+
   if constexpr(std::is_void_v<decltype((*f)())> ||
     std::is_reference_v<decltype((*f)())>)
   {
@@ -42,7 +45,7 @@ constexpr auto is_nothrow_dispatchable(auto&& f) noexcept
   }
   else
   {
-    return noexcept(std::declval<decltype((*f)())&>() = f());
+    return noexcept(std::declval<decltype((*f)())&>() = (*f)());
   }
 }
 
@@ -51,8 +54,7 @@ constexpr auto is_nothrow_dispatchable(auto&& f) noexcept
 constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   noexcept(
     (
-      detail::is_nothrow_dispatchable(
-        static_cast<std::remove_reference_t<decltype(f)>*>(nullptr)) && ...
+      detail::is_noexcept_dispatchable<decltype(f)>() && ...
     )
   )
   requires(
@@ -119,7 +121,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
       gnr::invoke_split<2>(
         [](auto&&, auto&& f)
         {
-          detail::is_nothrow_dispatchable(std::forward<decltype(f)>(f));
+          detail::is_noexcept_dispatchable<decltype(f)>();
         },
         std::forward<decltype(a)>(a)...
       )
