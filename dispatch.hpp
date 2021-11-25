@@ -53,9 +53,7 @@ constexpr auto is_noexcept_dispatchable() noexcept
 
 constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   noexcept(
-    (
-      detail::is_noexcept_dispatchable<decltype(f)>() && ...
-    )
+    (detail::is_noexcept_dispatchable<decltype(f)>() && ...)
   )
   requires(
     std::is_enum_v<std::remove_const_t<decltype(i)>> &&
@@ -73,7 +71,8 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   using R = decltype(std::declval<detail::at_t<0, decltype(f)...>>()());
 
   return [&]<auto ...I>(std::integer_sequence<int_t, I...>)
-    noexcept(noexcept((f(), ...))) -> decltype(auto)
+    noexcept((detail::is_noexcept_dispatchable<decltype(f)>() && ...)) ->
+    decltype(auto)
   {
     if constexpr(std::is_void_v<R>)
     {
