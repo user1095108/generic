@@ -52,7 +52,7 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   noexcept(
     (
       detail::is_nothrow_dispatchable(
-        static_cast<std::remove_cvref_t<decltype(f)>*>(nullptr)) && ...
+        static_cast<std::remove_reference_t<decltype(f)>*>(nullptr)) && ...
     )
   )
   requires(
