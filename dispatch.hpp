@@ -129,16 +129,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
       gnr::invoke_split<2>(
         [](auto&& e, auto&& f)
         {
-          if constexpr(std::is_void_v<decltype(f())> ||
-            std::is_reference_v<decltype(f())>)
-          {
-            f();
-          }
-          else
-          {
-            detail::result_t<decltype(f())> r;
-            r = reinterpret_cast<decltype(r)>(f());
-          }
+          detail::is_nothrow_dispatchable(std::forward<decltype(f)>(f));
         },
         std::forward<decltype(a)>(a)...
       )

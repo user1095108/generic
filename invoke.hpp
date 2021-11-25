@@ -50,8 +50,8 @@ constexpr auto split(auto&& t) noexcept requires(bool(N))
 
 }
 
-constexpr decltype(auto) apply(auto&& f, auto&& t) noexcept(
-  noexcept(
+constexpr decltype(auto) apply(auto&& f, auto&& t)
+  noexcept(noexcept(
     detail::invoke::is_nothrow_invocable(
       std::forward<decltype(f)>(f),
       std::forward<decltype(t)>(t)
@@ -59,8 +59,8 @@ constexpr decltype(auto) apply(auto&& f, auto&& t) noexcept(
   )
 )
 {
-  return [&]<auto ...I>(std::index_sequence<I...>) noexcept(
-    noexcept(
+  return [&]<auto ...I>(std::index_sequence<I...>)
+    noexcept(noexcept(
       std::invoke(
         std::forward<decltype(f)>(f),
         std::get<I>(std::forward<decltype(t)>(t))...
@@ -114,8 +114,8 @@ constexpr bool is_nothrow_split_invocable(auto&& f, auto&& ...a)
 }
 
 template <std::size_t N>
-constexpr void invoke_split(auto&& f, auto&& ...a) noexcept(
-  noexcept(
+constexpr void invoke_split(auto&& f, auto&& ...a)
+  noexcept(noexcept(
     detail::invoke::is_nothrow_split_invocable<N>(
       std::forward<decltype(f)>(f),
       std::forward<decltype(a)>(a)...
