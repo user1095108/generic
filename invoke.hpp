@@ -14,7 +14,7 @@ namespace detail::invoke
 
 constexpr void is_nothrow_invocable(auto&& f, auto&& t)
 {
-  return [&]<auto ...I>(std::index_sequence<I...>)
+  [&]<auto ...I>(std::index_sequence<I...>)
   {
     if (!noexcept(
         std::invoke(
