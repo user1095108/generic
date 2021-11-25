@@ -12,8 +12,12 @@ namespace gnr
 namespace detail::invoke
 {
 
-constexpr bool is_nothrow_invocable(auto&& f, auto&& t) noexcept
+template <typename F, typename T>
+constexpr bool is_noexcept_invocable() noexcept
 {
+  auto const f(static_cast<std::remove_reference_t<F>*>(nullptr));
+  auto const t(static_cast<std::remove_reference_t<T>*>(nullptr));
+
   return noexcept(
     [&]<auto ...I>(std::index_sequence<I...>)
     {
@@ -46,10 +50,7 @@ constexpr auto split(auto&& t) noexcept requires(bool(N))
 
 constexpr decltype(auto) apply(auto&& f, auto&& t)
   noexcept(
-    detail::invoke::is_nothrow_invocable(
-      static_cast<std::remove_reference_t<decltype(f)>*>(nullptr),
-      static_cast<std::remove_reference_t<decltype(t)>*>(nullptr)
-    )
+    detail::invoke::is_noexcept_invocable<decltype(f), decltype(t)>()
   )
 {
   return [&]<auto ...I>(std::index_sequence<I...>)
@@ -86,16 +87,22 @@ constexpr auto invoke_cond(auto f, auto&& ...a)
 namespace detail::invoke
 {
 
-template <std::size_t N>
-constexpr bool is_nothrow_split_invocable(auto&& f, auto&& ...a) noexcept
+template <std::size_t N, typename F, typename ...A>
+constexpr bool is_noexcept_split_invocable() noexcept
 {
+  auto const f(static_cast<std::remove_reference_t<F>*>(nullptr));
+
   return noexcept(
     ::gnr::apply([f](auto&& ...t) noexcept(noexcept(
       (::gnr::apply(*f, std::forward<decltype(t)>(t)), ...)))
       {
         (::gnr::apply(*f, std::forward<decltype(t)>(t)), ...);
       },
-      detail::invoke::split<N>(std::forward_as_tuple(*a...))
+      detail::invoke::split<N>(
+        std::forward_as_tuple(
+          *static_cast<std::remove_reference_t<A>*>(nullptr)...
+        )
+      )
     )
   );
 }
@@ -105,10 +112,8 @@ constexpr bool is_nothrow_split_invocable(auto&& f, auto&& ...a) noexcept
 template <std::size_t N>
 constexpr void invoke_split(auto&& f, auto&& ...a)
   noexcept(
-    detail::invoke::is_nothrow_split_invocable<N>(
-      static_cast<std::remove_reference_t<decltype(f)>*>(nullptr),
-      static_cast<std::remove_reference_t<decltype(a)>*>(nullptr)...
-    )
+    detail::invoke::is_noexcept_split_invocable<N, decltype(f),
+      decltype(a)...>()
   )
 {
   ::gnr::apply([f](auto&& ...t) noexcept(noexcept(
