@@ -121,7 +121,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
 #ifndef __clang__
   noexcept(noexcept(
       gnr::invoke_split<2>(
-        [](auto&& e, auto&& f)
+        [](auto&&, auto&& f)
         {
           detail::is_nothrow_dispatchable(std::forward<decltype(f)>(f));
         },
