@@ -21,7 +21,7 @@ constexpr bool is_noexcept_invocable() noexcept
   return noexcept(
     [&]<auto ...I>(std::index_sequence<I...>)
     {
-      return (std::invoke(*f, std::get<I>(*t)...));
+      return (std::invoke(F(*f), std::get<I>(T(*t))...));
     }(std::make_index_sequence<
         std::tuple_size_v<std::remove_reference_t<decltype(*t)>>
       >()
@@ -95,13 +95,13 @@ constexpr bool is_noexcept_split_invocable() noexcept
   return noexcept(
     ::gnr::apply([f](auto&& ...t)
       noexcept(noexcept(
-        (::gnr::apply(*f, std::forward<decltype(t)>(t)), ...)))
+        (::gnr::apply(F(*f), std::forward<decltype(t)>(t)), ...)))
       {
-        (::gnr::apply(*f, std::forward<decltype(t)>(t)), ...);
+        (::gnr::apply(F(*f), std::forward<decltype(t)>(t)), ...);
       },
       detail::invoke::split<N>(
         std::forward_as_tuple(
-          *static_cast<std::remove_reference_t<A>*>(nullptr)...
+          A(*static_cast<std::remove_reference_t<A>*>(nullptr))...
         )
       )
     )

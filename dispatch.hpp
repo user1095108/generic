@@ -38,14 +38,14 @@ constexpr auto is_noexcept_dispatchable() noexcept
 {
   auto const f(static_cast<std::remove_reference_t<F>*>(nullptr));
 
-  if constexpr(std::is_void_v<decltype((*f)())> ||
-    std::is_reference_v<decltype((*f)())>)
+  if constexpr(std::is_void_v<decltype(F(*f)())> ||
+    std::is_reference_v<decltype(F(*f)())>)
   {
-    return noexcept((*f)());
+    return noexcept(F(*f)());
   }
   else
   {
-    return noexcept(std::declval<decltype((*f)())&>() = (*f)());
+    return noexcept(std::declval<decltype(F(*f)())&>() = F(*f)());
   }
 }
 
