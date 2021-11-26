@@ -93,8 +93,9 @@ constexpr bool is_noexcept_split_invocable() noexcept
   auto const f(static_cast<std::remove_reference_t<F>*>(nullptr));
 
   return noexcept(
-    ::gnr::apply([f](auto&& ...t) noexcept(noexcept(
-      (::gnr::apply(*f, std::forward<decltype(t)>(t)), ...)))
+    ::gnr::apply([f](auto&& ...t)
+      noexcept(noexcept(
+        (::gnr::apply(*f, std::forward<decltype(t)>(t)), ...)))
       {
         (::gnr::apply(*f, std::forward<decltype(t)>(t)), ...);
       },
