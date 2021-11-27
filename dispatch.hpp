@@ -204,7 +204,7 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
   {
     detail::result_t<detail::at_t<0, decltype(v)...>> r;
 
-    ((I == i ? r = reinterpret_cast<decltype(r)>(&v) : nullptr), ...);
+    (void)(((I == i) && (r = reinterpret_cast<decltype(r)>(&v))) || ...);
 
     return *r;
   }(std::make_index_sequence<sizeof...(v)>());
