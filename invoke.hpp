@@ -12,6 +12,23 @@ namespace gnr
 namespace detail::invoke
 {
 
+template <std::size_t N>
+constexpr auto split(auto&& t) noexcept requires(bool(N))
+{
+  constexpr auto n(std::tuple_size_v<std::remove_cvref_t<decltype(t)>>);
+  static_assert(n && !(n % N));
+  return [&]<auto ...I>(std::index_sequence<I...>) noexcept
+  {
+    return std::make_tuple(
+      [&]<auto ...J>(std::index_sequence<J...>) noexcept
+      {
+        constexpr auto K(N * I);
+        return std::forward_as_tuple(std::get<K + J>(t)...);
+      }(std::make_index_sequence<N + I - I>())...
+    );
+  }(std::make_index_sequence<n / N>());
+}
+
 template <typename F, typename T>
 constexpr bool is_noexcept_invocable() noexcept
 {
@@ -23,27 +40,10 @@ constexpr bool is_noexcept_invocable() noexcept
     {
       return (std::invoke(F(*f), std::get<I>(T(*t))...));
     }(std::make_index_sequence<
-        std::tuple_size_v<std::remove_reference_t<decltype(*t)>>
+        std::tuple_size_v<std::remove_cvref_t<T>>
       >()
     )
   );
-}
-
-template <std::size_t N>
-constexpr auto split(auto&& t) noexcept requires(bool(N))
-{
-  constexpr auto n(std::tuple_size_v<std::remove_cvref_t<decltype(t)>>);
-  static_assert(n && !(n % N));
-  return [&]<auto ...I>(std::index_sequence<I...>) noexcept
-  {
-    return std::tuple(
-      [&]<auto ...J>(std::index_sequence<J...>) noexcept
-      {
-        constexpr auto K(N * I);
-        return std::forward_as_tuple(std::get<K + J>(t)...);
-      }(std::make_index_sequence<N + I - I>())...
-    );
-  }(std::make_index_sequence<n / N>());
 }
 
 }
@@ -67,7 +67,7 @@ constexpr decltype(auto) apply(auto&& f, auto&& t)
       std::get<I>(std::forward<decltype(t)>(t))...
     );
   }(std::make_index_sequence<
-      std::tuple_size_v<std::remove_reference_t<decltype(t)>>
+      std::tuple_size_v<std::remove_cvref_t<decltype(t)>>
     >()
   );
 }
@@ -93,7 +93,7 @@ constexpr bool is_noexcept_split_invocable() noexcept
   auto const f(static_cast<std::remove_reference_t<F>*>(nullptr));
 
   return noexcept(
-    ::gnr::apply([f](auto&& ...t)
+    ::gnr::apply([&](auto&& ...t)
       noexcept(noexcept(
         (::gnr::apply(F(*f), std::forward<decltype(t)>(t)), ...)))
       {
@@ -117,8 +117,11 @@ constexpr void invoke_split(auto&& f, auto&& ...a)
       decltype(a)...>()
   )
 {
-  ::gnr::apply([f](auto&& ...t) noexcept(noexcept(
-    (::gnr::apply(f, std::forward<decltype(t)>(t)), ...)))
+  ::gnr::apply(
+    [&](auto&& ...t)
+      noexcept(noexcept(
+        (::gnr::apply(f, std::forward<decltype(t)>(t)), ...))
+      )
     {
       (::gnr::apply(f, std::forward<decltype(t)>(t)), ...);
     },
