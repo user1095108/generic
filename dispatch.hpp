@@ -215,12 +215,18 @@ constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
   using R = decltype(std::declval<detail::at_t<1, decltype(a)...>>());
   detail::result_t<R> r;
 
-  gnr::invoke_split<2>(
+  gnr::invoke_split_cond<2>(
     [&](auto&& e, auto&& v) noexcept
     {
       if (e == i)
       {
         r = reinterpret_cast<decltype(r)>(&v);
+
+        return true;
+      }
+      else
+      {
+        return false;
       }
     },
     std::forward<decltype(a)>(a)...
