@@ -23,7 +23,8 @@ constexpr auto split(auto&& t) noexcept requires(bool(N))
       [&]<auto ...J>(std::index_sequence<J...>) noexcept
       {
         constexpr auto K(N * I);
-        return std::forward_as_tuple(std::get<K + J>(t)...);
+        return std::forward_as_tuple(
+          std::get<K + J>(std::forward<decltype(t)>(t))...);
       }(std::make_index_sequence<N + I - I>())...
     );
   }(std::make_index_sequence<n / N>());
