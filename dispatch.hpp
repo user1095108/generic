@@ -74,7 +74,7 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   {
     if constexpr(std::is_void_v<R>)
     {
-      ((I == int_t(i) ? (f(), 0) : 0), ...);
+      (void)((I == int_t(i) && (f(), true)) || ...);
     }
     else if constexpr(
       (
@@ -90,14 +90,8 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     {
       detail::result_t<R> r;
 
-      (
-        (
-          I == int_t(i) ?
-            r = reinterpret_cast<decltype(r)>(&f()) :
-            nullptr
-        ),
-        ...
-      );
+      (void)((I == int_t(i) &&
+        (r = reinterpret_cast<decltype(r)>(&f()))) || ...);
 
       return *r;
     }
@@ -105,7 +99,7 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     {
       R r;
 
-      ((I == int_t(i) ? (r = f(), 0) : 0), ...);
+      (void)(((I == int_t(i)) && (r = f(), true)) || ...);
 
       return r;
     }
@@ -130,13 +124,10 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
 
   if constexpr(std::is_void_v<R>)
   {
-    gnr::invoke_split<2>(
+    gnr::invoke_split_cond<2>(
       [&](auto&& e, auto&& f) noexcept(noexcept(f()))
       {
-        if (e == i)
-        {
-          f();
-        }
+        return (e == i) && (f(), true);
       },
       std::forward<decltype(a)>(a)...
     );
@@ -155,13 +146,10 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
   {
     detail::result_t<R> r;
 
-    gnr::invoke_split<2>(
+    gnr::invoke_split_cond<2>(
       [&](auto&& e, auto&& f) noexcept(noexcept(f()))
       {
-        if (e == i)
-        {
-          r = reinterpret_cast<decltype(r)>(&f());
-        }
+        return (e == i) && bool(r = reinterpret_cast<decltype(r)>(&f()));
       },
       std::forward<decltype(a)>(a)...
     );
@@ -172,14 +160,10 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
   {
     R r;
 
-    gnr::invoke_split<2>(
-      [&](auto&& e, auto&& f)
-        noexcept(noexcept(std::declval<R&>() = f()))
+    gnr::invoke_split_cond<2>(
+      [&](auto&& e, auto&& f) noexcept(noexcept(std::declval<R&>() = f()))
       {
-        if (e == i)
-        {
-          r = f();
-        }
+        return (e == i) && (r = f(), true);
       },
       std::forward<decltype(a)>(a)...
     );
@@ -218,9 +202,7 @@ constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
   gnr::invoke_split_cond<2>(
     [&](auto&& e, auto&& v) noexcept -> bool
     {
-      return e == i ?
-        bool(r = reinterpret_cast<decltype(r)>(&v)) :
-        false;
+      return (e == i) && (r = reinterpret_cast<decltype(r)>(&v));
     },
     std::forward<decltype(a)>(a)...
   );
