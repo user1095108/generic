@@ -200,7 +200,7 @@ constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
   detail::result_t<R> r;
 
   gnr::invoke_split_cond<2>(
-    [&](auto&& e, auto&& v) noexcept -> bool
+    [&](auto&& e, auto&& v) noexcept
     {
       return (e == i) && (r = reinterpret_cast<decltype(r)>(&v));
     },
