@@ -11,7 +11,7 @@
 namespace gnr
 {
 
-namespace detail
+namespace detail::dispatch
 {
 
 template <std::size_t I, typename ...T>
@@ -52,13 +52,15 @@ constexpr auto is_noexcept_dispatchable() noexcept
 }
 
 constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
-  noexcept((detail::is_noexcept_dispatchable<decltype(f)>() && ...))
+  noexcept((detail::dispatch::is_noexcept_dispatchable<decltype(f)>() && ...))
   requires(
     std::is_enum_v<std::remove_const_t<decltype(i)>> &&
     std::conjunction_v<
       std::is_same<
         std::decay_t<
-          decltype(std::declval<detail::at_t<0, decltype(f)...>>()())
+          decltype(
+            std::declval<detail::dispatch::at_t<0, decltype(f)...>>()()
+          )
         >,
         std::decay_t<decltype(std::declval<decltype(f)>()())>
       >...
@@ -66,11 +68,14 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   )
 {
   using int_t = std::underlying_type_t<std::remove_const_t<decltype(i)>>;
-  using R = decltype(std::declval<detail::at_t<0, decltype(f)...>>()());
+  using R = decltype(
+    std::declval<detail::dispatch::at_t<0, decltype(f)...>>()()
+  );
 
   return [&]<auto ...I>(std::integer_sequence<int_t, I...>)
-    noexcept((detail::is_noexcept_dispatchable<decltype(f)>() && ...)) ->
-    decltype(auto)
+    noexcept(
+      (detail::dispatch::is_noexcept_dispatchable<decltype(f)>() && ...)
+    ) -> decltype(auto)
   {
     if constexpr(std::is_void_v<R>)
     {
@@ -88,7 +93,7 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
       std::is_reference_v<R>
     )
     {
-      detail::result_t<R> r;
+      detail::dispatch::result_t<R> r;
 
       (void)((I == int_t(i) &&
         (r = reinterpret_cast<decltype(r)>(&f()))) || ...);
@@ -112,7 +117,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
       gnr::invoke_split<2>(
         [](auto&&, auto&& f)
         {
-          detail::is_noexcept_dispatchable<decltype(f)>();
+          detail::dispatch::is_noexcept_dispatchable<decltype(f)>();
         },
         std::forward<decltype(a)>(a)...
       )
@@ -120,7 +125,9 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
   )
 #endif // __clang__
 {
-  using R = decltype(std::declval<detail::at_t<1, decltype(a)...>>()());
+  using R = decltype(
+    std::declval<detail::dispatch::at_t<1, decltype(a)...>>()()
+  );
 
   if constexpr(std::is_void_v<R>)
   {
@@ -144,7 +151,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
     std::is_reference_v<R>
   )
   {
-    detail::result_t<R> r;
+    detail::dispatch::result_t<R> r;
 
     gnr::invoke_split_cond<2>(
       [&](auto&& e, auto&& f) noexcept(noexcept(f()))
@@ -177,7 +184,7 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
     std::conjunction_v<
       std::is_same<
         std::decay_t<
-          decltype(std::declval<detail::at_t<0, decltype(v)...>>())
+          decltype(std::declval<detail::dispatch::at_t<0, decltype(v)...>>())
         >,
         std::decay_t<decltype(std::declval<decltype(v)>())>
       >...
@@ -186,7 +193,7 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
 {
   return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> decltype(auto)
   {
-    detail::result_t<detail::at_t<0, decltype(v)...>> r;
+    detail::dispatch::result_t<detail::dispatch::at_t<0, decltype(v)...>> r;
 
     (void)(((I == i) && (r = reinterpret_cast<decltype(r)>(&v))) || ...);
 
@@ -196,8 +203,10 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
 
 constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
 {
-  using R = decltype(std::declval<detail::at_t<1, decltype(a)...>>());
-  detail::result_t<R> r;
+  using R = decltype(
+    std::declval<detail::dispatch::at_t<1, decltype(a)...>>()
+  );
+  detail::dispatch::result_t<R> r;
 
   gnr::invoke_split_cond<2>(
     [&](auto&& e, auto&& v) noexcept
