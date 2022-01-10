@@ -49,12 +49,20 @@ constexpr auto is_noexcept_dispatchable() noexcept
   }
 }
 
+template <typename T, bool = std::is_enum_v<T>>
+struct underlying_type : std::underlying_type<T> {};
+
+template <typename T>
+struct underlying_type<T, false> { using type = T; };
+
+template <typename T>
+using underlying_type_t = underlying_type<T>::type;
+
 }
 
 constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   noexcept((detail::dispatch::is_noexcept_dispatchable<decltype(f)>() && ...))
   requires(
-    std::is_enum_v<std::remove_const_t<decltype(i)>> &&
     std::conjunction_v<
       std::is_same<
         std::decay_t<
@@ -67,7 +75,9 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     >
   )
 {
-  using int_t = std::underlying_type_t<std::remove_const_t<decltype(i)>>;
+  using int_t =
+    detail::dispatch::underlying_type_t<std::remove_const_t<decltype(i)>>;
+
   using R = decltype(
     std::declval<detail::dispatch::at_t<0, decltype(f)...>>()()
   );
