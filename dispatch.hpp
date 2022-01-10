@@ -56,7 +56,7 @@ template <typename T>
 struct underlying_type<T, false> { using type = T; };
 
 template <typename T>
-using underlying_type_t = underlying_type<T>::type;
+using underlying_type_t = typename underlying_type<T>::type;
 
 }
 
@@ -205,7 +205,9 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
   {
     detail::dispatch::result_t<detail::dispatch::at_t<0, decltype(v)...>> r;
 
-    (void)(((I == i) && (r = reinterpret_cast<decltype(r)>(&v))) || ...);
+    (void)(
+      ((I == i) && (r = reinterpret_cast<decltype(r)>(&v), true)) || ...
+    );
 
     return *r;
   }(std::make_index_sequence<sizeof...(v)>());
@@ -218,7 +220,7 @@ constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
   gnr::invoke_split_cond<2>(
     [&](auto&& e, auto&& v) noexcept
     {
-      return (e == i) && (r = reinterpret_cast<decltype(r)>(&v));
+      return (e == i) && (r = reinterpret_cast<decltype(r)>(&v), true);
     },
     std::forward<decltype(a)>(a)...
   );
