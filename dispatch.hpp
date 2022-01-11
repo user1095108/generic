@@ -49,7 +49,7 @@ constexpr auto is_noexcept_dispatchable() noexcept
   }
 }
 
-template <typename T, bool = std::is_enum_v<T>>
+template <typename T, auto = std::is_enum_v<T>>
 struct underlying_type : std::underlying_type<T> {};
 
 template <typename T>
