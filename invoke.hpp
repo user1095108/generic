@@ -227,8 +227,7 @@ constexpr auto const chain_apply(auto&& ft, auto&& at)
     }
     else if constexpr(std::is_void_v<R>)
     {
-      return
-        chain_apply<I - 1>(
+      return chain_apply<I - 1>(
           std::forward<decltype(ft)>(ft),
           std::forward<decltype(at)>(at)
         ),

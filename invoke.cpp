@@ -20,8 +20,6 @@ int main()
     []{ std::cout << "lol" << std::endl; }
   );
 
-  std::cout << noexcept(gnr::chain_apply(0, inc, inc, inc, inc)) << std::endl;
-
   //
   auto const fib([](auto const a, decltype(a) b) noexcept
     {
