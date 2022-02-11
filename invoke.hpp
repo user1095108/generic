@@ -182,7 +182,10 @@ constexpr bool is_noexcept_chain_appliable() noexcept
     }
     else if constexpr(std::is_void_v<R>)
     {
-      return noexcept(std::get<I>(FT(*ft))());
+      return noexcept(
+        chain_apply<I - 1>(FT(*ft), AT(*at)),
+        std::get<I>(FT(*ft))()
+      );
     }
     else
     {
@@ -224,7 +227,12 @@ constexpr auto const chain_apply(auto&& ft, auto&& at)
     }
     else if constexpr(std::is_void_v<R>)
     {
-      return std::get<I>(ft)();
+      return
+        chain_apply<I - 1>(
+          std::forward<decltype(ft)>(ft),
+          std::forward<decltype(at)>(at)
+        ),
+        std::get<I>(ft)();
     }
     else
     {
