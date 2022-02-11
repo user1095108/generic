@@ -12,6 +12,15 @@ namespace gnr
 namespace detail::invoke
 {
 
+template <typename>
+struct is_tuple : std::false_type {};
+
+template <typename ...T>
+struct is_tuple<std::tuple<T...>> : std::true_type {};
+
+template <typename T>
+static constexpr bool is_tuple_v(is_tuple<std::remove_cvref_t<T>>{});
+
 template <std::size_t N>
 constexpr auto split(auto&& t) noexcept requires(bool(N))
 {
@@ -149,26 +158,83 @@ constexpr void invoke_split_cond(auto&& f, auto&& ...a)
   );
 }
 
-auto chain_apply(auto&& a, auto&& ...f)
+namespace detail::invoke
 {
-  auto const execute([&]<auto I>(auto&& self)
-    {
-      if constexpr(I)
-      {
-        return std::get<I>(std::forward_as_tuple(f...))(
-            self.template operator()<I - 1>(self)
-          );
-      }
-      else
-      {
-        return ::gnr::apply(std::get<0>(std::forward_as_tuple(f...)),
-            std::forward<decltype(a)>(a)
-          );
-      }
-    }
-  );
 
-  return execute.template operator()<sizeof...(f) - 1>(execute);
+template <auto I, typename FT, typename AT>
+constexpr bool is_noexcept_chain_appliable() noexcept
+{
+  auto const ft(static_cast<std::remove_reference_t<FT>*>(nullptr));
+  auto const at(static_cast<std::remove_reference_t<AT>*>(nullptr));
+
+  if constexpr(I)
+  {
+    return noexcept(
+      std::get<I>(*ft)(chain_apply<I - 1>(FT(*ft), AT(*at)))
+    );
+  }
+  else
+  {
+    return noexcept(::gnr::apply(std::get<0>(FT(*ft)), AT(*at)));
+  }
+}
+
+template <auto I>
+constexpr auto const chain_apply(auto&& ft, auto&& at)
+#ifndef __clang__
+  noexcept(is_noexcept_chain_appliable<I, decltype(ft), decltype(at)>())
+#endif // __clang__
+{
+  if constexpr(I)
+  {
+    return std::get<I>(ft)(
+      chain_apply<I - 1>(
+        std::forward<decltype(ft)>(ft),
+        std::forward<decltype(at)>(at)
+      )
+    );
+  }
+  else
+  {
+    return ::gnr::apply(
+      std::get<0>(ft),
+      std::forward<decltype(at)>(at)
+    );
+  }
+}
+
+}
+
+auto chain_apply(auto&& a, auto&& ...f)
+  noexcept(noexcept(
+      detail::invoke::chain_apply<sizeof...(f) - 1>(
+        std::forward_as_tuple(f...),
+        std::forward_as_tuple(a)
+      )
+    )
+  )
+  requires(!detail::invoke::is_tuple_v<decltype(a)>)
+{
+  return detail::invoke::chain_apply<sizeof...(f) - 1>(
+    std::forward_as_tuple(f...),
+    std::forward_as_tuple(a)
+  );
+}
+
+auto chain_apply(auto&& at, auto&& ...f)
+  noexcept(noexcept(
+      detail::invoke::chain_apply<sizeof...(f) - 1>(
+        std::forward_as_tuple(f...),
+        std::forward<decltype(at)>(at)
+      )
+    )
+  )
+  requires(detail::invoke::is_tuple_v<decltype(at)>)
+{
+  return detail::invoke::chain_apply<sizeof...(f) - 1>(
+    std::forward_as_tuple(f...),
+    std::forward<decltype(at)>(at)
+  );
 }
 
 

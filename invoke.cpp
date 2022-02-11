@@ -10,7 +10,8 @@ int main()
     }
   );
 
-  std::cout << gnr::chain_apply(std::tuple(0), inc, inc, inc, inc) << std::endl;
+  std::cout << gnr::chain_apply(0, inc, inc, inc, inc) << std::endl;
+  std::cout << noexcept(gnr::chain_apply(0, inc, inc, inc, inc)) << std::endl;
 
   return 0;
 }
