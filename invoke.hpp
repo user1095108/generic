@@ -182,7 +182,7 @@ constexpr bool is_noexcept_chain_appliable() noexcept
     }
     else if constexpr(std::is_void_v<R>)
     {
-      return noexcept(std::get<I>(ft)());
+      return noexcept(std::get<I>(FT(*ft))());
     }
     else
     {
