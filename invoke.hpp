@@ -169,9 +169,27 @@ constexpr bool is_noexcept_chain_appliable() noexcept
 
   if constexpr(I)
   {
-    return noexcept(
-      std::get<I>(*ft)(chain_apply<I - 1>(FT(*ft), AT(*at)))
-    );
+    using R = decltype(chain_apply<I - 1>(FT(*ft), AT(*at)));
+
+    if constexpr(is_tuple_v<R>)
+    {
+      return noexcept(
+        ::gnr::apply(
+          std::get<I>(FT(*ft)),
+          chain_apply<I - 1>(FT(*ft), AT(*at))
+        )
+      );
+    }
+    else if constexpr(std::is_void_v<R>)
+    {
+      return noexcept(std::get<I>(ft)());
+    }
+    else
+    {
+      return noexcept(
+        std::get<I>(*ft)(chain_apply<I - 1>(FT(*ft), AT(*at)))
+      );
+    }
   }
   else
   {
@@ -187,12 +205,36 @@ constexpr auto const chain_apply(auto&& ft, auto&& at)
 {
   if constexpr(I)
   {
-    return std::get<I>(ft)(
+    using R = decltype(
       chain_apply<I - 1>(
         std::forward<decltype(ft)>(ft),
         std::forward<decltype(at)>(at)
       )
     );
+
+    if constexpr(is_tuple_v<R>)
+    {
+      return ::gnr::apply(
+        std::get<I>(ft),
+        chain_apply<I - 1>(
+          std::forward<decltype(ft)>(ft),
+          std::forward<decltype(at)>(at)
+        )
+      );
+    }
+    else if constexpr(std::is_void_v<R>)
+    {
+      return std::get<I>(ft)();
+    }
+    else
+    {
+      return std::get<I>(ft)(
+        chain_apply<I - 1>(
+          std::forward<decltype(ft)>(ft),
+          std::forward<decltype(at)>(at)
+        )
+      );
+    }
   }
   else
   {
