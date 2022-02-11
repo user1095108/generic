@@ -17,6 +17,7 @@ int main()
     inc,
     inc,
     [](auto const i) { std::cout << i << std::endl; },
+    []{ std::cout << "lal" << std::endl; },
     []{ std::cout << "lol" << std::endl; }
   );
 
