@@ -149,6 +149,28 @@ constexpr void invoke_split_cond(auto&& f, auto&& ...a)
   );
 }
 
+auto chain_apply(auto&& a, auto&& ...f)
+{
+  auto const execute([&]<auto I>(auto&& self)
+    {
+      if constexpr(I)
+      {
+        return std::get<I>(std::forward_as_tuple(f...))(
+            self.template operator()<I - 1>(self)
+          );
+      }
+      else
+      {
+        return ::gnr::apply(std::get<0>(std::forward_as_tuple(f...)),
+            std::forward<decltype(a)>(a)
+          );
+      }
+    }
+  );
+
+  return execute.template operator()<sizeof...(f) - 1>(execute);
+}
+
 
 }
 
