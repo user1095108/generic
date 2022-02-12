@@ -234,8 +234,6 @@ auto chain_apply(auto&& a, auto&& ...f)
   );
 }
 
-
-
 }
 
 #endif // GNR_INVOKE_HPP
