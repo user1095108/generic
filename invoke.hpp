@@ -194,7 +194,10 @@ constexpr auto const chain_apply(auto&& t, auto&& f, auto&& ...fs)
         std::forward<decltype(t)>(t)
       );
 
-      return chain_apply(std::tuple(), std::forward<decltype(fs)>(fs)...);
+      return chain_apply(
+        std::tuple(),
+        std::forward<decltype(fs)>(fs)...
+      );
     }
     else
     {
