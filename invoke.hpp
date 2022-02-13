@@ -218,7 +218,7 @@ constexpr auto const chain_apply(auto&& t, auto&& f, auto&& ...fs)
   }
 }
 
-auto chain_apply(auto&& a, auto&& ...f)
+constexpr auto chain_apply(auto&& a, auto&& ...f)
   noexcept(noexcept(
       chain_apply(
         std::forward_as_tuple(a),
