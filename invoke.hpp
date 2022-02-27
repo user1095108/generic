@@ -160,7 +160,7 @@ constexpr void invoke_split_cond(auto&& f, auto&& ...a)
   );
 }
 
-constexpr auto const chain_apply(auto&& t, auto&& f, auto&& ...fs)
+constexpr auto chain_apply(auto&& t, auto&& f, auto&& ...fs)
   noexcept(noexcept(
       ::gnr::apply(
         std::forward<decltype(f)>(f),
