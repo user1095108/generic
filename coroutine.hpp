@@ -41,8 +41,8 @@ public:
   };
 
 private:
-  statebuf env_in_;
-  statebuf env_out_;
+  gnr::statebuf env_in_;
+  gnr::statebuf env_out_;
 
   enum status status_{TERMINATED};
 
