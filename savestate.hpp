@@ -63,15 +63,15 @@ static inline bool __attribute__((always_inline)) savestate(
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
-    : "memory", "rax"
+    : "rax", "memory"
   );
 #elif defined(__aarch64__)
   asm volatile (
-    "mov x7, sp\n\t"
-    "str x7, %0\n\t" // store sp
+    "mov x0, sp\n\t"
+    "str x0, %0\n\t" // store sp
     "str fp, %1\n\t" // store fp
-    "ldr x7, =1f\n\t" // load label
-    "str x7, %2\n\t" // store label
+    "ldr x0, =1f\n\t" // load label
+    "str x0, %2\n\t" // store label
     "mov %w3, #0\n\t" // store 0 into result
     "b 2f\n\t"
     "1:"
@@ -79,14 +79,14 @@ static inline bool __attribute__((always_inline)) savestate(
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
-    : "x7", "memory"
+    : "x0", "memory"
   );
 #elif defined(__ARM_ARCH) && (7 == __ARM_ARCH)
   asm volatile (
     "str sp, %0\n\t" // store sp
     "str r7, %1\n\t" // store fp
-    "ldr r3, =1f\n\t" // load label
-    "str r3, %2\n\t" // store label
+    "ldr r0, =1f\n\t" // load label
+    "str r0, %2\n\t" // store label
     "mov %3, $0\n\t" // store 0 into result
     "b 2f\n\t"
     "1:"
@@ -94,14 +94,14 @@ static inline bool __attribute__((always_inline)) savestate(
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
-    : "r3", "memory"
+    : "r0", "memory"
   );
 #elif defined(__arm__)
   asm volatile (
     "str sp, %0\n\t" // store sp
     "str fp, %1\n\t" // store fp
-    "ldr r3, =1f\n\t" // load label
-    "str r3, %2\n\t" // store label
+    "ldr r0, =1f\n\t" // load label
+    "str r0, %2\n\t" // store label
     "mov %3, $0\n\t" // store 0 into result
     "b 2f\n\t"
     "1:"
@@ -109,7 +109,7 @@ static inline bool __attribute__((always_inline)) savestate(
     "2:"
     : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
-    : "r3", "memory"
+    : "r0", "memory"
   );
 #endif
 
