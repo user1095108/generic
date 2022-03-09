@@ -83,8 +83,8 @@ static inline bool __attribute__((always_inline)) savestate(
   asm volatile (
     "str sp, %0\n\t" // store sp
     "str r7, %1\n\t" // store fp
-    "ldr r3, =1f\n\t" // load label into r3
-    "str r3, %2\n\t" // store r3 into label
+    "ldr r3, =1f\n\t" // load label
+    "str r3, %2\n\t" // store label
     "mov %3, $0\n\t" // store 0 into result
     "b 2f\n\t"
     "1:"
@@ -98,8 +98,8 @@ static inline bool __attribute__((always_inline)) savestate(
   asm volatile (
     "str sp, %0\n\t" // store sp
     "str fp, %1\n\t" // store fp
-    "ldr r3, =1f\n\t" // load label into r3
-    "str r3, %2\n\t" // store r3 into label
+    "ldr r3, =1f\n\t" // load label
+    "str r3, %2\n\t" // store label
     "mov %3, $0\n\t" // store 0 into result
     "b 2f\n\t"
     "1:"
