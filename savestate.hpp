@@ -26,6 +26,8 @@ struct statebuf
 #elif defined(__arm__)
   #define clobber_all() asm volatile ("":::"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "lr");
 #endif
+#else
+  #define clobber_all()
 #endif
 
 #if defined(__GNUC__)
