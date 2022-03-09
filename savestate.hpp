@@ -68,8 +68,8 @@ static inline bool __attribute__((always_inline)) savestate(
     "mov x7, sp\n\t"
     "str x7, %0\n\t" // store sp
     "str fp, %1\n\t" // store fp
-    "ldr x7, =1f\n\t" // load label into x7
-    "str x7, %2\n\t" // store x7 into label
+    "ldr x7, =1f\n\t" // load label
+    "str x7, %2\n\t" // store label
     "mov %w3, #0\n\t" // store 0 into result
     "b 2f\n\t"
     "1:"
