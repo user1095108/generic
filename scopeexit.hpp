@@ -53,7 +53,8 @@ class scope_exit
 
 public:
   explicit scope_exit(T&& f)
-    noexcept(noexcept(T(std::forward<T>(f)))): f_(std::forward<T>(f))
+    noexcept(noexcept(T(std::forward<T>(f)))):
+    f_(std::forward<T>(f))
   {
   }
 
@@ -68,7 +69,7 @@ public:
 
 }
 
-#define SCOPE_EXIT(...) auto const CAT(scope_exit_, __LINE__)    \
+#define SCOPE_EXIT(...) auto const CAT(gnr_scope_exit_, __LINE__)\
   (scope_exit::detail::scope_exit([POP_LAST(__VA_ARGS__)]()\
     noexcept(noexcept(LAST(__VA_ARGS__)))\
     { LAST(__VA_ARGS__); }))
