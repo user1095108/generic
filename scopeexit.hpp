@@ -43,7 +43,7 @@
 #define LAST_9(x1, x2, x3, x4, x5, x6, x7, x8, x9) x9
 #define LAST_10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10) x10
 
-namespace scope_exit::detail
+namespace gnr
 {
 
 template <typename T>
@@ -58,10 +58,10 @@ public:
   {
   }
 
+  ~scope_exit() noexcept(noexcept(std::declval<T>()())) { f_(); }
+
   scope_exit(scope_exit const&) = delete;
   scope_exit(scope_exit&&) = delete;
-
-  ~scope_exit() noexcept(noexcept(std::declval<T>()())) { f_(); }
 
   //
   scope_exit& operator=(auto&&) = delete;
@@ -70,7 +70,7 @@ public:
 }
 
 #define SCOPE_EXIT(...) auto const CAT(gnr_scope_exit_, __LINE__)\
-  (scope_exit::detail::scope_exit([POP_LAST(__VA_ARGS__)]()\
+  (gnr::scope_exit([POP_LAST(__VA_ARGS__)]()\
     noexcept(noexcept(LAST(__VA_ARGS__)))\
     { LAST(__VA_ARGS__); }))
 
