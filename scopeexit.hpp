@@ -62,9 +62,6 @@ public:
 
   scope_exit(scope_exit const&) = delete;
   scope_exit(scope_exit&&) = delete;
-
-  //
-  scope_exit& operator=(auto&&) = delete;
 };
 
 }
