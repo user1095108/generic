@@ -46,19 +46,19 @@
 namespace gnr
 {
 
-template <typename T>
+template <typename F>
 class scope_exit
 {
-  T const f_;
+  F const f_;
 
 public:
-  explicit scope_exit(T&& f)
-    noexcept(noexcept(T(std::forward<T>(f)))):
-    f_(std::forward<T>(f))
+  explicit scope_exit(F&& f)
+    noexcept(noexcept(F(std::forward<F>(f)))):
+    f_(std::forward<F>(f))
   {
   }
 
-  ~scope_exit() noexcept(noexcept(std::declval<T>()())) { f_(); }
+  ~scope_exit() noexcept(noexcept(std::declval<F>()())) { f_(); }
 
   scope_exit(scope_exit const&) = delete;
   scope_exit(scope_exit&&) = delete;
