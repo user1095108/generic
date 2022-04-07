@@ -30,7 +30,7 @@ struct statebuf
 
 #if defined(__GNUC__)
 static inline bool __attribute__((always_inline)) savestate(
-  cr::statebuf& ssb) noexcept
+  gnr::statebuf& ssb) noexcept
 {
   bool r;
 
