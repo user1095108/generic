@@ -49,7 +49,7 @@ namespace gnr
 template <typename F>
 class scope_exit
 {
-  F f_;
+  F const f_;
 
 public:
   explicit scope_exit(F&& f)
