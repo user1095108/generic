@@ -58,7 +58,7 @@ public:
   {
   }
 
-  ~scope_exit() noexcept(noexcept(std::declval<F>()())) { f_(); }
+  ~scope_exit() noexcept(noexcept(std::declval<F&>()())) { f_(); }
 
   scope_exit(scope_exit const&) = delete;
   scope_exit(scope_exit&&) = delete;
