@@ -49,12 +49,12 @@ namespace gnr
 template <typename F>
 class scope_exit
 {
-  F const f_;
+  F f_;
 
 public:
   explicit scope_exit(F&& f)
-    noexcept(noexcept(F(std::forward<F>(f)))):
-    f_(std::forward<F>(f))
+    noexcept(noexcept(F(std::move(f)))):
+    f_(std::move(f))
   {
   }
 
