@@ -140,21 +140,21 @@ constexpr void invoke_split(auto&& f, auto&& ...a)
 }
 
 template <std::size_t N>
-constexpr void invoke_split_cond(auto&& f, auto&& ...a)
+constexpr bool invoke_split_cond(auto&& f, auto&& ...a)
   noexcept(
     detail::invoke::is_noexcept_split_invocable<
       N, decltype(f), decltype(a)...
     >()
   )
 {
-  ::gnr::apply(
+  return ::gnr::apply(
     [&](auto&& ...t)
       noexcept(noexcept(
           (::gnr::apply(f, std::forward<decltype(t)>(t)), ...)
         )
       )
     {
-      (::gnr::apply(f, std::forward<decltype(t)>(t)) || ...);
+      return (::gnr::apply(f, std::forward<decltype(t)>(t)) || ...);
     },
     detail::invoke::split<N>(std::forward_as_tuple(a...))
   );
