@@ -239,6 +239,21 @@ constexpr auto chain_apply(auto&& a, auto&& ...f)
   );
 }
 
+constexpr auto chain_apply(int[0], auto&& ...f)
+  noexcept(noexcept(
+      chain_apply(
+        std::tuple(),
+        std::forward<decltype(f)>(f)...
+      )
+    )
+  )
+{
+  return chain_apply(
+    std::tuple(),
+    std::forward<decltype(f)>(f)...
+  );
+}
+
 }
 
 #endif // GNR_INVOKE_HPP
