@@ -203,7 +203,7 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
 {
   return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> decltype(auto)
   {
-    detail::dispatch::result_t<detail::dispatch::at_t<0, decltype(v)...>> r;
+    detail::dispatch::result_t<detail::dispatch::at_t<0, decltype(v)...>> r{};
 
     (void)(
       ((I == i) && (r = reinterpret_cast<decltype(r)>(&v), true)) || ...
@@ -215,7 +215,7 @@ constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
 
 constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
 {
-  detail::dispatch::result_t<detail::dispatch::at_t<1, decltype(a)...>> r;
+  detail::dispatch::result_t<detail::dispatch::at_t<1, decltype(a)...>> r{};
 
   gnr::invoke_split_cond<2>(
     [&](auto&& e, auto&& v) noexcept
