@@ -19,8 +19,7 @@ class static_new
   static constinit inline std::size_t c_; // instance counter
 
 public:
-  static_new(auto&& ...a)
-    noexcept(std::is_nothrow_constructible_v<A, decltype(a)...>)
+  static_new() noexcept
   {
     [&]<auto ...I>(auto const c, std::index_sequence<I...>)
     {
@@ -31,8 +30,6 @@ public:
         ...
       );
     }(c_++, std::make_index_sequence<N>());
-
-    ::new (p_) A(std::forward<decltype(a)>(a)...);
   }
 
   static_new(static_new const&) = delete;
