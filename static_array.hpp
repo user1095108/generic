@@ -5,6 +5,8 @@
 #include <algorithm> // std::move()
 #include <iterator> // std::begin(), std::end()
 
+#include "static_new.hpp"
+
 namespace gnr
 {
 
@@ -14,26 +16,12 @@ class static_array
   A* p_;
   std::size_t const N_;
 
-  template <auto, std::size_t N>
-  static constinit inline A storage_[N];
-
-  static constinit inline std::size_t c_; // instance counter
-
 public:
   template <std::size_t N>
   static_array(A (&&a)[N]):
+    p_(&(*gnr::static_new<A[N]>())[0]),
     N_(N)
   {
-    [&]<auto ...I>(auto const c, std::index_sequence<I...>)
-    {
-      (
-        (
-          I == c ? p_ = storage_<I, N> : nullptr
-        ),
-        ...
-      );
-    }(c_++, std::make_index_sequence<128>());
-
     std::move(std::begin(a), std::end(a), begin());
   }
 
