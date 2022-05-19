@@ -19,7 +19,7 @@ class static_array
 public:
   template <std::size_t N>
   static_array(A (&&a)[N]):
-    p_(&(*gnr::static_new<A[N]>())[0]),
+    p_(gnr::static_new<A[N]>()),
     N_(N)
   {
     std::move(std::begin(a), std::end(a), begin());

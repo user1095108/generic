@@ -11,7 +11,11 @@ namespace gnr
 template <typename A, std::size_t N = 128>
 class static_new
 {
-  A* p_;
+  std::conditional_t<
+    std::is_array_v<A>,
+    std::decay_t<A>,
+    A*
+  > p_;
 
   template <auto>
   static constinit inline std::aligned_storage<sizeof(A)> storage_;
@@ -45,7 +49,7 @@ public:
   static_new& operator=(static_new&&) = delete;
 
   //
-  operator A*() noexcept { return p_; }
+  operator decltype(p_)() noexcept { return p_; }
 };
 
 }
