@@ -26,7 +26,7 @@ class static_new
   > storage_;
 
 public:
-  static_new(auto&& ...a)
+  explicit static_new(auto&& ...a)
     noexcept(std::is_nothrow_constructible_v<A, decltype(a)...>)
   {
     [&]<auto ...I>(auto const c, std::index_sequence<I...>)
