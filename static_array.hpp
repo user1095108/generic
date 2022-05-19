@@ -18,7 +18,8 @@ class static_array
 
 public:
   template <std::size_t N>
-  static_array(A (&&a)[N]):
+  static_array(A (&&a)[N])
+    noexcept(std::is_nothrow_move_assignable_v<A>):
     p_(gnr::static_new<A[N]>()),
     N_(N)
   {
