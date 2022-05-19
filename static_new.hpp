@@ -20,7 +20,10 @@ class static_new
   static constinit inline std::size_t c_; // instance counter
 
   template <auto>
-  static constinit inline std::aligned_storage_t<sizeof(A), alignof(A)> storage_;
+  static constinit inline std::aligned_storage_t<
+    sizeof(A),
+    alignof(A)
+  > storage_;
 
 public:
   static_new(auto&& ...a)
@@ -36,8 +39,6 @@ public:
         ),
         ...
       );
-
-      ;
     }(c_++, std::make_index_sequence<N>());
   }
 
