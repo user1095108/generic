@@ -14,22 +14,27 @@ class static_new
   A* p_;
 
   template <auto>
-  static constinit inline A storage_;
-
-  static constinit inline std::size_t c_; // instance counter
+  static constinit inline std::aligned_storage<sizeof(A)> storage_;
 
 public:
-  static_new() noexcept
+  static_new(auto&& ...a)
+    noexcept(std::is_nothrow_constructible_v<A, decltype(a)...>)
   {
+    static constinit std::size_t c; // instance counter
+
+    void* p;
+
     [&]<auto ...I>(auto const c, std::index_sequence<I...>)
     {
       (
         (
-          I == c ? p_ = &storage_<I> : nullptr
+          I == c ? p = &storage_<I> : nullptr
         ),
         ...
       );
-    }(c_++, std::make_index_sequence<N>());
+    }(c++, std::make_index_sequence<N>());
+
+    p_ = ::new (p) A(std::forward<decltype(a)>(a)...);
   }
 
   static_new(static_new const&) = delete;
