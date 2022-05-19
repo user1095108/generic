@@ -2,7 +2,11 @@
 # define STATIC_ARRAY_HPP
 # pragma once
 
-#include <algorithm>
+#include <algorithm> // std::move()
+#include <iterator> // std::begin(), std::end()
+
+namespace gnr
+{
 
 template <typename A>
 class static_array
@@ -45,5 +49,7 @@ public:
   auto end() const noexcept { return p_ + N_; }
   auto size() const noexcept { return N_; }
 };
+
+}
 
 #endif // STATIC_ARRAY_HPP
