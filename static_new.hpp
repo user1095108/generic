@@ -25,6 +25,25 @@ class static_new
     alignof(A)
   > storage_;
 
+  static constinit struct deleter
+  {
+    ~deleter()
+      noexcept(std::is_nothrow_destructible_v<A>)
+    {
+      [&]<auto ...I>(auto const c, std::index_sequence<I...>)
+      {
+        (
+          (
+            I < c ?
+              std::launder(reinterpret_cast<A*>(&storage_<I>))->~A() :
+              void()
+          ),
+          ...
+        );
+      }(c_, std::make_index_sequence<N>());
+    }
+  } const d_;
+
 public:
   explicit static_new(auto&& ...a)
     noexcept(std::is_nothrow_constructible_v<A, decltype(a)...>)
