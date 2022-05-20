@@ -69,7 +69,7 @@ public:
   static_new& operator=(static_new&&) = delete;
 
   //
-  operator decltype(p_)() noexcept { return p_; }
+  operator auto() noexcept { return p_; }
 };
 
 }
