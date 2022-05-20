@@ -2,7 +2,7 @@
 # define STATIC_NEW_HPP
 # pragma once
 
-#include <new>
+#include <memory>
 #include <type_traits>
 
 namespace gnr
@@ -35,7 +35,9 @@ class static_new
         (
           (
             I < c ?
-              std::launder(reinterpret_cast<A*>(&storage_<I>))->~A() :
+              std::destroy_at(
+                std::launder(reinterpret_cast<A*>(&storage_<I>))
+              ) :
               void()
           ),
           ...
