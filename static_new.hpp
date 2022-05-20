@@ -25,7 +25,7 @@ class static_new
     alignof(A)
   > storage_;
 
-  static constinit struct deleter
+  static constinit inline struct deleter
   {
     ~deleter()
       noexcept(std::is_nothrow_destructible_v<A>)
