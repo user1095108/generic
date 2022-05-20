@@ -7,14 +7,17 @@ namespace gnr
 
 struct statebuf
 {
-  void *sp, *label;
+  void* sp, *label;
+#if defined(i386) || defined(__i386) || defined(__i386__)
+  void* bp;
+#endif
 };
 
 }
 
 #if defined(__GNUC__)
 # if defined(i386) || defined(__i386) || defined(__i386__)
-#  define clobber_all() asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi", "ebp", "cc");
+#  define clobber_all() asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi", "cc");
 # elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
 #  define clobber_all() asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "cc");
 # elif defined(__arm__)
@@ -37,14 +40,15 @@ static inline bool __attribute__((always_inline)) savestate(
 # if defined(i386) || defined(__i386) || defined(__i386__)
   asm (
     "movl %%esp, %0\n\t" // store sp
-    "lea 1f(%%eip), %%eax\n\t" // load label
-    "movl %%eax, %1\n\t" // store label
-    "movb $0, %2\n\t" // return false
+    "movl %%ebp, %1\n\t" // store bp
+    "lea 1f, %%eax\n\t" // load label
+    "movl %%eax, %2\n\t" // store label
+    "movb $0, %3\n\t" // return false
     "jmp 2f\n\t"
     "1:"
-    "movb $1, %2\n\t" // return true
+    "movb $1, %3\n\t" // return true
     "2:"
-    : "=m" (ssb.sp), "=m" (ssb.label), "=r" (r)
+    : "=m" (ssb.sp), "=m" (ssb.bp), "=m" (ssb.label), "=r" (r)
     :
     : "eax", "memory"
   );
@@ -104,13 +108,14 @@ static inline bool __attribute__((always_inline)) savestate(
 
 #if defined(__GNUC__)
 # if defined(i386) || defined(__i386) || defined(__i386__)
-#  define restorestate(SSB)          \
-    asm (                            \
-      "movl %0, %%esp\n\t"           \
-      "jmp *%1"                      \
-      :                              \
-      : "m" (SSB.sp), "m" (SSB.label)\
-    );                               \
+#  define restorestate(SSB)                        \
+    asm (                                          \
+      "movl %0, %%esp\n\t"                         \
+      "movl %1, %%ebp\n\t"                         \
+      "jmp *%2"                                    \
+      :                                            \
+      : "m" (SSB.sp), "m" (SSB.bp), "m" (SSB.label)\
+    );                                             \
     __builtin_unreachable();
 # elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) ||\
    defined(__x86_64)
