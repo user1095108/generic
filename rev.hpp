@@ -21,7 +21,7 @@ struct rev
 };
 
 template <typename T>
-rev(std::initializer_list<T>) -> rev<std::initializer_list<T>&&>;
+rev(std::initializer_list<T>) -> rev<std::initializer_list<T> const&>;
 
 template <typename T>
 rev(T&&) -> rev<T&&>;
