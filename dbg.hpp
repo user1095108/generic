@@ -27,7 +27,7 @@ static struct
 static constexpr auto& dbg(std::cout);
 #endif // NDEBUG
 
-[[noreturn]] inline std::ostream& abort(std::ostream& os) noexcept
+[[noreturn]] inline std::ostream& abort(std::ostream&) noexcept
 {
   std::abort();
 }
