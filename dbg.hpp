@@ -16,6 +16,11 @@ static struct
   {
     return *this;
   }
+
+  auto& operator<<(std::ostream&(* const)(std::ostream&)) const noexcept
+  {
+    return *this;
+  }
 } const dbg;
 
 #else
