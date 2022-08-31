@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 #include "forwarder.hpp"
 #include "fwdref.hpp"
@@ -35,13 +36,8 @@ int main()
 
   h();
 
-  auto const message("");
-  std::cout << std::addressof(message) << std::endl;
-
-  test([&]{
-      std::cout << std::addressof(message) << std::endl;
-    }
-  );
+  gnr::forwarder<void(std::shared_ptr<int>)> a([&](std::shared_ptr<int> p) { std::cout << p.use_count() << std::endl; });
+  a(std::make_shared<int>(1));
 
   return 0;
 }

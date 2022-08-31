@@ -26,7 +26,7 @@ template <typename R, typename ...A, std::size_t N, bool E>
 class forwarder_impl2<R (A...), N, E>
 {
 protected:
-  R (*stub_)(void const*, A&&...) noexcept(E) {};
+  R (*stub_)(void const*, A...) noexcept(E) {};
 
   std::aligned_storage_t<N> store_;
 
@@ -40,10 +40,11 @@ public:
   using result_type = R;
 
 public:
-  R operator()(A... args) const noexcept(E)
+  template <typename ...B>
+  R operator()(B&& ...b) const noexcept(E)
   {
     //assert(stub_);
-    return stub_(std::addressof(store_), std::forward<A>(args)...);
+    return stub_(std::addressof(store_), std::forward<B>(b)...);
   }
 
   template <typename F,
@@ -59,11 +60,11 @@ public:
 
     ::new (std::addressof(store_)) functor_type(std::forward<F>(f));
 
-    stub_ = [](void const* const ptr, A&&... args) noexcept(E) -> R
+    stub_ = [](void const* const ptr, A... a) noexcept(E) -> R
       {
         return std::invoke(
           *static_cast<functor_type*>(const_cast<void*>(ptr)),
-          std::forward<A>(args)...);
+          std::forward<A>(a)...);
       };
   }
 };
