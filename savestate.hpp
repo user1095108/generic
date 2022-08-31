@@ -17,7 +17,7 @@ struct statebuf
 
 #if defined(__GNUC__)
 # if defined(i386) || defined(__i386) || defined(__i386__)
-#  define clobber_all() asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi", "cc");
+#  define clobber_all() asm volatile ("":::"eax", "ebx", "ecx", "edx", "esi", "edi", "ebp", "cc");
 # elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
 #  define clobber_all() asm volatile ("":::"rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "cc");
 # elif defined(__arm__)
