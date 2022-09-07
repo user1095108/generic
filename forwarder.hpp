@@ -115,7 +115,12 @@ public:
 
   forwarder& operator=(forwarder&&) = default;
 
-  template <typename F>
+  template <typename F,
+    typename = std::enable_if_t<
+      !std::is_same_v<std::decay_t<F>, forwarder> &&
+      inherited_t::template is_invocable<F>()
+    >
+  >
   forwarder& operator=(F&& f) noexcept(
     noexcept(inherited_t::assign(std::forward<F>(f))))
   {
