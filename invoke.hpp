@@ -239,7 +239,7 @@ constexpr auto chain_apply(auto&& a, auto&& ...f)
   );
 }
 
-constexpr auto chain_apply(int[0], auto&& ...f)
+constexpr auto chain_apply(int[], auto&& ...f)
   noexcept(noexcept(
       chain_apply(
         std::tuple(),
