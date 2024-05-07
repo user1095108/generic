@@ -25,7 +25,7 @@ using result_t = std::conditional_t<
       char const,
       std::remove_extent_t<std::remove_reference_t<R>>
     >,
-    std::remove_extent_t<std::remove_reference_t<R>>(*)[],
+    std::add_pointer_t<R>,
     std::conditional_t<std::is_reference_v<R>, std::add_pointer_t<R>, R>
   >;
 
