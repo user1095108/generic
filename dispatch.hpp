@@ -18,16 +18,8 @@ template <std::size_t I, typename ...T>
 using at_t = std::tuple_element_t<I, std::tuple<T...>>;
 
 template <typename R>
-using result_t = std::conditional_t<
-    std::is_array_v<std::remove_reference_t<R>> &&
-    (1 == std::rank_v<std::remove_reference_t<R>>) &&
-    std::is_same_v<
-      char const,
-      std::remove_extent_t<std::remove_reference_t<R>>
-    >,
-    std::add_pointer_t<R>,
-    std::conditional_t<std::is_reference_v<R>, std::add_pointer_t<R>, R>
-  >;
+using result_t =
+  std::conditional_t<std::is_reference_v<R>, std::add_pointer_t<R>, R>;
 
 template <typename F>
 constexpr auto is_noexcept_dispatchable() noexcept
@@ -87,17 +79,7 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     {
       (void)((I == int_t(i) && (f(), true)) || ...);
     }
-    else if constexpr(
-      (
-        std::is_array_v<std::remove_reference_t<R>> &&
-        (1 == std::rank_v<std::remove_reference_t<R>>) &&
-        std::is_same_v<
-          char const,
-          std::remove_extent_t<std::remove_reference_t<R>>
-        >
-      ) ||
-      std::is_reference_v<R>
-    )
+    else if constexpr(std::is_reference_v<R>)
     {
       detail::dispatch::result_t<R> r;
 
@@ -145,17 +127,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
       std::forward<decltype(a)>(a)...
     );
   }
-  else if constexpr(
-    (
-      std::is_array_v<std::remove_reference_t<R>> &&
-      (1 == std::rank_v<std::remove_reference_t<R>>) &&
-      std::is_same_v<
-        char const,
-        std::remove_extent_t<std::remove_reference_t<R>>
-      >
-    ) ||
-    std::is_reference_v<R>
-  )
+  else if constexpr(std::is_reference_v<R>)
   {
     detail::dispatch::result_t<R> r;
 
@@ -214,9 +186,9 @@ constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
   detail::dispatch::result_t<detail::dispatch::at_t<1, decltype(a)...>> r{};
 
   gnr::invoke_split_cond<2>(
-    [&](auto&& e, auto&& v) noexcept
+    [&](auto&& e, auto&& a) noexcept
     {
-      return (e == i) && (r = reinterpret_cast<decltype(r)>(&v), true);
+      return (e == i) && (r = reinterpret_cast<decltype(r)>(&a), true);
     },
     std::forward<decltype(a)>(a)...
   );
