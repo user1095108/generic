@@ -19,6 +19,7 @@ using at_t = std::tuple_element_t<I, std::tuple<T...>>;
 
 template <typename R>
 using result_t = std::conditional_t<
+    std::is_reference_v<R> &&
     std::is_array_v<std::remove_reference_t<R>> &&
     std::is_same_v<
       char const,
