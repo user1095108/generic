@@ -19,19 +19,15 @@ using at_t = std::tuple_element_t<I, std::tuple<T...>>;
 
 template <typename R>
 using result_t = std::conditional_t<
-  std::is_array_v<std::remove_reference_t<R>> &&
-  (1 == std::rank_v<std::remove_reference_t<R>>) &&
-  std::is_same_v<
-    char,
-    std::remove_const_t<std::remove_extent_t<std::remove_reference_t<R>>>
-  >,
-  std::remove_extent_t<std::remove_reference_t<R>>(*)[],
-  std::conditional_t<
-    std::is_reference_v<R>,
-    std::remove_reference_t<R>*,
-    R
-  >
->;
+    std::is_array_v<std::remove_reference_t<R>> &&
+    (1 == std::rank_v<std::remove_reference_t<R>>) &&
+    std::is_same_v<
+      char const,
+      std::remove_extent_t<std::remove_reference_t<R>>
+    >,
+    std::remove_extent_t<std::remove_reference_t<R>>(*)[],
+    std::conditional_t<std::is_reference_v<R>, std::add_pointer_t<R>, R>
+  >;
 
 template <typename F>
 constexpr auto is_noexcept_dispatchable() noexcept
@@ -96,8 +92,8 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
         std::is_array_v<std::remove_reference_t<R>> &&
         (1 == std::rank_v<std::remove_reference_t<R>>) &&
         std::is_same_v<
-          char,
-          std::remove_const_t<std::remove_extent_t<std::remove_reference_t<R>>>
+          char const,
+          std::remove_extent_t<std::remove_reference_t<R>>
         >
       ) ||
       std::is_reference_v<R>
@@ -154,8 +150,8 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
       std::is_array_v<std::remove_reference_t<R>> &&
       (1 == std::rank_v<std::remove_reference_t<R>>) &&
       std::is_same_v<
-        char,
-        std::remove_const_t<std::remove_extent_t<std::remove_reference_t<R>>>
+        char const,
+        std::remove_extent_t<std::remove_reference_t<R>>
       >
     ) ||
     std::is_reference_v<R>
@@ -189,28 +185,28 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
   }
 }
 
-constexpr decltype(auto) select(auto const i, auto&& ...v) noexcept
+constexpr decltype(auto) select(auto const i, auto&& ...a) noexcept
   requires(
     std::conjunction_v<
       std::is_same<
         std::decay_t<
-          decltype(std::declval<detail::dispatch::at_t<0, decltype(v)...>>())
+          decltype(std::declval<detail::dispatch::at_t<0, decltype(a)...>>())
         >,
-        std::decay_t<decltype(std::declval<decltype(v)>())>
+        std::decay_t<decltype(std::declval<decltype(a)>())>
       >...
     >
   )
 {
   return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> decltype(auto)
   {
-    detail::dispatch::result_t<detail::dispatch::at_t<0, decltype(v)...>> r{};
+    detail::dispatch::result_t<detail::dispatch::at_t<0, decltype(a)...>> r{};
 
     (void)(
-      ((I == i) && (r = reinterpret_cast<decltype(r)>(&v), true)) || ...
+      ((I == i) && (r = reinterpret_cast<decltype(r)>(&a), true)) || ...
     );
 
     return *r;
-  }(std::make_index_sequence<sizeof...(v)>());
+  }(std::make_index_sequence<sizeof...(a)>());
 }
 
 constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
