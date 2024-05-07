@@ -169,26 +169,26 @@ constexpr decltype(auto) select(auto const i, auto&& ...a) noexcept
     >
   )
 {
-  return [&]<auto ...I>(std::index_sequence<I...>) noexcept -> decltype(auto)
+  using res_t = std::add_pointer_t<detail::dispatch::at_t<0, decltype(a)...>>;
+  res_t r{};
+
+  [&]<auto ...I>(std::index_sequence<I...>) noexcept
   {
-    std::add_pointer_t<detail::dispatch::at_t<0, decltype(a)...>> r{};
-
-    (void)(
-      ((I == i) && (r = reinterpret_cast<decltype(r)>(&a), true)) || ...
-    );
-
-    return *r;
+    (void)(((I == i) && (r = reinterpret_cast<res_t>(&a), true)) || ...);
   }(std::make_index_sequence<sizeof...(a)>());
+
+  return *r;
 }
 
 constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
 {
-  std::add_pointer_t<detail::dispatch::at_t<1, decltype(a)...>> r{};
+  using res_t = std::add_pointer_t<detail::dispatch::at_t<1, decltype(a)...>>;
+  res_t r{};
 
   gnr::invoke_split_cond<2>(
     [&](auto&& e, auto&& a) noexcept
     {
-      return (e == i) && (r = reinterpret_cast<decltype(r)>(&a), true);
+      return (e == i) && (r = reinterpret_cast<res_t>(&a), true);
     },
     std::forward<decltype(a)>(a)...
   );
