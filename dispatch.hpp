@@ -18,8 +18,11 @@ template <std::size_t I, typename ...T>
 using at_t = std::tuple_element_t<I, std::tuple<T...>>;
 
 template <typename R>
-using result_t =
-  std::conditional_t<std::is_reference_v<R>, std::add_pointer_t<R>, R>;
+using result_t = std::conditional_t<
+    std::is_array_v<std::remove_reference_t<R>>,
+    std::remove_extent_t<std::remove_reference_t<R>>(*)[],
+    std::conditional_t<std::is_reference_v<R>, std::add_pointer_t<R>, R>
+  >;
 
 template <typename F>
 constexpr auto is_noexcept_dispatchable() noexcept
@@ -169,12 +172,13 @@ constexpr decltype(auto) select(auto const i, auto&& ...a) noexcept
     >
   )
 {
-  using res_t = std::add_pointer_t<detail::dispatch::at_t<0, decltype(a)...>>;
+  using res_t = detail::dispatch::result_t<
+    detail::dispatch::at_t<0, decltype(a)...>>;
   res_t r{};
 
   [&]<auto ...I>(std::index_sequence<I...>) noexcept
   {
-    (void)(((I == i) && (r = reinterpret_cast<res_t>(&a), true)) || ...);
+    (void)(((I == i) && (r = &a, true)) || ...);
   }(std::make_index_sequence<sizeof...(a)>());
 
   return *r;
@@ -182,13 +186,14 @@ constexpr decltype(auto) select(auto const i, auto&& ...a) noexcept
 
 constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
 {
-  using res_t = std::add_pointer_t<detail::dispatch::at_t<1, decltype(a)...>>;
+  using res_t = detail::dispatch::result_t<
+    detail::dispatch::at_t<1, decltype(a)...>>;
   res_t r{};
 
   gnr::invoke_split_cond<2>(
     [&](auto&& e, auto&& a) noexcept
     {
-      return (e == i) && (r = reinterpret_cast<res_t>(&a), true);
+      return (e == i) && (r = &a, true);
     },
     std::forward<decltype(a)>(a)...
   );
