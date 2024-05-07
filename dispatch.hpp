@@ -91,8 +91,7 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     {
       detail::dispatch::result_t<R> r;
 
-      (void)((I == int_t(i) &&
-        (r = reinterpret_cast<decltype(r)>(&f()))) || ...);
+      (void)((I == int_t(i) && (r = &f()), true) || ...);
 
       return *r;
     }
@@ -142,7 +141,7 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
     gnr::invoke_split_cond<2>(
       [&](auto&& e, auto&& f) noexcept(noexcept(f()))
       {
-        return (e == i) && (r = reinterpret_cast<decltype(r)>(&f()));
+        return (e == i) && (r = &f(), true);
       },
       std::forward<decltype(a)>(a)...
     );
