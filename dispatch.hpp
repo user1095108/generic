@@ -67,8 +67,8 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
     detail::dispatch::underlying_type_t<std::remove_const_t<decltype(i)>>;
 
   using R = decltype(
-    std::declval<detail::dispatch::at_t<0, decltype(f)...>>()()
-  );
+      std::declval<detail::dispatch::at_t<0, decltype(f)...>>()()
+    );
 
   return [&]<auto ...I>(std::integer_sequence<int_t, I...>)
     noexcept(
@@ -114,8 +114,8 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
 #endif // __clang__
 {
   using R = decltype(
-    std::declval<detail::dispatch::at_t<1, decltype(a)...>>()()
-  );
+      std::declval<detail::dispatch::at_t<1, decltype(a)...>>()()
+    );
 
   if constexpr(std::is_void_v<R>)
   {
