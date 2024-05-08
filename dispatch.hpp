@@ -198,9 +198,6 @@ constexpr decltype(auto) select(auto const i, auto&& ...a) noexcept
 
 constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
 {
-  using int_t =
-    detail::dispatch::underlying_type_t<std::remove_const_t<decltype(i)>>;
-
   using R =
     detail::dispatch::result_t<detail::dispatch::at_t<1, decltype(a)...>>;
   R r{};
@@ -208,7 +205,7 @@ constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
   gnr::invoke_split_cond<2>(
     [&](auto&& e, auto&& a) noexcept
     {
-      return (e == int_t(i)) && (r = &a, true);
+      return (e == i) && (r = &a, true);
     },
     std::forward<decltype(a)>(a)...
   );
