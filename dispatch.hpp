@@ -168,7 +168,10 @@ constexpr decltype(auto) select(auto const i, auto&& a, auto&& b) noexcept
   requires(std::is_same_v<detail::dispatch::result_t<decltype(a)>,
     detail::dispatch::result_t<decltype(b)>>)
 {
-  return i ? b : a;
+  using int_t =
+    detail::dispatch::underlying_type_t<std::remove_const_t<decltype(i)>>;
+
+  return int_t(i) ? b : a;
 }
 
 constexpr decltype(auto) select(auto const i, auto&& ...a) noexcept
