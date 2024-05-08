@@ -164,14 +164,19 @@ constexpr decltype(auto) dispatch2(auto const i, auto&& ...a)
   }
 }
 
+constexpr decltype(auto) select(auto const i, auto&& a, auto&& b) noexcept
+  requires(std::is_same_v<detail::dispatch::result_t<decltype(a)>,
+    detail::dispatch::result_t<decltype(b)>>)
+{
+  return i ? b : a;
+}
+
 constexpr decltype(auto) select(auto const i, auto&& ...a) noexcept
   requires(
     std::conjunction_v<
       std::is_same<
-        std::decay_t<
-          decltype(std::declval<detail::dispatch::at_t<0, decltype(a)...>>())
-        >,
-        std::decay_t<decltype(std::declval<decltype(a)>())>
+        detail::dispatch::result_t<detail::dispatch::at_t<0, decltype(a)...>>,
+        detail::dispatch::result_t<decltype(a)>
       >...
     >
   )
