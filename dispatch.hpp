@@ -61,12 +61,12 @@ constexpr decltype(auto) dispatch(auto const i, auto&& ...f)
   requires(
     std::conjunction_v<
       std::is_same<
-        std::decay_t<
+        detail::dispatch::result_t<
           decltype(
             std::declval<detail::dispatch::at_t<0, decltype(f)...>>()()
           )
         >,
-        std::decay_t<decltype(std::declval<decltype(f)>()())>
+        detail::dispatch::result_t<decltype(std::declval<decltype(f)>()())>
       >...
     >
   )
@@ -181,20 +181,26 @@ constexpr decltype(auto) select(auto const i, auto&& ...a) noexcept
     >
   )
 {
+  using int_t =
+    detail::dispatch::underlying_type_t<std::remove_const_t<decltype(i)>>;
+
   using R =
     detail::dispatch::result_t<detail::dispatch::at_t<0, decltype(a)...>>;
   R r{};
 
   [&]<auto ...I>(std::index_sequence<I...>) noexcept
   {
-    (void)(((I == i) && (r = &a, true)) || ...);
-  }(std::make_index_sequence<sizeof...(a)>());
+    (void)(((I == int_t(i)) && (r = &a, true)) || ...);
+  }(std::make_integer_sequence<int_t, sizeof...(a)>());
 
   return *r;
 }
 
 constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
 {
+  using int_t =
+    detail::dispatch::underlying_type_t<std::remove_const_t<decltype(i)>>;
+
   using R =
     detail::dispatch::result_t<detail::dispatch::at_t<1, decltype(a)...>>;
   R r{};
@@ -202,7 +208,7 @@ constexpr decltype(auto) select2(auto const i, auto&& ...a) noexcept
   gnr::invoke_split_cond<2>(
     [&](auto&& e, auto&& a) noexcept
     {
-      return (e == i) && (r = &a, true);
+      return (e == int_t(i)) && (r = &a, true);
     },
     std::forward<decltype(a)>(a)...
   );
