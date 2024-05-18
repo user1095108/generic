@@ -161,48 +161,43 @@ constexpr bool invoke_split_cond(auto&& f, auto&& ...a)
 }
 
 constexpr auto chain_apply(auto&& t, auto&& f, auto&& ...fs)
-  noexcept(noexcept(
-      ::gnr::apply(
-        std::forward<decltype(f)>(f),
-        std::forward<decltype(t)>(t)
-      )
-    )
-  )
+  noexcept(noexcept(::gnr::apply(std::forward<decltype(f)>(f),
+    std::forward<decltype(t)>(t))))
   requires(detail::invoke::is_tuple_v<decltype(t)>)
 {
   if constexpr(sizeof...(fs))
   {
     using R = decltype(
-      ::gnr::apply(
-        std::forward<decltype(f)>(f),
-        std::forward<decltype(t)>(t)
-      )
-    );
-
-    if constexpr(gnr::detail::invoke::is_tuple_v<R>)
-    {
-      return chain_apply(
         ::gnr::apply(
           std::forward<decltype(f)>(f),
           std::forward<decltype(t)>(t)
-        ),
-        std::forward<decltype(fs)>(fs)...
+        )
       );
+
+    if constexpr(gnr::detail::invoke::is_tuple_v<R>)
+    { // f retutns a tuple, continue
+      return chain_apply(
+          ::gnr::apply(
+            std::forward<decltype(f)>(f),
+            std::forward<decltype(t)>(t)
+          ),
+          std::forward<decltype(fs)>(fs)...
+        );
     }
     else if constexpr(std::is_void_v<R>)
-    {
+    { // apply and continue
       ::gnr::apply(
         std::forward<decltype(f)>(f),
         std::forward<decltype(t)>(t)
       );
 
       return chain_apply(
-        std::tuple(),
-        std::forward<decltype(fs)>(fs)...
-      );
+          std::tuple(),
+          std::forward<decltype(fs)>(fs)...
+        );
     }
     else
-    {
+    { // wrap return value into tuple and continue
       return chain_apply(
         std::forward_as_tuple(
           ::gnr::apply(
@@ -215,11 +210,11 @@ constexpr auto chain_apply(auto&& t, auto&& f, auto&& ...fs)
     }
   }
   else
-  {
+  { // apply f as only 1 function is provided
     return ::gnr::apply(
-      std::forward<decltype(f)>(f),
-      std::forward<decltype(t)>(t)
-    );
+        std::forward<decltype(f)>(f),
+        std::forward<decltype(t)>(t)
+      );
   }
 }
 
